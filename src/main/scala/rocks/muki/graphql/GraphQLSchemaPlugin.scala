@@ -51,7 +51,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   import autoImport._
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    graphqlSchemaSnippet := "???",
+    graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
     graphqlProductionSchema := SchemaLoader.fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log),
     graphqlSchemaChanges := SchemaLoader.fromFile(graphqlSchemaGen.value) compare graphqlProductionSchema.value,
     graphqlSchemaGen := {
