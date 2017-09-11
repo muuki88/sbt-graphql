@@ -1,6 +1,7 @@
 package rocks.muki.graphql
 
 import rocks.muki.graphql.schema.SchemaLoader
+import sangria.ast.Document
 import sangria.schema._
 import sbt._
 import sbt.Keys._
@@ -52,7 +53,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
-    graphqlProductionSchema := SchemaLoader.fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log),
+    graphqlProductionSchema := Schema.buildFromAst(Document.emptyStub),
     graphqlSchemaChanges := SchemaLoader.fromFile(graphqlSchemaGen.value) compare graphqlProductionSchema.value,
     graphqlSchemaGen := {
       val schemaFile = resourceManaged.value / "sbt-sangria-codegen" / "schema.graphql"
