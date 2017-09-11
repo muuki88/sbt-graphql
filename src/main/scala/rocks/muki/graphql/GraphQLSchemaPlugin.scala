@@ -1,6 +1,5 @@
 package rocks.muki.graphql
 
-import rocks.muki.graphql.schema.SchemaLoader
 import sangria.ast.Document
 import sangria.schema._
 import sbt._
@@ -48,6 +47,11 @@ object GraphQLSchemaPlugin extends AutoPlugin {
      * Creates realease notes for changes between the production and the current schema
      */
     val graphqlReleaseNotes: TaskKey[String] = taskKey[String]("Creates realease notes for changes between the production and the current schema")
+
+    /**
+     * Helper to load schemas from different places
+     */
+    val SchemaLoader: rocks.muki.graphql.schema.SchemaLoader.type = rocks.muki.graphql.schema.SchemaLoader
   }
   import autoImport._
 
