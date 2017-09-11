@@ -8,9 +8,9 @@ import sangria.macros._
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
 import sangria.schema.Schema
+import sbt.io.IO
 import sbt.util.Logger
 
-import scala.io.Source
 import scala.util.{Failure, Success}
 import scalaj.http.Http
 
@@ -56,7 +56,7 @@ object SchemaLoader {
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] = {
-    val schemaJson = Source.fromFile(file).mkString
+    val schemaJson = IO.read(file)
     QueryParser.parse(schemaJson) match {
       case Success(document) => Schema.buildFromAst(document)
       case Failure(error) => throw error
