@@ -1,6 +1,6 @@
 name := "graphql-test-project"
 
-enablePlugins(GraphQLSchemaPlugin)
+enablePlugins(GraphQLSchemaPlugin, GraphQLQueryPlugin)
 
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "1.3.0",

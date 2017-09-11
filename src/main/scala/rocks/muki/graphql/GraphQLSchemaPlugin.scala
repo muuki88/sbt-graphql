@@ -41,7 +41,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     /**
      * Validates the new schema against existing queries and the production schema
      */
-    val graphqlValidate: TaskKey[Unit] = taskKey[Unit]("Validates the new schema against existing queries and the production schema")
+    val graphqlValidateSchema: TaskKey[Unit] = taskKey[Unit]("Validates the new schema against existing queries and the production schema")
 
     /**
      * Creates realease notes for changes between the production and the current schema
@@ -66,12 +66,12 @@ object GraphQLSchemaPlugin extends AutoPlugin {
       schemaFile
     },
 
-    graphqlValidate := {
+    graphqlValidateSchema := {
       val log = streams.value.log
       val breakingChanges = graphqlSchemaChanges.value.filter(_.breakingChange)
       if(breakingChanges.nonEmpty) {
         breakingChanges.foreach(change => log.error(s" * ${change.description}"))
-        sys.error("Validation failed: Breaking changes found")
+        quietError("Validation failed: Breaking changes found")
       }
     },
 
