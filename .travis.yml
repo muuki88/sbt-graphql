@@ -1,0 +1,20 @@
+language: scala
+matrix:
+  include:
+  - jdk: oraclejdk8
+    scala: 2.12.3
+    env: COMMAND=validate
+
+script:
+  - sbt -J-Xmx1024m ++$TRAVIS_SCALA_VERSION $COMMAND
+
+env:
+  global:
+    secure: BUwoUugJ5WNgQcetu/9tRP8G3unhmUBSnCj3cGVhRkgWDPz1cIgtKukp5D6Bq97PRMGK1co/kNOvdVVXLN7wPG4PowmaXnmd7xuNvpRLkDM0sj7fBk92ocYFgLVq30bbY7budx85isgx3z1hzQXVbbLSmdbP7WGqCccdwmQOdnkXobSj7l8SHzsH1vT/Bh3IQ+Yq9lmJbURGRRj9kjosQfSneBVltxSS5NWOf1oPZeRD4DtHmX+6CJxAln9RZnwk2eutsJrSwrmcZvA6+1z4SQArncj+9TZTG7lcjqw99v6VBT9eEp92ifN3UeJxBu8h1/Cl6yzLuIyPtgzXTNvehV6QuefdpcoFYTM0jXsxFk8sOpmG5Upw/2Wc2gpuplezOzpDs3JP/VVW78rlzJ0xThr8j8pBEB/2Dx4n/Wu8T034FIptYhkqMhc09OfXAQ1zz50eBe/zCJZzggoKJcSfJq3DM3+C60g3Z0MnzxogAUMu3pvE3bayOELNWJyqHMC2cS12izJr5avjgpY7dYFEK7tfdRB/QBrbX5Ul3KJUAl47houLMptBTYr3gtIMLQZbfMf3ngnf72Qbs/8NS4Hm8a5jqyrlDKOGmPoHjheuKjQH5XT5IWzYFKeMdTAF8ldMCN5yW6Nk1hEGbKOyCAdzAHWmF0GFKNBaz+JJI+UjEEM=
+
+before_install:
+- openssl aes-256-cbc -K $encrypted_ef7a89177743_key -iv $encrypted_ef7a89177743_iv
+  -in project/.gnupg/sec.asc.enc -out project/.gnupg/sec.asc -d
+
+after_success:
+  - sbt publishLocalSigned
