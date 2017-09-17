@@ -1,4 +1,4 @@
-# sbt-graphql
+# sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql)
 
 > This plugin is an experiment at this moment
 
