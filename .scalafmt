@@ -1,0 +1,4 @@
+align = none
+maxColumn = 120
+
+rewrite.rules = [SortImports, RedundantBraces, RedundantParens]

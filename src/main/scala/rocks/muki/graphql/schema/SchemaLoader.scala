@@ -15,44 +15,46 @@ import scala.util.{Failure, Success}
 import scalaj.http.Http
 
 /**
- * Defines a specific way for loading graphql schemas.
- */
+  * Defines a specific way for loading graphql schemas.
+  */
 trait SchemaLoader {
 
   /**
-   * Load the schema.
-   * The Context and Val types are always any as we cannot make any
-   * assumptions while loading an external schema.
-   *
-   * @return the successful loaded schema
-   */
+    * Load the schema.
+    * The Context and Val types are always any as we cannot make any
+    * assumptions while loading an external schema.
+    *
+    * @return the successful loaded schema
+    */
   def loadSchema(): Schema[Any, Any]
 }
 
 object SchemaLoader {
 
   /**
-   * Loads a schema from an schema json file.
-   *
-   * @param file the schema json file
-   */
-  def fromFile(file: File): Schema[Any, Any] = new FileSchemaLoader(file).loadSchema()
+    * Loads a schema from an schema json file.
+    *
+    * @param file the schema json file
+    */
+  def fromFile(file: File): Schema[Any, Any] =
+    new FileSchemaLoader(file).loadSchema()
 
   /**
-   * Loads a schema from an graphql endpoint.
-   *
-   * @param url the graphql endpoint
-   * @param log log output
-   */
-  def fromIntrospection(url: String, log: Logger): Schema[Any, Any] = new IntrospectSchemaLoader(url, log).loadSchema()
+    * Loads a schema from an graphql endpoint.
+    *
+    * @param url the graphql endpoint
+    * @param log log output
+    */
+  def fromIntrospection(url: String, log: Logger): Schema[Any, Any] =
+    new IntrospectSchemaLoader(url, log).loadSchema()
 
 }
 
 /**
- * Loads a schema from an schema json file.
- *
- * @param file the schema json file
- */
+  * Loads a schema from an schema json file.
+  *
+  * @param file the schema json file
+  */
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] = {
@@ -65,19 +67,20 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
 }
 
 /**
- * Loads a schema from an graphql endpoint.
- *
- * @param url the graphql endpoint
- * @param log log output
- */
+  * Loads a schema from an graphql endpoint.
+  *
+  * @param url the graphql endpoint
+  * @param log log output
+  */
 class IntrospectSchemaLoader(url: String, log: Logger) extends SchemaLoader {
 
-  override def loadSchema(): Schema[Any, Any] = Schema.buildFromIntrospection(introspect)
+  override def loadSchema(): Schema[Any, Any] =
+    Schema.buildFromIntrospection(introspect)
 
   /**
-   * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
-   * @return the introspect query result
-   */
+    * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
+    * @return the introspect query result
+    */
   private def introspect(): Json = {
     log.info(s"Introspect graphql endpoint: $url")
     val introspectQuery = gql"""
@@ -169,7 +172,8 @@ class IntrospectSchemaLoader(url: String, log: Logger) extends SchemaLoader {
            }
          }
        }"""
-    val response = Http(url).param("query", introspectQuery.renderCompact).asString
+    val response =
+      Http(url).param("query", introspectQuery.renderCompact).asString
     parse(response.body) match {
       case Right(json) => json
       case Left(error) =>
