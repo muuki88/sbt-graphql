@@ -1,4 +1,4 @@
-# sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql)
+# sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql) [ ![Download](https://api.bintray.com/packages/sbt/sbt-plugin-releases/sbt-graphql/images/download.svg) ](https://bintray.com/sbt/sbt-plugin-releases/sbt-graphql/_latestVersion) 
 
 > This plugin is an experiment at this moment
 
