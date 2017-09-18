@@ -24,7 +24,11 @@ All features are based on the excellent [Sangria GraphQL library](http://sangria
 
 # Usage
 
-> This plugin is not yet released. You will have to build it yourself at this moment. Sorry for that :(
+Add this to your `plugins.sbt` and replace the `<version>` placeholder with the latest release.
+
+```scala
+addSbtPlugin("rocks.muki" % "sbt-graphql" % "<version>")
+```
 
 In your `build.sbt` enable the plugins and add sangria. I'm using circe as a parser for my json response.
 
