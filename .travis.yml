@@ -19,4 +19,4 @@ before_install:
     -in project/.gnupg/sec.asc.enc -out project/.gnupg/sec.asc -d
 
 after_success:
-  - sbt publishLocalSigned
+  - sbt publishViaTravis
