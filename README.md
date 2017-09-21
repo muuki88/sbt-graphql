@@ -1,6 +1,7 @@
 # sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql) [ ![Download](https://api.bintray.com/packages/sbt/sbt-plugin-releases/sbt-graphql/images/download.svg) ](https://bintray.com/sbt/sbt-plugin-releases/sbt-graphql/_latestVersion) 
 
-> This plugin is an experiment at this moment
+> This plugin is an experiment at this moment.
+> SBT 1.x only
 
 SBT plugin to generate and validate graphql schemas written with Sangria.
 
@@ -111,3 +112,25 @@ your `build.sbt`
 ```scala
 sourceDirectory in (Compile, graphqlValidateQueries) := file("path/to/graphql")
 ```
+
+# Developing
+
+## Test project
+
+You can try out your changes immediately with the `test-project`:
+
+```bash
+$ cd test-project
+sbt
+```
+
+If you change code in the plugin you need to `reload` the test-project.
+
+## Releasing
+
+Push a tag `vX.Y.Z` a travis will automatically release it.
+If you push to the `snapshot` branch a snapshot version (using the git sha)
+will be published.
+
+The `git.baseVersion := "x.y.z"` setting configures the base version for
+snapshot releases.
