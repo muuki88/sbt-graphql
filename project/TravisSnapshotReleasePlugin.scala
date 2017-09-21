@@ -34,6 +34,8 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
         log.info(s"Publish via travis on branch $branch")
         log.info(s"Using version ${version.value}")
         log.info(s"Release tag $releaseTag")
+        log.info(s"Sbt-git found branch ${git.gitCurrentBranch}")
+        log.info(s"Sbt-git found tags ${git.gitCurrentTags}")
 
         if (!isTravisBuild.value) {
           Def.task[Unit] {
@@ -50,14 +52,14 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
               log.success(
                 s"Pushed to snapshot branch. Publishing $snapshotVersion")
             }
-          //.dependsOn(publishSigned)
+            .dependsOn(publishSigned)
         } else if (releaseTag.isDefined) {
           Def
             .task[Unit] {
               log.success(
                 s"Pushed to master branch. Publishing a release with version ${version.value}")
             }
-          //.dependsOn(publishSigned)
+            .dependsOn(publishSigned)
         } else {
           Def.task[Unit] {
             log.warn(
