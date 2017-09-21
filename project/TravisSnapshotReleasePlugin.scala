@@ -34,8 +34,8 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
         log.info(s"Publish via travis on branch $branch")
         log.info(s"Using version ${version.value}")
         log.info(s"Release tag $releaseTag")
-        log.info(s"Sbt-git found branch ${git.gitCurrentBranch}")
-        log.info(s"Sbt-git found tags ${git.gitCurrentTags}")
+        log.info(s"Sbt-git found branch ${git.gitCurrentBranch.value}")
+        log.info(s"Sbt-git found tags ${git.gitCurrentTags.value}")
 
         if (!isTravisBuild.value) {
           Def.task[Unit] {
