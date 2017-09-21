@@ -14,17 +14,27 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
   object autoImport {
     val publishViaTravis: TaskKey[Unit] =
       taskKey[Unit]("publish via travis CI")
+
+    val travisBranch: SettingKey[Option[String]] =
+      settingKey[Option[String]]("travis git branch")
   }
   import autoImport._
 
   override def projectSettings: Seq[Setting[_]] = Seq(
+    travisBranch := sys.env.get("TRAVIS_BRANCH"),
     publishViaTravis := Def
       .taskDyn[Unit] {
         val log = streams.value.log
-        val branch = git.gitCurrentBranch.value
-        val currentTags = git.gitCurrentTags.value
+        // Travis sets the branch via an environment variable. Also tags are checked out as branches
+        val branch = travisBranch.value.getOrElse("<no travis branch>")
+        val currentTags = List(branch)
+
         val tagToVersionNumber = git.gitTagToVersionNumber.value
         val releaseTag = git.releaseVersion(currentTags, tagToVersionNumber, "")
+        log.info(s"Publish via travis on branch $branch")
+        log.info(s"Using version ${version.value}")
+        log.info(s"Release tag $releaseTag")
+
         if (!isTravisBuild.value) {
           Def.task[Unit] {
             log.warn("Not running on travis. Skip publish task")
@@ -40,14 +50,14 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
               log.success(
                 s"Pushed to snapshot branch. Publishing $snapshotVersion")
             }
-            .dependsOn(publishSigned)
-        } else if (branch == "master" && releaseTag.isDefined) {
+          //.dependsOn(publishSigned)
+        } else if (releaseTag.isDefined) {
           Def
             .task[Unit] {
               log.success(
                 s"Pushed to master branch. Publishing a release with version ${version.value}")
             }
-            .dependsOn(publishSigned)
+          //.dependsOn(publishSigned)
         } else {
           Def.task[Unit] {
             log.warn(
