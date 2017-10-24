@@ -46,7 +46,7 @@ object SchemaLoader {
     * @param log log output
     */
   def fromIntrospection(url: String, log: Logger): IntrospectSchemaLoader =
-    new IntrospectSchemaLoader(url, log)
+    IntrospectSchemaLoader(url, log)
 
 }
 
@@ -72,10 +72,17 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
   * @param url the graphql endpoint
   * @param log log output
   */
-class IntrospectSchemaLoader(url: String, log: Logger) extends SchemaLoader {
+case class IntrospectSchemaLoader(url: String,
+                                  log: Logger,
+                                  headers: Seq[(String, String)] = Seq.empty)
+    extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
     Schema.buildFromIntrospection(introspect())
+
+  def withHeaders(headers: (String, String)*): IntrospectSchemaLoader = {
+    copy(headers = headers.toList)
+  }
 
   /**
     * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
@@ -172,8 +179,10 @@ class IntrospectSchemaLoader(url: String, log: Logger) extends SchemaLoader {
            }
          }
        }"""
-    val response =
-      Http(url).param("query", introspectQuery.renderCompact).asString
+    val response = Http(url)
+      .headers(headers)
+      .param("query", introspectQuery.renderCompact)
+      .asString
     parse(response.body) match {
       case Right(json) => json
       case Left(error) =>

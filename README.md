@@ -94,10 +94,12 @@ You can also define a schema from a `SchemaLoader`. This requires defining an an
 
 ```scala
 graphqlSchemas += GraphQLSchema(
-  "staging",
-  "staging schema at staging.your-graphql.net/graphql",
+  "sangria-example",
+  "staging schema at http://try.sangria-graphql.org/graphql",
   Def.task(
-    GraphQLSchemaLoader.fromIntrospection("http://staging.your-graphql.net/graphql", streams.value.log)
+    GraphQLSchemaLoader
+      .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+      .loadSchema()
   ).taskValue
 )
 ```
@@ -114,6 +116,7 @@ graphqlProductionSchema := GraphQLSchemaLoader
 // from a graphql endpoint via introspection
 graphqlProductionSchema := GraphQLSchemaLoader
   .fromIntrospection("http://prod.your-graphql.net/graphql", streams.value.log)
+  .withHeaders("X-Api-Version" -> "1", "X-Api-Key" -> "4198ab84-e992-42b0-8742-225ed15a781e")
   .loadSchema()
 ```
 

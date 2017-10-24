@@ -8,3 +8,13 @@ libraryDependencies ++= Seq(
 )
 
 graphqlSchemaSnippet := "example.ProductSchema.schema"
+
+graphqlSchemas += GraphQLSchema(
+  "sangria-example",
+  "staging schema at http://try.sangria-graphql.org/graphql",
+  Def.task(
+    GraphQLSchemaLoader
+      .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+      .loadSchema()
+  ).taskValue
+)
