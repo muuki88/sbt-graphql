@@ -107,13 +107,14 @@ places.
 
 ```scala
 // from a file
-graphqlProductionSchema := GraphQLSchemaLoader.fromFile((resourceManaged in Compile).value / "prod.graphql")
+graphqlProductionSchema := GraphQLSchemaLoader
+  .fromFile((resourceManaged in Compile).value / "prod.graphql")
+  .loadSchema()
 
 // from a graphql endpoint via introspection
-graphqlProductionSchema := GraphQLSchemaLoader.fromIntrospection(
-  "http://prod.your-graphql.net/graphql",
-  streams.value.log
-)
+graphqlProductionSchema := GraphQLSchemaLoader
+  .fromIntrospection("http://prod.your-graphql.net/graphql", streams.value.log)
+  .loadSchema()
 ```
 
 The introspection query doesn't support headers at this moment, but will be added

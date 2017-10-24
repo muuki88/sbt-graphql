@@ -36,8 +36,8 @@ object SchemaLoader {
     *
     * @param file the schema json file
     */
-  def fromFile(file: File): Schema[Any, Any] =
-    new FileSchemaLoader(file).loadSchema()
+  def fromFile(file: File): FileSchemaLoader =
+    new FileSchemaLoader(file)
 
   /**
     * Loads a schema from an graphql endpoint.
@@ -45,8 +45,8 @@ object SchemaLoader {
     * @param url the graphql endpoint
     * @param log log output
     */
-  def fromIntrospection(url: String, log: Logger): Schema[Any, Any] =
-    new IntrospectSchemaLoader(url, log).loadSchema()
+  def fromIntrospection(url: String, log: Logger): IntrospectSchemaLoader =
+    new IntrospectSchemaLoader(url, log)
 
 }
 
@@ -61,7 +61,7 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
     val schemaJson = IO.read(file)
     QueryParser.parse(schemaJson) match {
       case Success(document) => Schema.buildFromAst(document)
-      case Failure(error) => throw error
+      case Failure(error)    => throw error
     }
   }
 }
@@ -75,7 +75,7 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
 class IntrospectSchemaLoader(url: String, log: Logger) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
-    Schema.buildFromIntrospection(introspect)
+    Schema.buildFromIntrospection(introspect())
 
   /**
     * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
