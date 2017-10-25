@@ -174,7 +174,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
                       |    schemaFile.getParentFile.mkdirs()
                       |    new java.io.PrintWriter(schemaFile) {
                       |      write(graphql)
-                      |      close
+                      |      close()
                       |    }
                       |    ()
                       |  }
