@@ -1,4 +1,5 @@
 /project/.gnupg/sec.asc
+target
 
 *.class
 *.log
