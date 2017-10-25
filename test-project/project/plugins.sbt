@@ -1,2 +1,2 @@
-lazy val graphqlPlugin =  ProjectRef(file("../.."), "sbt-graphql")
+lazy val graphqlPlugin = ProjectRef(file("../.."), "sbt-graphql")
 dependsOn(graphqlPlugin)

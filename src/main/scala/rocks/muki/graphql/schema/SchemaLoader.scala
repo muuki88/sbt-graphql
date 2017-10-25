@@ -188,7 +188,7 @@ case class IntrospectSchemaLoader(url: String,
       case Left(error) =>
         log.error("JSON parse errors:")
         log.error(error.message)
-        sys.error(s"Invalid json was returned from graphql endpoint $url")
+        sys.error(s"Invalid JSON was returned from graphql endpoint $url")
     }
   }
 }

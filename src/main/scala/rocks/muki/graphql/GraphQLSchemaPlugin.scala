@@ -112,7 +112,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     graphqlProductionSchema := Schema.buildFromAst(Document.emptyStub),
     graphqlSchemaChanges := graphqlSchemaChangesTask.evaluated,
     graphqlSchemaGen := {
-      val schemaFile = resourceManaged.value / "sbt-sangria-codegen" / "schema.graphql"
+      val schemaFile = resourceManaged.value / "sbt-graphql" / "schema.graphql"
       runner.value.run(
         s"$packageName.$mainClass",
         Attributed.data((fullClasspath in Compile).value),
@@ -174,7 +174,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
                       |    schemaFile.getParentFile.mkdirs()
                       |    new java.io.PrintWriter(schemaFile) {
                       |      write(graphql)
-                      |      close
+                      |      close()
                       |    }
                       |    ()
                       |  }
