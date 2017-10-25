@@ -61,7 +61,7 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
     val schemaJson = IO.read(file)
     QueryParser.parse(schemaJson) match {
       case Success(document) => Schema.buildFromAst(document)
-      case Failure(error)    => throw error
+      case Failure(error) => throw error
     }
   }
 }
