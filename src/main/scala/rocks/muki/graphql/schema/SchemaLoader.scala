@@ -90,98 +90,9 @@ case class IntrospectSchemaLoader(url: String,
     */
   private def introspect(): Json = {
     log.info(s"Introspect graphql endpoint: $url")
-    val introspectQuery = gql"""
-     query IntrospectionQuery {
-         __schema {
-           queryType { name }
-           mutationType { name }
-           subscriptionType { name }
-           types {
-             ...FullType
-           }
-           directives {
-             name
-             description
-             locations
-             args {
-               ...InputValue
-             }
-           }
-         }
-       }
-       fragment FullType on __Type {
-         kind
-         name
-         description
-         fields(includeDeprecated: true) {
-           name
-           description
-           args {
-             ...InputValue
-           }
-           type {
-             ...TypeRef
-           }
-           isDeprecated
-           deprecationReason
-         }
-         inputFields {
-           ...InputValue
-         }
-         interfaces {
-           ...TypeRef
-         }
-         enumValues(includeDeprecated: true) {
-           name
-           description
-           isDeprecated
-           deprecationReason
-         }
-         possibleTypes {
-           ...TypeRef
-         }
-       }
-       fragment InputValue on __InputValue {
-         name
-         description
-         type { ...TypeRef }
-         defaultValue
-       }
-       fragment TypeRef on __Type {
-         kind
-         name
-         ofType {
-           kind
-           name
-           ofType {
-             kind
-             name
-             ofType {
-               kind
-               name
-               ofType {
-                 kind
-                 name
-                 ofType {
-                   kind
-                   name
-                   ofType {
-                     kind
-                     name
-                     ofType {
-                       kind
-                       name
-                     }
-                   }
-                 }
-               }
-             }
-           }
-         }
-       }"""
     val response = Http(url)
       .headers(headers)
-      .param("query", introspectQuery.renderCompact)
+      .param("query", sangria.introspection.introspectionQuery.renderCompact)
       .asString
     parse(response.body) match {
       case Right(json) => json
