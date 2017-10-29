@@ -4,6 +4,7 @@ import java.io.File
 
 import io.circe.Json
 import io.circe.parser.parse
+import sangria.introspection.introspectionQuery
 import sangria.macros._
 import sangria.marshalling.circe._
 import sangria.parser.QueryParser
@@ -92,7 +93,7 @@ case class IntrospectSchemaLoader(url: String,
     log.info(s"Introspect graphql endpoint: $url")
     val response = Http(url)
       .headers(headers)
-      .param("query", sangria.introspection.introspectionQuery.renderCompact)
+      .param("query", introspectionQuery.renderCompact)
       .asString
     parse(response.body) match {
       case Right(json) => json
