@@ -77,4 +77,5 @@ pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
 // ci commands
 addCommandAlias("validateFormatting",
                 "; scalafmt::test ; test:scalafmt::test ; sbt:scalafmt::test")
-addCommandAlias("validate", "; clean ; update ; validateFormatting ; test ; scripted")
+addCommandAlias("validate",
+                "; clean ; update ; validateFormatting ; test ; scripted")
