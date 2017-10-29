@@ -9,3 +9,6 @@ addSbtPlugin("com.dwijnand" % "sbt-travisci" % "1.1.1")
 
 // plugin project
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.0.0-MF"
+
+// testing
+libraryDependencies += "org.scala-sbt" %% "scripted-plugin" % sbtVersion.value

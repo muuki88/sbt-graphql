@@ -14,6 +14,10 @@ libraryDependencies ++= Seq(
   "org.scalaj" %% "scalaj-http" % "2.3.0"
 )
 
+// scripted test settings
+scriptedLaunchOpts += "-Dproject.version=" + version.value
+
+// project meta data
 licenses := Seq(
   "Apache-2.0" -> url("https://opensource.org/licenses/Apache-2.0"))
 homepage := Some(url("https://github.com/muuki88/sbt-graphql"))
