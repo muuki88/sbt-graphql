@@ -1,0 +1,28 @@
+# Entity that can be identified
+interface Identifiable {
+  id: String!
+}
+
+# The product picture
+type Picture {
+  width: Int!
+  height: Int!
+
+  # Picture CDN URL
+  url: String
+}
+
+type Product implements Identifiable {
+  id: String!
+  name: String!
+  description: String!
+  picture(size: Int!): Picture!
+}
+
+type Query {
+  # Returns a product with specific `id`.
+  product(id: String!): Product
+
+  # Returns a list of all available products.
+  products: [Product!]!
+}

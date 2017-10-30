@@ -1,0 +1,6 @@
+query Product()
+  product(id: "love") {
+     name
+     description
+  }
+}

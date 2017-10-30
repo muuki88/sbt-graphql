@@ -72,6 +72,13 @@ object GraphQLSchemaPlugin extends AutoPlugin {
       taskKey[File]("generates a graphql schema file")
 
     /**
+      * Renders the given schema into a graphql file.
+      * The input is the label in the graphqlSchemas setting.
+      */
+    val graphqlRenderSchema: InputKey[File] =
+      inputKey[File]("renders the given schema to a graphql file")
+
+    /**
       * Returns the changes between the two schemas defined as parameters.
       *
       * `graphqlSchemaChanges <new schema> <old schema>`
@@ -111,8 +118,9 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
     graphqlProductionSchema := Schema.buildFromAst(Document.emptyStub),
     graphqlSchemaChanges := graphqlSchemaChangesTask.evaluated,
+    target in graphqlSchemaGen := (target in Compile).value / "sbt-graphql",
     graphqlSchemaGen := {
-      val schemaFile = resourceManaged.value / "sbt-graphql" / "schema.graphql"
+      val schemaFile = (target in graphqlSchemaGen).value / "schema.graphql"
       runner.value.run(
         s"$packageName.$mainClass",
         Attributed.data((fullClasspath in Compile).value),
@@ -149,7 +157,10 @@ object GraphQLSchemaPlugin extends AutoPlugin {
             .loadSchema()
         )
         .taskValue
-    )
+    ),
+    // schema rendering
+    target in graphqlRenderSchema := (target in Compile).value / "grapqhl",
+    graphqlRenderSchema := graphqlRenderSchemaTask.evaluated
   )
 
   /**
@@ -194,6 +205,13 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     token(Space ~> schemaParser)
   }
 
+  private val singleSchemaLabelParser: Def.Initialize[Parser[String]] =
+    Def.setting {
+      val labels = graphqlSchemas.value.schemas.map(_.label)
+      // create a dependent parser. A label can only be selected once
+      schemaLabelParser(labels)
+    }
+
   /**
     * Parses two schema labels
     */
@@ -228,6 +246,24 @@ object GraphQLSchemaPlugin extends AutoPlugin {
       breakingChanges.foreach(change => log.error(s" * ${change.description}"))
       quietError("Validation failed: Breaking changes found")
     }
+  }
+
+  private val graphqlRenderSchemaTask = Def.inputTaskDyn[File] {
+    val log = streams.value.log
+    val label = singleSchemaLabelParser.parsed
+    val file = (target in graphqlRenderSchema).value / s"$label.graphql"
+    val schemaDefinition = graphqlSchemas.value.schemaByLabel.getOrElse(
+      label,
+      sys.error(s"The schema '$label' is not defined in graphqlSchemas")
+    )
+    log.info(s"Rendering schema to: ${file.getPath}")
+
+    Def.task {
+      val schema = schemaDefinition.schemaTask.value
+      IO.write(file, schema.renderPretty)
+      file
+    }
+
   }
 
 }

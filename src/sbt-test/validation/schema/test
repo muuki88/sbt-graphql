@@ -1,0 +1,3 @@
+# validation should fail with the broken.graphql file
+> graphqlValidateSchema build product-schema
+-> graphqlValidateSchema build product-schema-broken
