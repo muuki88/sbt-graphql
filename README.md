@@ -61,6 +61,12 @@ Now you can generate a schema with
 $ sbt graphqlSchemaGen
 ```
 
+You can configure the output directory in your `build.sbt` with
+
+```scala
+target in graphqlSchemaGen := target.value / "grapqhl-build-schema"
+```
+
 ## Schema definitions
 
 Your build can contain multiple schemas. They are stored in the `graphqlSchemas` setting.

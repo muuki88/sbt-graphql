@@ -118,8 +118,9 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
     graphqlProductionSchema := Schema.buildFromAst(Document.emptyStub),
     graphqlSchemaChanges := graphqlSchemaChangesTask.evaluated,
+    target in graphqlSchemaGen := (target in Compile).value / "sbt-graphql",
     graphqlSchemaGen := {
-      val schemaFile = resourceManaged.value / "sbt-graphql" / "schema.graphql"
+      val schemaFile = (target in graphqlSchemaGen).value / "schema.graphql"
       runner.value.run(
         s"$packageName.$mainClass",
         Attributed.data((fullClasspath in Compile).value),

@@ -1,0 +1,9 @@
+# validate the default settings
+$ absent target/sbt-graphql/schema.graphql
+> graphqlSchemaGen
+$ exists target/sbt-graphql/schema.graphql
+# configure the target folder
+$ absent target/schema.graphql
+> set target in graphqlSchemaGen := (target in Compile).value
+> graphqlSchemaGen
+$ exists target/schema.graphql
