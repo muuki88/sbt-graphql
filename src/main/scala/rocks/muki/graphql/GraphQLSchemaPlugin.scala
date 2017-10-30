@@ -208,7 +208,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   private val singleSchemaLabelParser: Def.Initialize[Parser[String]] =
     Def.setting {
       val labels = graphqlSchemas.value.schemas.map(_.label)
-      // create a depened parser. A label can only be selected once
+      // create a dependent parser. A label can only be selected once
       schemaLabelParser(labels)
     }
 
