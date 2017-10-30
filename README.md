@@ -64,7 +64,7 @@ $ sbt graphqlSchemaGen
 You can configure the output directory in your `build.sbt` with
 
 ```scala
-target in graphqlSchemaGen := target.value / "grapqhl-build-schema"
+target in graphqlSchemaGen := target.value / "graphql-build-schema"
 ```
 
 ## Schema definitions
@@ -110,7 +110,7 @@ graphqlSchemas += GraphQLSchema(
 )
 ```
 
-`sbt-grapqhl` provides a helper object `GraphQLSchemaLoader` to load schemas from different
+`sbt-graphql` provides a helper object `GraphQLSchemaLoader` to load schemas from different
 places.
 
 ```scala

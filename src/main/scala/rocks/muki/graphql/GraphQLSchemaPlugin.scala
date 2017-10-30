@@ -159,7 +159,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
         .taskValue
     ),
     // schema rendering
-    target in graphqlRenderSchema := (target in Compile).value / "grapqhl",
+    target in graphqlRenderSchema := (target in Compile).value / "graphql",
     graphqlRenderSchema := graphqlRenderSchemaTask.evaluated
   )
 
