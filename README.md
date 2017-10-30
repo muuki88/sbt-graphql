@@ -142,6 +142,22 @@ $ sbt
 > graphqlValidateSchema build prod
 ```
 
+## Schema rendering
+
+You can render every schema with the `graphqlRenderSchema` task. In your sbt shell
+
+```sbt
+> graphqlRenderSchema build
+```
+
+This will render the `build` schema.
+
+You can configure the target directory with
+
+```scala
+target in graphqlRenderSchema := target.value / "graphql-schema"
+```
+
 ## Schema release notes
 
 `sbt-graphql` creates release notes from changes between two schemas. The format is currently markdown.
