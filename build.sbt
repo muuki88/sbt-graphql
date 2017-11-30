@@ -8,11 +8,14 @@ libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria-circe" % "1.1.0",
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-  "org.scalaj" %% "scalaj-http" % "2.3.0"
+  "org.scalaj" %% "scalaj-http" % "2.3.0",
+  "org.scalameta" %% "scalameta" % "1.8.0",
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
 
 // scripted test settings
 scriptedLaunchOpts += "-Dproject.version=" + version.value
+scriptedLaunchOpts += "-Dcodegen.samples.dir=" + ((baseDirectory in ThisBuild).value / "src/test/resources")
 
 // project meta data
 licenses := Seq(

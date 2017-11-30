@@ -1,0 +1,7 @@
+query BlogListing($pagination: Pagination!) {
+  blogs(pagination: $pagination) {
+    id
+    title
+    uri
+  }
+}
