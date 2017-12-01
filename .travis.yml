@@ -23,4 +23,5 @@ deploy:
   script: sbt publishViaTravis
   skip_cleanup: true
   on:
+    tags: true
     condition: $TRAVIS_PULL_REQUEST = false
