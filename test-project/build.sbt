@@ -1,5 +1,7 @@
 name := "graphql-test-project"
 
+version := "0.4"
+
 enablePlugins(GraphQLSchemaPlugin, GraphQLQueryPlugin)
 
 libraryDependencies ++= Seq(
@@ -7,7 +9,7 @@ libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria-circe" % "1.1.0"
 )
 
-graphqlSchemaSnippet := "example.ProductSchema.schema"
+graphqlSchemaSnippet := "example.StarWarsSchema.schema"
 
 graphqlSchemas += GraphQLSchema(
   "sangria-example",
@@ -15,6 +17,9 @@ graphqlSchemas += GraphQLSchema(
   Def.task(
     GraphQLSchemaLoader
       .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+      .withHeaders("User-Agent" -> "sbt-graphql/${version.value}")
       .loadSchema()
   ).taskValue
 )
+
+addCommandAlias("validateSangriaExample", "graphqlValidateSchema build sangria-example")
