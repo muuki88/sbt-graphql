@@ -20,7 +20,7 @@ class MarkdownReleaseNotes extends ReleaseNotes {
       output.append("\n")
     }
 
-    if(nonBreaking.nonEmpty) {
+    if (nonBreaking.nonEmpty) {
       output.append("## Schema changes\n")
       output.append(renderChanges(nonBreaking))
       output.append("\n")
