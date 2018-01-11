@@ -2,7 +2,7 @@ package rocks.muki.graphql
 
 import sangria.ast.Document
 import sangria.schema._
-import sbt.{ Result => _, _ }
+import sbt.{Result => _, _}
 import sbt.Keys._
 import complete.{FixedSetExamples, Parser}
 import complete.DefaultParsers._
@@ -16,10 +16,11 @@ import sangria.marshalling.circe._
 object GraphQLCodegenPlugin extends AutoPlugin {
 
   object autoImport {
-    val graphqlCodegenSchema  = taskKey[File]("GraphQL schema file")
+    val graphqlCodegenSchema = taskKey[File]("GraphQL schema file")
     val graphqlCodegenQueries = taskKey[Seq[File]]("GraphQL query documents")
-    val graphqlCodegenPackage = settingKey[String]("Package for the generated code")
-    val graphqlCodegen        = taskKey[File]("Generate GraphQL API code")
+    val graphqlCodegenPackage =
+      settingKey[String]("Package for the generated code")
+    val graphqlCodegen = taskKey[File]("Generate GraphQL API code")
   }
   import autoImport._
 
@@ -29,10 +30,9 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     includeFilter in graphqlCodegen := "*.graphql",
     excludeFilter in graphqlCodegen := HiddenFileFilter,
     graphqlCodegenQueries := Defaults
-      .collectFiles(
-	resourceDirectories in graphqlCodegen,
-	includeFilter in graphqlCodegen,
-	excludeFilter in graphqlCodegen)
+      .collectFiles(resourceDirectories in graphqlCodegen,
+		    includeFilter in graphqlCodegen,
+		    excludeFilter in graphqlCodegen)
       .value,
     sourceGenerators in Compile += Def.task { Seq(graphqlCodegen.value) },
     graphqlCodegenPackage := "graphql.codegen",
@@ -76,7 +76,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
 	Failure(s"Failed to parse schema in $schemaFile: ${error.getMessage}")
       }
 
-  def parseIntrospectionSchemaJson(json: Json): Either[Throwable, Schema[_, _]] =
+  def parseIntrospectionSchemaJson(
+      json: Json): Either[Throwable, Schema[_, _]] =
     Either.catchNonFatal {
       val builder = new DefaultIntrospectionSchemaBuilder[Unit]
       Schema.buildFromIntrospection[Unit, Json](json, builder)
@@ -86,7 +87,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     headers.filter(_.nonEmpty).map { header =>
       header.split("=", 2) match {
 	case Array(name, value) => name -> value
-	case Array(name)        => name -> ""
+	case Array(name) => name -> ""
       }
     }
 }

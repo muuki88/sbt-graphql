@@ -17,4 +17,5 @@
 package rocks.muki.graphql.codegen
 package starwars
 
-class StarWarsCodegenSpec extends CodegenBaseSpec("starwars", TestSchema.StarWarsSchema)
+class StarWarsCodegenSpec
+    extends CodegenBaseSpec("starwars", TestSchema.StarWarsSchema)

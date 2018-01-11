@@ -23,7 +23,7 @@ import sangria.ast
 
 case class Importer(schema: Schema[_, _], document: ast.Document) {
   private val typeInfo = new TypeInfo(schema)
-  private val types    = scala.collection.mutable.Set[Type]()
+  private val types = scala.collection.mutable.Set[Type]()
 
   def parse(): Result[Tree.Api] =
     Right(
@@ -34,11 +34,11 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
       ))
 
   /**
-   * Marks a schema type so it is added to the imported AST.
-   *
-   * Must be explicitly called for each type that a field references. For example,
-   * to generate a field which has an enum type this method should be called.
-   */
+    * Marks a schema type so it is added to the imported AST.
+    *
+    * Must be explicitly called for each type that a field references. For example,
+    * to generate a field which has an enum type this method should be called.
+    */
   def touchType(tpe: Type): Unit = tpe.namedType match {
     case IDType =>
       types += tpe
@@ -60,9 +60,12 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
   def generateSelections(
       selections: Seq[ast.Selection],
       typeConditions: Set[Type] = Set.empty): Tree.Selection =
-    selections.map(generateSelection(typeConditions)).foldLeft(Tree.Selection.empty)(_ + _)
+    selections
+      .map(generateSelection(typeConditions))
+      .foldLeft(Tree.Selection.empty)(_ + _)
 
-  def generateSelection(typeConditions: Set[Type])(node: ast.Selection): Tree.Selection = {
+  def generateSelection(typeConditions: Set[Type])(
+      node: ast.Selection): Tree.Selection = {
     def conditionalFragment(f: => Tree.Selection): Tree.Selection =
       if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
 	f
@@ -79,14 +82,15 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
 	    val types = union.types.toList.map { tpe =>
 	      // Prepend the union type name to include and descend into fragment spreads
 	      val conditions = Set[Type](union, tpe) ++ tpe.interfaces
-	      val selection  = generateSelections(field.selections, conditions)
+	      val selection = generateSelections(field.selections, conditions)
 	      Tree.UnionSelection(tpe, selection)
 	    }
 	    Tree.Selection(Tree.Field(field.outputName, tpe, union = types))
 
 	  case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
 	    val gen = generateSelections(field.selections)
-	    Tree.Selection(Tree.Field(field.outputName, tpe, selection = Some(gen)))
+	    Tree.Selection(
+	      Tree.Field(field.outputName, tpe, selection = Some(gen)))
 
 	  case _ =>
 	    touchType(tpe)
@@ -94,13 +98,14 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
 	}
 
       case fragmentSpread: ast.FragmentSpread =>
-	val name     = fragmentSpread.name
+	val name = fragmentSpread.name
 	val fragment = document.fragments(fragmentSpread.name)
 	// Sangria's TypeInfo abstraction does not resolve fragment spreads
 	// when traversing, so explicitly enter resolved fragment.
 	typeInfo.enter(fragment)
 	val result = conditionalFragment(
-	  generateSelections(fragment.selections, typeConditions).copy(interfaces = Vector(name)))
+	  generateSelections(fragment.selections, typeConditions)
+	    .copy(interfaces = Vector(name)))
 	typeInfo.leave(fragment)
 	result
 

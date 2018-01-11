@@ -22,7 +22,9 @@ import scala.io.Source
 import scala.meta._
 import sangria.schema.Schema
 
-abstract class CodegenBaseSpec(name: String, schema: Option[Schema[_, _]] = None) extends WordSpec {
+abstract class CodegenBaseSpec(name: String,
+			       schema: Option[Schema[_, _]] = None)
+    extends WordSpec {
   def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))
 
   val inputDir = new File("src/test/resources", name)
@@ -34,7 +36,7 @@ abstract class CodegenBaseSpec(name: String, schema: Option[Schema[_, _]] = None
     for {
       input <- inputDir.listFiles()
       if input.getName.endsWith(".graphql")
-      name     = input.getName.replace(".graphql", "")
+      name = input.getName.replace(".graphql", "")
       expected = new File(inputDir, s"$name.scala")
       if expected.exists
     } {
@@ -42,7 +44,7 @@ abstract class CodegenBaseSpec(name: String, schema: Option[Schema[_, _]] = None
 	val generator = ScalametaGenerator(s"${name}Api")
 	val builder = schema match {
 	  case Some(schema) => Builder(schema)
-	  case None         => Builder(new File(inputDir, "schema.graphql"))
+	  case None => Builder(new File(inputDir, "schema.graphql"))
 	}
 	val Right(out) = builder
 	  .withQuery(input)

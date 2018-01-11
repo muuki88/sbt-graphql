@@ -21,12 +21,11 @@ import scala.meta._
 import sangria.schema
 
 /**
- * Generate code using Scalameta.
- */
-case class ScalametaGenerator(
-    moduleName: Term.Name,
-    emitInterfaces: Boolean = false,
-    stats: Seq[Stat] = Vector.empty)
+  * Generate code using Scalameta.
+  */
+case class ScalametaGenerator(moduleName: Term.Name,
+			      emitInterfaces: Boolean = false,
+			      stats: Seq[Stat] = Vector.empty)
     extends Generator[Defn.Object] {
 
   override def apply(api: Tree.Api): Result[Defn.Object] = {
@@ -53,13 +52,15 @@ case class ScalametaGenerator(
   def termParam(paramName: String, tpe: Type) =
     Term.Param(Vector.empty, Term.Name(paramName), Some(tpe), None)
 
-  def generateTemplate(traits: Seq[String], prefix: String = moduleName.value + "."): Template = {
+  def generateTemplate(traits: Seq[String],
+		       prefix: String = moduleName.value + "."): Template = {
     val ctorNames = traits.map(prefix + _).map(Ctor.Name.apply)
     val emptySelf = Term.Param(Vector.empty, Name.Anonymous(), None, None)
     Template(Nil, ctorNames, emptySelf, None)
   }
 
-  def generateFieldType(field: Tree.Field)(genType: schema.Type => Type): Type = {
+  def generateFieldType(field: Tree.Field)(
+      genType: schema.Type => Type): Type = {
     def typeOf(tpe: schema.Type): Type = tpe match {
       case schema.OptionType(wrapped) =>
 	t"Option[${typeOf(wrapped)}]"
@@ -86,24 +87,26 @@ case class ScalametaGenerator(
 	  Type.Name(tpe.namedType.name)
       }
 
-    def generateSelectionParams(prefix: String)(selection: Tree.Selection): Seq[Term.Param] =
+    def generateSelectionParams(prefix: String)(
+	selection: Tree.Selection): Seq[Term.Param] =
       selection.fields.map { field =>
 	val tpe = fieldType(field, prefix)
 	termParam(field.name, tpe)
       }
 
-    def generateSelectionStats(prefix: String)(selection: Tree.Selection): Seq[Stat] =
+    def generateSelectionStats(prefix: String)(
+	selection: Tree.Selection): Seq[Stat] =
       selection.fields.flatMap {
 	case Tree.Field(name, tpe, None, unionTypes) if unionTypes.nonEmpty =>
-	  val unionName  = Type.Name(name.capitalize)
+	  val unionName = Type.Name(name.capitalize)
 	  val objectName = Term.Name(unionName.value)
-	  val template   = generateTemplate(Seq(unionName.value), prefix)
+	  val template = generateTemplate(Seq(unionName.value), prefix)
 	  val unionValues = unionTypes.flatMap {
 	    case Tree.UnionSelection(tpe, selection) =>
-	      val path     = prefix + unionName.value + "." + tpe.name + "."
-	      val stats    = generateSelectionStats(path)(selection)
-	      val params   = generateSelectionParams(path)(selection)
-	      val tpeName  = Type.Name(tpe.name)
+	      val path = prefix + unionName.value + "." + tpe.name + "."
+	      val stats = generateSelectionStats(path)(selection)
+	      val params = generateSelectionParams(path)(selection)
+	      val tpeName = Type.Name(tpe.name)
 	      val termName = Term.Name(tpe.name)
 
 	      Vector(q"case class $tpeName(..$params) extends $template") ++
@@ -121,10 +124,12 @@ case class ScalametaGenerator(
 	  )
 
 	case Tree.Field(name, tpe, Some(selection), _) =>
-	  val stats  = generateSelectionStats(prefix + name.capitalize + ".")(selection)
-	  val params = generateSelectionParams(prefix + name.capitalize + ".")(selection)
+	  val stats =
+	    generateSelectionStats(prefix + name.capitalize + ".")(selection)
+	  val params =
+	    generateSelectionParams(prefix + name.capitalize + ".")(selection)
 
-	  val tpeName  = Type.Name(name.capitalize)
+	  val tpeName = Type.Name(name.capitalize)
 	  val termName = Term.Name(name.capitalize)
 	  val interfaces =
 	    if (emitInterfaces) selection.interfaces
@@ -147,13 +152,13 @@ case class ScalametaGenerator(
       termParam(varDef.name, fieldType(varDef))
     }
 
-    val name   = operation.name.getOrElse(sys.error("found unnamed operation"))
+    val name = operation.name.getOrElse(sys.error("found unnamed operation"))
     val prefix = moduleName.value + "." + name + "."
-    val stats  = generateSelectionStats(prefix)(operation.selection)
+    val stats = generateSelectionStats(prefix)(operation.selection)
     val params = generateSelectionParams(prefix)(operation.selection)
 
-    val tpeName          = Type.Name(name)
-    val termName         = Term.Name(name)
+    val tpeName = Type.Name(name)
+    val termName = Term.Name(name)
     val variableTypeName = Type.Name(name + "Variables")
 
     Vector[Stat](
@@ -190,7 +195,7 @@ case class ScalametaGenerator(
       termParam(field.name, tpe)
     }
     val className = Type.Name(obj.name)
-    val template  = generateTemplate(interfaces)
+    val template = generateTemplate(interfaces)
     q"case class $className(..$params) extends $template": Stat
   }
 
@@ -206,12 +211,12 @@ case class ScalametaGenerator(
 
     case Tree.Enum(name, values) =>
       val enumValues = values.map { value =>
-	val template  = generateTemplate(Seq(name))
+	val template = generateTemplate(Seq(name))
 	val valueName = Term.Name(value)
 	q"case object $valueName extends $template"
       }
 
-      val enumName   = Type.Name(name)
+      val enumName = Type.Name(name)
       val objectName = Term.Name(name)
       Vector[Stat](
 	q"sealed trait $enumName",
@@ -219,14 +224,14 @@ case class ScalametaGenerator(
       )
 
     case Tree.TypeAlias(from, to) =>
-      val alias      = Type.Name(from)
+      val alias = Type.Name(from)
       val underlying = Type.Name(to)
       Vector(q"type $alias = $underlying": Stat)
 
     case Tree.Union(name, types) =>
       val unionValues = types.map(obj => generateObject(obj, Seq(name)))
-      val unionName   = Type.Name(name)
-      val objectName  = Term.Name(name)
+      val unionName = Type.Name(name)
+      val objectName = Term.Name(name)
       Vector[Stat](
 	q"sealed trait $unionName",
 	q"object $objectName { ..$unionValues }"

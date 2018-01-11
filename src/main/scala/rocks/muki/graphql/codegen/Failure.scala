@@ -17,6 +17,6 @@
 package rocks.muki.graphql.codegen
 
 /**
- * Generate a result from the loaded tree.
- */
+  * Generate a result from the loaded tree.
+  */
 case class Failure(message: String) extends Exception(message)

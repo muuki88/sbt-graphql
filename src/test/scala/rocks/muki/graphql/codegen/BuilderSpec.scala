@@ -46,7 +46,8 @@ class BuilderSpec extends WordSpec {
     }
 
     "validate query documents" in {
-      val scala.util.Success(query) = QueryParser.parse("""
+      val scala.util.Success(query) =
+	QueryParser.parse("""
 	query HeroName($episdoe: Episode!) {
 	  hero(episode: $episode) {
 	    name
@@ -62,18 +63,23 @@ class BuilderSpec extends WordSpec {
 	  |        ^, Variable '$episdoe' is not used in operation HeroName. (line 2, column 24):
 	  |        query HeroName($episdoe: Episode!) {
 	  |                       ^""".stripMargin
-      val Left(failure) = Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
+      val Left(failure) =
+	Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
 
       assert(failure == Failure(expectedMessage))
     }
 
     "merge query documents" in {
       val Right(tree) = Builder(StarWarsSchema)
-	.withQuery(new File("src/test/resources/starwars/HeroAndFriends.graphql"))
-	.withQuery(new File("src/test/resources/starwars/HeroNameQuery.graphql"))
+	.withQuery(
+	  new File("src/test/resources/starwars/HeroAndFriends.graphql"))
+	.withQuery(
+	  new File("src/test/resources/starwars/HeroNameQuery.graphql"))
 	.generate[Tree.Api]
 
-      assert(tree.operations.flatMap(_.name) == Vector("HeroAndFriends", "HeroNameQuery"))
+      assert(
+	tree.operations.flatMap(_.name) == Vector("HeroAndFriends",
+						  "HeroNameQuery"))
     }
   }
 }

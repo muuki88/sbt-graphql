@@ -20,23 +20,25 @@ import scala.collection.immutable.Seq
 import sangria.schema
 
 /**
- * AST representing the extracted GraphQL types.
- */
+  * AST representing the extracted GraphQL types.
+  */
 sealed trait Tree
 object Tree {
-  case class Field(
-      name: String,
-      tpe: schema.Type,
-      selection: Option[Selection] = None,
-      union: Seq[UnionSelection] = Seq.empty)
+  case class Field(name: String,
+		   tpe: schema.Type,
+		   selection: Option[Selection] = None,
+		   union: Seq[UnionSelection] = Seq.empty)
       extends Tree {
     def isObjectLike = selection.nonEmpty
-    def isUnion      = union.nonEmpty
+    def isUnion = union.nonEmpty
   }
 
-  case class Selection(fields: Seq[Field], interfaces: Seq[String] = Vector.empty) extends Tree {
+  case class Selection(fields: Seq[Field],
+		       interfaces: Seq[String] = Vector.empty)
+      extends Tree {
     def +(that: Selection) =
-      Selection((this.fields ++ that.fields).distinct, this.interfaces ++ that.interfaces)
+      Selection((this.fields ++ that.fields).distinct,
+		this.interfaces ++ that.interfaces)
   }
   object Selection {
     final val empty = Selection(Vector.empty)
@@ -44,31 +46,36 @@ object Tree {
       Selection(Vector(field))
   }
 
-  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection) extends Tree
-
-  /**
-   * Operations represent API calls and are the entry points to the API.
-   */
-  case class Operation(name: Option[String], variables: Seq[Field], selection: Selection)
+  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection)
       extends Tree
 
   /**
-   * Marker trait for GraphQL input and output types.
-   */
+    * Operations represent API calls and are the entry points to the API.
+    */
+  case class Operation(name: Option[String],
+		       variables: Seq[Field],
+		       selection: Selection)
+      extends Tree
+
+  /**
+    * Marker trait for GraphQL input and output types.
+    */
   sealed trait Type extends Tree {
     def name: String
   }
-  case class Object(name: String, fields: Seq[Field])    extends Type
+  case class Object(name: String, fields: Seq[Field]) extends Type
   case class Interface(name: String, fields: Seq[Field]) extends Type
-  case class Enum(name: String, vaules: Seq[String])     extends Type
-  case class TypeAlias(name: String, tpe: String)        extends Type
-  case class Union(name: String, types: Seq[Object])     extends Type
+  case class Enum(name: String, vaules: Seq[String]) extends Type
+  case class TypeAlias(name: String, tpe: String) extends Type
+  case class Union(name: String, types: Seq[Object]) extends Type
 
   /**
-   * The API based on one or more GraphQL query documents using a given schema.
-   *
-   * It includes only the operations, interfaces and input/output types
-   * referenced in the query documents.
-   */
-  case class Api(operations: Seq[Operation], interfaces: Seq[Interface], types: Seq[Type])
+    * The API based on one or more GraphQL query documents using a given schema.
+    *
+    * It includes only the operations, interfaces and input/output types
+    * referenced in the query documents.
+    */
+  case class Api(operations: Seq[Operation],
+		 interfaces: Seq[Interface],
+		 types: Seq[Type])
 }

@@ -31,11 +31,13 @@ case class Builder private (
   private def withQuery(query: => Result[Document]): Builder = {
     val validatedQuery = schema.flatMap { validSchema =>
       query.flatMap { loadedQuery =>
-	val violations = QueryValidator.default.validateQuery(validSchema, loadedQuery)
+	val violations =
+	  QueryValidator.default.validateQuery(validSchema, loadedQuery)
 	if (violations.isEmpty)
 	  query
 	else
-	  Left(Failure(s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
+	  Left(Failure(
+	    s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
       }
     }
 
@@ -56,31 +58,33 @@ case class Builder private (
 
   def generate[T](implicit generator: Generator[T]): Result[T] =
     for {
-      validSchema   <- schema
+      validSchema <- schema
       validDocument <- document
-      api           <- Importer(validSchema, validDocument).parse
-      result        <- generator(api)
+      api <- Importer(validSchema, validDocument).parse
+      result <- generator(api)
     } yield result
 }
 
 object Builder {
   def apply(schema: Schema[_, _]): Builder = new Builder(Right(schema))
-  def apply(schemaFile: File): Builder     = new Builder(parseSchema(schemaFile))
+  def apply(schemaFile: File): Builder = new Builder(parseSchema(schemaFile))
 
   private val emptyDocumentResult: Result[Document] = Right(Document.emptyStub)
 
   private def parseSchema(file: File): Result[Schema[_, _]] =
     for {
       document <- parseDocument(file)
-      schema <- Either.catchNonFatal(Schema.buildFromAst(document)).leftMap { error =>
-	Failure(s"Failed to read schema $file: ${error.getMessage}")
+      schema <- Either.catchNonFatal(Schema.buildFromAst(document)).leftMap {
+	error =>
+	  Failure(s"Failed to read schema $file: ${error.getMessage}")
       }
     } yield schema
 
   private def parseDocument(file: File): Result[Document] =
     for {
-      input <- Either.catchNonFatal(Source.fromFile(file).mkString).leftMap { error =>
-	Failure(s"Failed to read $file: ${error.getMessage}")
+      input <- Either.catchNonFatal(Source.fromFile(file).mkString).leftMap {
+	error =>
+	  Failure(s"Failed to read $file: ${error.getMessage}")
       }
       document <- Either.fromTry(QueryParser.parse(input)).leftMap { error =>
 	Failure(s"Failed to parse $file: ${error.getMessage}")
