@@ -12,7 +12,7 @@ lazy val server = project.in(file("server"))
       graphqlQueryDirectory in IntegrationTest := (sourceDirectory in IntegrationTest).value / "graphql"
     )
     .settings(
-      addCommandAlias("validateSangriaExample", "graphqlValidateSchema build sangria-example")
+      addCommandAlias("validateStarWars", "graphqlValidateSchema build starwars")
     )
 
 lazy val client = project.in(file("client"))
@@ -42,9 +42,9 @@ lazy val commonSettings = Seq(
     "starwars schema at http://try.sangria-graphql.org/graphql",
     Def.task(
       GraphQLSchemaLoader
-	.fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
-  .withHeaders("User-Agent" -> s"sbt-graphql/${version.value}")
-	.loadSchema()
+        .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+        .withHeaders("User-Agent" -> s"sbt-graphql/${version.value}")
+        .loadSchema()
     ).taskValue
   )
 )
