@@ -101,9 +101,9 @@ object TestData {
 
   class FriendsResolver extends DeferredResolver[Any] {
     override def resolve(deferred: Vector[Deferred[Any]], ctx: Any, queryState: Any)(
-	implicit ec: ExecutionContext) = deferred map {
+      implicit ec: ExecutionContext) = deferred map {
       case DeferFriends(friendIds) ⇒
-	Future.fromTry(Try(friendIds map (id ⇒ characters.find(_.id == id))))
+        Future.fromTry(Try(friendIds map (id ⇒ characters.find(_.id == id))))
     }
   }
 

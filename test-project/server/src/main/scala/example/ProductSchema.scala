@@ -27,8 +27,8 @@ object ProductSchema {
       Field("width", IntType, resolve = _.value.width),
       Field("height", IntType, resolve = _.value.height),
       Field("url", OptionType(StringType),
-	description = Some("Picture CDN URL"),
-	resolve = _.value.url)))
+        description = Some("Picture CDN URL"),
+        resolve = _.value.url)))
 
   val IdentifiableType = InterfaceType(
     "Identifiable",

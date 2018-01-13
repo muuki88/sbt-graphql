@@ -164,10 +164,10 @@ case class ScalametaGenerator(moduleName: Term.Name,
     Vector[Stat](
       q"case class $tpeName(..${params})",
       q"""
-	object $termName {
-	  case class $variableTypeName(..$variables)
-	  ..${stats}
-	}
+        object $termName {
+          case class $variableTypeName(..$variables)
+          ..${stats}
+        }
       """
     )
   }
