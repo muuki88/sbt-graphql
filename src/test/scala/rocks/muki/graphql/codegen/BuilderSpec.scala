@@ -28,25 +28,25 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
   "Builder" should {
     "fail with non-existent schema" in {
       val result = Builder(new File("schema-file-does-not-exist"))
-	.generate[Tree.Api]
+        .generate[Tree.Api]
 
       result.left.value.message should startWith(
-	"Failed to read schema-file-does-not-exist: schema-file-does-not-exist")
+        "Failed to read schema-file-does-not-exist: schema-file-does-not-exist")
 
     }
 
     "fail with non-existent query" in {
       val result = Builder(StarWarsSchema)
-	.withQuery(new File("query-file-does-not-exist"))
-	.generate[Tree.Api]
+        .withQuery(new File("query-file-does-not-exist"))
+        .generate[Tree.Api]
 
       result.left.value.message should startWith(
-	"Failed to read query-file-does-not-exist: query-file-does-not-exist")
+        "Failed to read query-file-does-not-exist: query-file-does-not-exist")
     }
 
     "validate query documents" in {
       val scala.util.Success(query) =
-	QueryParser.parse("""
+        QueryParser.parse("""
 	query HeroName($episdoe: Episode!) {
 	  hero(episode: $episode) {
 	    name
@@ -54,7 +54,7 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
 	}
       """)
       val expectedMessage =
-	"""Invalid query: Variable '$episode' is not defined by operation 'HeroName'. (line 3, column 25):
+        """Invalid query: Variable '$episode' is not defined by operation 'HeroName'. (line 3, column 25):
 	  |          hero(episode: $episode) {
 	  |                        ^
 	  | (line 2, column 9):
@@ -63,20 +63,20 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
 	  |        query HeroName($episdoe: Episode!) {
 	  |                       ^""".stripMargin
       val Left(failure) =
-	Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
+        Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
 
       failure should be(Failure(expectedMessage))
     }
 
     "merge query documents" in {
       val tree = Builder(StarWarsSchema)
-	.withQuery(
-	  new File("src/test/resources/starwars/HeroAndFriends.graphql"))
-	.withQuery(
-	  new File("src/test/resources/starwars/HeroNameQuery.graphql"))
-	.generate[Tree.Api]
-	.right
-	.value
+        .withQuery(
+          new File("src/test/resources/starwars/HeroAndFriends.graphql"))
+        .withQuery(
+          new File("src/test/resources/starwars/HeroNameQuery.graphql"))
+        .generate[Tree.Api]
+        .right
+        .value
 
       val names = tree.operations.flatMap(_.name)
       names should contain only ("HeroAndFriends", "HeroNameQuery")

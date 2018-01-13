@@ -23,7 +23,7 @@ import scala.meta._
 import sangria.schema.Schema
 
 abstract class CodegenBaseSpec(name: String,
-			       schema: Option[Schema[_, _]] = None)
+                               schema: Option[Schema[_, _]] = None)
     extends WordSpec {
   def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))
 
@@ -41,20 +41,20 @@ abstract class CodegenBaseSpec(name: String,
       if expected.exists
     } {
       s"generate code for ${input.getName}" in {
-	val generator = ScalametaGenerator(s"${name}Api")
-	val builder = schema match {
-	  case Some(schema) => Builder(schema)
-	  case None => Builder(new File(inputDir, "schema.graphql"))
-	}
-	val Right(out) = builder
-	  .withQuery(input)
-	  .generate(generator)
-	val actual = out.show[Syntax]
+        val generator = ScalametaGenerator(s"${name}Api")
+        val builder = schema match {
+          case Some(schema) => Builder(schema)
+          case None => Builder(new File(inputDir, "schema.graphql"))
+        }
+        val Right(out) = builder
+          .withQuery(input)
+          .generate(generator)
+        val actual = out.show[Syntax]
 
-	if (actual.trim != contentOf(expected).trim)
-	  println(actual)
+        if (actual.trim != contentOf(expected).trim)
+          println(actual)
 
-	assert(actual.trim == contentOf(expected).trim)
+        assert(actual.trim == contentOf(expected).trim)
       }
     }
   }
