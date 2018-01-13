@@ -25,20 +25,20 @@ import sangria.schema
 sealed trait Tree
 object Tree {
   case class Field(name: String,
-		   tpe: schema.Type,
-		   selection: Option[Selection] = None,
-		   union: Seq[UnionSelection] = Seq.empty)
+                   tpe: schema.Type,
+                   selection: Option[Selection] = None,
+                   union: Seq[UnionSelection] = Seq.empty)
       extends Tree {
     def isObjectLike = selection.nonEmpty
     def isUnion = union.nonEmpty
   }
 
   case class Selection(fields: Seq[Field],
-		       interfaces: Seq[String] = Vector.empty)
+                       interfaces: Seq[String] = Vector.empty)
       extends Tree {
     def +(that: Selection) =
       Selection((this.fields ++ that.fields).distinct,
-		this.interfaces ++ that.interfaces)
+                this.interfaces ++ that.interfaces)
   }
   object Selection {
     final val empty = Selection(Vector.empty)
@@ -53,8 +53,8 @@ object Tree {
     * Operations represent API calls and are the entry points to the API.
     */
   case class Operation(name: Option[String],
-		       variables: Seq[Field],
-		       selection: Selection)
+                       variables: Seq[Field],
+                       selection: Selection)
       extends Tree
 
   /**
@@ -76,6 +76,6 @@ object Tree {
     * referenced in the query documents.
     */
   case class Api(operations: Seq[Operation],
-		 interfaces: Seq[Interface],
-		 types: Seq[Type])
+                 interfaces: Seq[Interface],
+                 types: Seq[Type])
 }

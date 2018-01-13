@@ -28,9 +28,9 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
   def parse(): Result[Tree.Api] =
     Right(
       Tree.Api(
-	document.operations.values.map(generateOperation).toVector,
-	document.fragments.values.toVector.map(generateFragment),
-	schema.typeList.filter(types).collect(generateType)
+        document.operations.values.map(generateOperation).toVector,
+        document.fragments.values.toVector.map(generateFragment),
+        schema.typeList.filter(types).collect(generateType)
       ))
 
   /**
@@ -68,52 +68,52 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
       node: ast.Selection): Tree.Selection = {
     def conditionalFragment(f: => Tree.Selection): Tree.Selection =
       if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
-	f
+        f
       else
-	Tree.Selection.empty
+        Tree.Selection.empty
 
     typeInfo.enter(node)
     val result = node match {
       case field: ast.Field =>
-	require(typeInfo.tpe.isDefined, s"Field without type: $field")
-	val tpe = typeInfo.tpe.get
-	tpe.namedType match {
-	  case union: UnionType[_] =>
-	    val types = union.types.toList.map { tpe =>
-	      // Prepend the union type name to include and descend into fragment spreads
-	      val conditions = Set[Type](union, tpe) ++ tpe.interfaces
-	      val selection = generateSelections(field.selections, conditions)
-	      Tree.UnionSelection(tpe, selection)
-	    }
-	    Tree.Selection(Tree.Field(field.outputName, tpe, union = types))
+        require(typeInfo.tpe.isDefined, s"Field without type: $field")
+        val tpe = typeInfo.tpe.get
+        tpe.namedType match {
+          case union: UnionType[_] =>
+            val types = union.types.toList.map { tpe =>
+              // Prepend the union type name to include and descend into fragment spreads
+              val conditions = Set[Type](union, tpe) ++ tpe.interfaces
+              val selection = generateSelections(field.selections, conditions)
+              Tree.UnionSelection(tpe, selection)
+            }
+            Tree.Selection(Tree.Field(field.outputName, tpe, union = types))
 
-	  case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
-	    val gen = generateSelections(field.selections)
-	    Tree.Selection(
-	      Tree.Field(field.outputName, tpe, selection = Some(gen)))
+          case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
+            val gen = generateSelections(field.selections)
+            Tree.Selection(
+              Tree.Field(field.outputName, tpe, selection = Some(gen)))
 
-	  case _ =>
-	    touchType(tpe)
-	    Tree.Selection(Tree.Field(field.outputName, tpe))
-	}
+          case _ =>
+            touchType(tpe)
+            Tree.Selection(Tree.Field(field.outputName, tpe))
+        }
 
       case fragmentSpread: ast.FragmentSpread =>
-	val name = fragmentSpread.name
-	val fragment = document.fragments(fragmentSpread.name)
-	// Sangria's TypeInfo abstraction does not resolve fragment spreads
-	// when traversing, so explicitly enter resolved fragment.
-	typeInfo.enter(fragment)
-	val result = conditionalFragment(
-	  generateSelections(fragment.selections, typeConditions)
-	    .copy(interfaces = Vector(name)))
-	typeInfo.leave(fragment)
-	result
+        val name = fragmentSpread.name
+        val fragment = document.fragments(fragmentSpread.name)
+        // Sangria's TypeInfo abstraction does not resolve fragment spreads
+        // when traversing, so explicitly enter resolved fragment.
+        typeInfo.enter(fragment)
+        val result = conditionalFragment(
+          generateSelections(fragment.selections, typeConditions)
+            .copy(interfaces = Vector(name)))
+        typeInfo.leave(fragment)
+        result
 
       case inlineFragment: ast.InlineFragment =>
-	conditionalFragment(generateSelections(inlineFragment.selections))
+        conditionalFragment(generateSelections(inlineFragment.selections))
 
       case unknown =>
-	sys.error("Unknown selection: " + unknown.toString)
+        sys.error("Unknown selection: " + unknown.toString)
     }
     typeInfo.leave(node)
     result
@@ -123,11 +123,11 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
     typeInfo.enter(operation)
     val variables = operation.variables.toVector.map { varDef =>
       schema.getInputType(varDef.tpe) match {
-	case Some(tpe) =>
-	  touchType(tpe)
-	  Tree.Field(varDef.name, tpe)
-	case None =>
-	  sys.error("Unknown input type: " + varDef.tpe)
+        case Some(tpe) =>
+          touchType(tpe)
+          Tree.Field(varDef.name, tpe)
+        case None =>
+          sys.error("Unknown input type: " + varDef.tpe)
       }
     }
 
@@ -154,8 +154,8 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
   def generateType: PartialFunction[Type, Tree.Type] = {
     case interface: InterfaceType[_, _] =>
       val fields = interface.uniqueFields.map { field =>
-	touchType(field.fieldType)
-	Tree.Field(field.name, field.fieldType)
+        touchType(field.fieldType)
+        Tree.Field(field.name, field.fieldType)
       }
       Tree.Interface(interface.name, fields)
 
@@ -171,8 +171,8 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
 
     case inputObj: InputObjectType[_] =>
       val fields = inputObj.fields.map { field =>
-	touchType(field.fieldType)
-	Tree.Field(field.name, field.fieldType)
+        touchType(field.fieldType)
+        Tree.Field(field.name, field.fieldType)
       }
       Tree.Object(inputObj.name, fields)
 

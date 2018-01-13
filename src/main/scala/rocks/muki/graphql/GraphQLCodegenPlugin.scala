@@ -27,8 +27,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     excludeFilter in graphqlCodegen := HiddenFileFilter,
     graphqlCodegenQueries := Defaults
       .collectFiles(resourceDirectories in graphqlCodegen,
-		    includeFilter in graphqlCodegen,
-		    excludeFilter in graphqlCodegen)
+                    includeFilter in graphqlCodegen,
+                    excludeFilter in graphqlCodegen)
       .value,
     sourceGenerators in Compile += Def.task { Seq(graphqlCodegen.value) },
     graphqlCodegenPackage := "graphql.codegen",
@@ -44,23 +44,23 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       log.info(s"Use schema $schema for query validation")
 
       val builder =
-	if (schema.getName.endsWith(".json"))
-	  Builder(SchemaLoader.fromFile(schema).loadSchema())
-	else
-	  Builder(schema)
+        if (schema.getName.endsWith(".json"))
+          Builder(SchemaLoader.fromFile(schema).loadSchema())
+        else
+          Builder(schema)
 
       val result = builder
-	.withQuery(queries: _*)
-	.generate(generator)
-	.map { code =>
-	  IO.createDirectory(output.getParentFile)
-	  IO.writeLines(output,
-			List(s"package $packageName", code.show[Syntax]))
-	}
+        .withQuery(queries: _*)
+        .generate(generator)
+        .map { code =>
+          IO.createDirectory(output.getParentFile)
+          IO.writeLines(output,
+                        List(s"package $packageName", code.show[Syntax]))
+        }
 
       result match {
-	case Left(error) => sys.error(s"Failed to generate code: $error")
-	case Right(()) => output
+        case Left(error) => sys.error(s"Failed to generate code: $error")
+        case Right(()) => output
       }
     }
   )

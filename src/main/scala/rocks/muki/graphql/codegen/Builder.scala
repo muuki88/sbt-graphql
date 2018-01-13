@@ -31,13 +31,13 @@ case class Builder private (
   private def withQuery(query: => Result[Document]): Builder = {
     val validatedQuery = schema.flatMap { validSchema =>
       query.flatMap { loadedQuery =>
-	val violations =
-	  QueryValidator.default.validateQuery(validSchema, loadedQuery)
-	if (violations.isEmpty)
-	  query
-	else
-	  Left(Failure(
-	    s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
+        val violations =
+          QueryValidator.default.validateQuery(validSchema, loadedQuery)
+        if (violations.isEmpty)
+          query
+        else
+          Left(Failure(
+            s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
       }
     }
 
@@ -53,7 +53,7 @@ case class Builder private (
   def withQuery(queryFiles: File*): Builder =
     queryFiles.foldLeft(this) {
       case (builder, file) =>
-	builder.withQuery(Builder.parseDocument(file))
+        builder.withQuery(Builder.parseDocument(file))
     }
 
   def generate[T](implicit generator: Generator[T]): Result[T] =
@@ -75,19 +75,19 @@ object Builder {
     for {
       document <- parseDocument(file)
       schema <- Either.catchNonFatal(Schema.buildFromAst(document)).leftMap {
-	error =>
-	  Failure(s"Failed to read schema $file: ${error.getMessage}")
+        error =>
+          Failure(s"Failed to read schema $file: ${error.getMessage}")
       }
     } yield schema
 
   private def parseDocument(file: File): Result[Document] =
     for {
       input <- Either.catchNonFatal(Source.fromFile(file).mkString).leftMap {
-	error =>
-	  Failure(s"Failed to read $file: ${error.getMessage}")
+        error =>
+          Failure(s"Failed to read $file: ${error.getMessage}")
       }
       document <- Either.fromTry(QueryParser.parse(input)).leftMap { error =>
-	Failure(s"Failed to parse $file: ${error.getMessage}")
+        Failure(s"Failed to parse $file: ${error.getMessage}")
       }
     } yield document
 }
