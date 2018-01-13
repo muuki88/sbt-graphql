@@ -1,19 +1,15 @@
 package rocks.muki.graphql
 
-import sangria.ast.Document
-import sangria.schema._
-import sbt.{Result => _, _}
-import sbt.Keys._
-import complete.{FixedSetExamples, Parser}
-import complete.DefaultParsers._
 import rocks.muki.graphql.codegen._
-import cats.syntax.either._
-import _root_.io.circe.Json
-import java.io.PrintStream
-import scala.meta.{io => _, _}
-import sangria.marshalling.circe._
+import rocks.muki.graphql.schema.SchemaLoader
+import sbt.Keys._
+import sbt.{Result => _, _}
+
+import scala.meta._
 
 object GraphQLCodegenPlugin extends AutoPlugin {
+
+  override def requires: Plugins = GraphQLPlugin
 
   object autoImport {
     val graphqlCodegenSchema = taskKey[File]("GraphQL schema file")
@@ -38,14 +34,18 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     graphqlCodegenPackage := "graphql.codegen",
     name in graphqlCodegen := "GraphQLCodegen",
     graphqlCodegen := {
+      val log = streams.value.log
       val output = sourceManaged.value / "sbt-graphql" / "GraphQLCodegen.scala"
       val generator = ScalametaGenerator((name in graphqlCodegen).value)
       val queries = graphqlCodegenQueries.value
+      log.info(s"Generate code for ${queries.length} queries")
       val packageName = graphqlCodegenPackage.value
       val schema = graphqlCodegenSchema.value
+      log.info(s"Use schema $schema for query validation")
+
       val builder =
 	if (schema.getName.endsWith(".json"))
-	  Builder(parseIntrospectionSchemaFile(schema))
+	  Builder(SchemaLoader.fromFile(schema).loadSchema())
 	else
 	  Builder(schema)
 
@@ -53,41 +53,16 @@ object GraphQLCodegenPlugin extends AutoPlugin {
 	.withQuery(queries: _*)
 	.generate(generator)
 	.map { code =>
-	  output.getParentFile.mkdirs()
-	  val stdout = new PrintStream(output)
-	  stdout.println(s"package $packageName")
-	  stdout.println()
-	  stdout.println(code.show[Syntax])
-	  stdout.close()
+	  IO.createDirectory(output.getParentFile)
+	  IO.writeLines(output,
+			List(s"package $packageName", code.show[Syntax]))
 	}
 
       result match {
-	case Left(error) => sys.error("Failed to generate code: $error")
+	case Left(error) => sys.error(s"Failed to generate code: $error")
 	case Right(()) => output
       }
     }
   )
 
-  def parseIntrospectionSchemaFile(schemaFile: File): Result[Schema[_, _]] =
-    _root_.io.circe.jawn
-      .parseFile(schemaFile)
-      .flatMap(parseIntrospectionSchemaJson)
-      .leftMap { error: Throwable =>
-	Failure(s"Failed to parse schema in $schemaFile: ${error.getMessage}")
-      }
-
-  def parseIntrospectionSchemaJson(
-      json: Json): Either[Throwable, Schema[_, _]] =
-    Either.catchNonFatal {
-      val builder = new DefaultIntrospectionSchemaBuilder[Unit]
-      Schema.buildFromIntrospection[Unit, Json](json, builder)
-    }
-
-  def parseHeaders(headers: List[String]): List[(String, String)] =
-    headers.filter(_.nonEmpty).map { header =>
-      header.split("=", 2) match {
-	case Array(name, value) => name -> value
-	case Array(name) => name -> ""
-      }
-    }
 }
