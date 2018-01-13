@@ -1,5 +1,6 @@
 package rocks.muki.graphql
 
+import rocks.muki.graphql.releasenotes.MarkdownReleaseNotes
 import rocks.muki.graphql.schema.SchemaLoader
 import sangria.schema._
 import sbt._
