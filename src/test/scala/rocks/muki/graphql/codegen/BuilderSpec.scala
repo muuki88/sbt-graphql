@@ -16,11 +16,11 @@
 
 package rocks.muki.graphql.codegen
 
-import org.scalatest.WordSpec
+import org.scalatest.{EitherValues, Matchers, WordSpec}
 import java.io.File
 import sangria.parser.QueryParser
 
-class BuilderSpec extends WordSpec {
+class BuilderSpec extends WordSpec with Matchers with EitherValues {
   import starwars.TestSchema.StarWarsSchema
 
   val generator = ScalametaGenerator("CodegenResult")
@@ -30,9 +30,9 @@ class BuilderSpec extends WordSpec {
       val result = Builder(new File("schema-file-does-not-exist"))
 	.generate[Tree.Api]
 
-      assert(
-	result == Left(Failure("Failed to read schema-file-does-not-exist: " +
-	  "schema-file-does-not-exist (No such file or directory)")))
+      result.left.value.message should startWith(
+	"Failed to read schema-file-does-not-exist: schema-file-does-not-exist")
+
     }
 
     "fail with non-existent query" in {
@@ -40,9 +40,8 @@ class BuilderSpec extends WordSpec {
 	.withQuery(new File("query-file-does-not-exist"))
 	.generate[Tree.Api]
 
-      assert(
-	result == Left(Failure("Failed to read query-file-does-not-exist: " +
-	  "query-file-does-not-exist (No such file or directory)")))
+      result.left.value.message should startWith(
+	"Failed to read query-file-does-not-exist: query-file-does-not-exist")
     }
 
     "validate query documents" in {
@@ -66,20 +65,22 @@ class BuilderSpec extends WordSpec {
       val Left(failure) =
 	Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
 
-      assert(failure == Failure(expectedMessage))
+      failure should be(Failure(expectedMessage))
     }
 
     "merge query documents" in {
-      val Right(tree) = Builder(StarWarsSchema)
+      val tree = Builder(StarWarsSchema)
 	.withQuery(
 	  new File("src/test/resources/starwars/HeroAndFriends.graphql"))
 	.withQuery(
 	  new File("src/test/resources/starwars/HeroNameQuery.graphql"))
 	.generate[Tree.Api]
+	.right
+	.value
 
-      assert(
-	tree.operations.flatMap(_.name) == Vector("HeroAndFriends",
-						  "HeroNameQuery"))
+      val names = tree.operations.flatMap(_.name)
+      names should contain only ("HeroAndFriends", "HeroNameQuery")
+
     }
   }
 }
