@@ -12,11 +12,11 @@ object MultiQueryApi {
     object Hero {
       case class Friends(name: Option[String], friends: Option[List[Option[MultiQueryApi.HeroAndNestedFriends.Hero.Friends.Friends]]])
       object Friends {
-	case class Friends(name: Option[String], friends: Option[List[Option[MultiQueryApi.HeroAndNestedFriends.Hero.Friends.Friends.Friends]]])
-	object Friends {
-	  case class Friends(name: Option[String], friends: Option[List[Option[MultiQueryApi.HeroAndNestedFriends.Hero.Friends.Friends.Friends.Friends]]])
-	  object Friends { case class Friends(name: Option[String]) }
-	}
+        case class Friends(name: Option[String], friends: Option[List[Option[MultiQueryApi.HeroAndNestedFriends.Hero.Friends.Friends.Friends]]])
+        object Friends {
+          case class Friends(name: Option[String], friends: Option[List[Option[MultiQueryApi.HeroAndNestedFriends.Hero.Friends.Friends.Friends.Friends]]])
+          object Friends { case class Friends(name: Option[String]) }
+        }
       }
     }
   }

@@ -47,21 +47,21 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
     "validate query documents" in {
       val scala.util.Success(query) =
         QueryParser.parse("""
-	query HeroName($episdoe: Episode!) {
-	  hero(episode: $episode) {
-	    name
-	  }
-	}
+        query HeroName($episdoe: Episode!) {
+          hero(episode: $episode) {
+            name
+          }
+        }
       """)
       val expectedMessage =
         """Invalid query: Variable '$episode' is not defined by operation 'HeroName'. (line 3, column 25):
-	  |          hero(episode: $episode) {
-	  |                        ^
-	  | (line 2, column 9):
-	  |        query HeroName($episdoe: Episode!) {
-	  |        ^, Variable '$episdoe' is not used in operation HeroName. (line 2, column 24):
-	  |        query HeroName($episdoe: Episode!) {
-	  |                       ^""".stripMargin
+        |          hero(episode: $episode) {
+        |                        ^
+        | (line 2, column 9):
+        |        query HeroName($episdoe: Episode!) {
+        |        ^, Variable '$episdoe' is not used in operation HeroName. (line 2, column 24):
+        |        query HeroName($episdoe: Episode!) {
+        |                       ^""".stripMargin
       val Left(failure) =
         Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
 
