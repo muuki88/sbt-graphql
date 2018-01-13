@@ -39,12 +39,12 @@ case class ScalametaGenerator(moduleName: Term.Name,
 
     Right(
       q"""
-	object $moduleName {
-	  ..$operations
-	  ..$fragments
-	  ..$types
-	  ..$stats
-	}
+        object $moduleName {
+          ..$operations
+          ..$fragments
+          ..$types
+          ..$stats
+        }
       """
     )
   }

@@ -55,7 +55,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
         .map { code =>
           IO.createDirectory(output.getParentFile)
           IO.writeLines(output,
-                        List(s"package $packageName", code.show[Syntax]))
+                        List(s"package $packageName", "", code.show[Syntax]))
         }
 
       result match {

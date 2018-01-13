@@ -17,5 +17,6 @@ TaskKey[Unit]("check") := {
     """.stripMargin.trim
 
   assert(file.exists)
-  assert(IO.read(file).trim == expected)
+  val generated = IO.read(file).trim
+  assert(generated == expected, s"Generated file:\n$generated")
 }
