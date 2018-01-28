@@ -28,7 +28,7 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
   "Builder" should {
     "fail with non-existent schema" in {
       val result = Builder(new File("schema-file-does-not-exist"))
-        .generate[Tree.Api]
+        .generate[TypedDocument.Api]
 
       result.left.value.message should startWith(
         "Failed to read schema-file-does-not-exist: schema-file-does-not-exist")
@@ -38,7 +38,7 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
     "fail with non-existent query" in {
       val result = Builder(StarWarsSchema)
         .withQuery(new File("query-file-does-not-exist"))
-        .generate[Tree.Api]
+        .generate[TypedDocument.Api]
 
       result.left.value.message should startWith(
         "Failed to read query-file-does-not-exist: query-file-does-not-exist")
@@ -63,7 +63,7 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
         |        query HeroName($episdoe: Episode!) {
         |                       ^""".stripMargin
       val Left(failure) =
-        Builder(StarWarsSchema).withQuery(query).generate[Tree.Api]
+        Builder(StarWarsSchema).withQuery(query).generate[TypedDocument.Api]
 
       failure should be(Failure(expectedMessage))
     }
@@ -74,7 +74,7 @@ class BuilderSpec extends WordSpec with Matchers with EitherValues {
           new File("src/test/resources/starwars/HeroAndFriends.graphql"))
         .withQuery(
           new File("src/test/resources/starwars/HeroNameQuery.graphql"))
-        .generate[Tree.Api]
+        .generate[TypedDocument.Api]
         .right
         .value
 

@@ -16,58 +16,72 @@
 
 package rocks.muki.graphql.codegen
 
-import scala.collection.immutable.Seq
-import sangria.schema
+import sangria.{ast, schema}
 
 /**
   * AST representing the extracted GraphQL types.
   */
-sealed trait Tree
-object Tree {
+sealed trait TypedDocument
+object TypedDocument {
+
+  /**
+    * Selcted GraphQL field
+    *
+    * @param name - the field name
+    * @param tpe - the field type extraced from the schema
+    * @param selection -
+    * @param union
+    */
   case class Field(name: String,
                    tpe: schema.Type,
                    selection: Option[Selection] = None,
-                   union: Seq[UnionSelection] = Seq.empty)
-      extends Tree {
+                   union: List[UnionSelection] = List.empty)
+      extends TypedDocument {
     def isObjectLike = selection.nonEmpty
     def isUnion = union.nonEmpty
   }
 
-  case class Selection(fields: Seq[Field],
-                       interfaces: Seq[String] = Vector.empty)
-      extends Tree {
+  case class Selection(fields: List[Field], interfaces: List[String] = List.empty)
+      extends TypedDocument {
     def +(that: Selection) =
       Selection((this.fields ++ that.fields).distinct,
                 this.interfaces ++ that.interfaces)
   }
   object Selection {
-    final val empty = Selection(Vector.empty)
+    final val empty = Selection(List.empty)
     def apply(field: Field): Selection =
-      Selection(Vector(field))
+      Selection(List(field))
   }
 
   case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection)
-      extends Tree
+      extends TypedDocument
 
   /**
     * Operations represent API calls and are the entry points to the API.
+    *
+    * @param name the operation name
+    * @param variables input variables
+    * @param selection the selected fields
+    * @param original the original sangria OperationDefinition
+    *
     */
   case class Operation(name: Option[String],
-                       variables: Seq[Field],
-                       selection: Selection)
-      extends Tree
+                       variables: List[Field],
+                       selection: Selection,
+                       original: ast.OperationDefinition)
+      extends TypedDocument
 
   /**
     * Marker trait for GraphQL input and output types.
     */
-  sealed trait Type extends Tree {
+  sealed trait Type extends TypedDocument {
     def name: String
   }
-  case class Object(name: String, fields: Seq[Field]) extends Type
-  case class Interface(name: String, fields: Seq[Field]) extends Type
-  case class Enum(name: String, vaules: Seq[String]) extends Type
+  case class Object(name: String, fields: List[Field]) extends Type
+  case class Interface(name: String, fields: List[Field]) extends Type
+  case class Enum(name: String, vaules: List[String]) extends Type
   case class TypeAlias(name: String, tpe: String) extends Type
-  case class Union(name: String, types: Seq[Object]) extends Type
+  case class Union(name: String, types: List[Object]) extends Type
 
   /**
     * The API based on one or more GraphQL query documents using a given schema.
@@ -75,7 +89,7 @@ object Tree {
     * It includes only the operations, interfaces and input/output types
     * referenced in the query documents.
     */
-  case class Api(operations: Seq[Operation],
-                 interfaces: Seq[Interface],
-                 types: Seq[Type])
+  case class Api(operations: List[Operation],
+                 interfaces: List[Interface],
+                 types: List[Type])
 }

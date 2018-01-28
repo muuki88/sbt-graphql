@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
   "org.scalaj" %% "scalaj-http" % "2.3.0",
-  "org.scalameta" %% "scalameta" % "1.8.0",
+  "org.scalameta" %% "scalameta" % "2.1.2",
   "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
 

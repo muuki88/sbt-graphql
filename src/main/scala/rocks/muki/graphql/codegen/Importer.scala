@@ -16,21 +16,29 @@
 
 package rocks.muki.graphql.codegen
 
-import scala.collection.immutable.Seq
 import sangria.validation.TypeInfo
 import sangria.schema._
 import sangria.ast
 
 case class Importer(schema: Schema[_, _], document: ast.Document) {
+
+  /**
+    * We need the schema to generate any type info from a parsed ast.Document
+    */
   private val typeInfo = new TypeInfo(schema)
+
+  /**
+    * Aggregates all types seen during the document parsing
+    */
   private val types = scala.collection.mutable.Set[Type]()
 
-  def parse(): Result[Tree.Api] =
+  def parse(): Result[TypedDocument.Api] =
     Right(
-      Tree.Api(
-        document.operations.values.map(generateOperation).toVector,
-        document.fragments.values.toVector.map(generateFragment),
-        schema.typeList.filter(types).collect(generateType)
+      TypedDocument.Api(
+        document.operations.values.map(generateOperation).toList,
+        document.fragments.values.toList.map(generateFragment),
+        // Include only types that have been used in the document
+        schema.typeList.filter(types).collect(generateType).toList
       ))
 
   /**
@@ -39,7 +47,7 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
     * Must be explicitly called for each type that a field references. For example,
     * to generate a field which has an enum type this method should be called.
     */
-  def touchType(tpe: Type): Unit = tpe.namedType match {
+  private def touchType(tpe: Type): Unit = tpe.namedType match {
     case IDType =>
       types += tpe
       ()
@@ -57,20 +65,20 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
       ()
   }
 
-  def generateSelections(
-      selections: Seq[ast.Selection],
-      typeConditions: Set[Type] = Set.empty): Tree.Selection =
+  private def generateSelections(
+      selections: Vector[ast.Selection],
+      typeConditions: Set[Type] = Set.empty): TypedDocument.Selection =
     selections
       .map(generateSelection(typeConditions))
-      .foldLeft(Tree.Selection.empty)(_ + _)
+      .foldLeft(TypedDocument.Selection.empty)(_ + _)
 
-  def generateSelection(typeConditions: Set[Type])(
-      node: ast.Selection): Tree.Selection = {
-    def conditionalFragment(f: => Tree.Selection): Tree.Selection =
+  private def generateSelection(typeConditions: Set[Type])(
+      node: ast.Selection): TypedDocument.Selection = {
+    def conditionalFragment(f: => TypedDocument.Selection): TypedDocument.Selection =
       if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
         f
       else
-        Tree.Selection.empty
+        TypedDocument.Selection.empty
 
     typeInfo.enter(node)
     val result = node match {
@@ -79,22 +87,22 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
         val tpe = typeInfo.tpe.get
         tpe.namedType match {
           case union: UnionType[_] =>
-            val types = union.types.toList.map { tpe =>
+            val types = union.types.map { tpe =>
               // Prepend the union type name to include and descend into fragment spreads
               val conditions = Set[Type](union, tpe) ++ tpe.interfaces
               val selection = generateSelections(field.selections, conditions)
-              Tree.UnionSelection(tpe, selection)
+              TypedDocument.UnionSelection(tpe, selection)
             }
-            Tree.Selection(Tree.Field(field.outputName, tpe, union = types))
+            TypedDocument.Selection(TypedDocument.Field(field.outputName, tpe, union = types))
 
           case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
             val gen = generateSelections(field.selections)
-            Tree.Selection(
-              Tree.Field(field.outputName, tpe, selection = Some(gen)))
+            TypedDocument.Selection(
+              TypedDocument.Field(field.outputName, tpe, selection = Some(gen)))
 
           case _ =>
             touchType(tpe)
-            Tree.Selection(Tree.Field(field.outputName, tpe))
+            TypedDocument.Selection(TypedDocument.Field(field.outputName, tpe))
         }
 
       case fragmentSpread: ast.FragmentSpread =>
@@ -105,7 +113,7 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
         typeInfo.enter(fragment)
         val result = conditionalFragment(
           generateSelections(fragment.selections, typeConditions)
-            .copy(interfaces = Vector(name)))
+            .copy(interfaces = List(name)))
         typeInfo.leave(fragment)
         result
 
@@ -119,13 +127,13 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
     result
   }
 
-  def generateOperation(operation: ast.OperationDefinition): Tree.Operation = {
+  private def generateOperation(operation: ast.OperationDefinition): TypedDocument.Operation = {
     typeInfo.enter(operation)
-    val variables = operation.variables.toVector.map { varDef =>
+    val variables = operation.variables.toList.map { varDef =>
       schema.getInputType(varDef.tpe) match {
         case Some(tpe) =>
           touchType(tpe)
-          Tree.Field(varDef.name, tpe)
+          TypedDocument.Field(varDef.name, tpe)
         case None =>
           sys.error("Unknown input type: " + varDef.tpe)
       }
@@ -133,50 +141,54 @@ case class Importer(schema: Schema[_, _], document: ast.Document) {
 
     val selection = generateSelections(operation.selections)
     typeInfo.leave(operation)
-    Tree.Operation(operation.name, variables, selection)
+    TypedDocument.Operation(operation.name, variables, selection, operation)
   }
 
-  def generateFragment(fragment: ast.FragmentDefinition): Tree.Interface = {
+  private def generateFragment(fragment: ast.FragmentDefinition): TypedDocument.Interface = {
     typeInfo.enter(fragment)
     val selection = generateSelections(fragment.selections)
     typeInfo.leave(fragment)
-    Tree.Interface(fragment.name, selection.fields)
+    TypedDocument.Interface(fragment.name, selection.fields)
   }
 
-  def generateObject(obj: ObjectType[_, _]): Tree.Object = {
+  private def generateObject(obj: ObjectType[_, _]): TypedDocument.Object = {
     val fields = obj.uniqueFields.map { field =>
       touchType(field.fieldType)
-      Tree.Field(field.name, field.fieldType)
+      TypedDocument.Field(field.name, field.fieldType)
     }
-    Tree.Object(obj.name, fields)
+    TypedDocument.Object(obj.name, fields.toList)
   }
 
-  def generateType: PartialFunction[Type, Tree.Type] = {
+  /**
+    * Map from a sangria schema.Type to a
+    * @return
+    */
+  private def generateType: PartialFunction[Type, TypedDocument.Type] = {
     case interface: InterfaceType[_, _] =>
       val fields = interface.uniqueFields.map { field =>
         touchType(field.fieldType)
-        Tree.Field(field.name, field.fieldType)
+        TypedDocument.Field(field.name, field.fieldType)
       }
-      Tree.Interface(interface.name, fields)
+      TypedDocument.Interface(interface.name, fields.toList)
 
     case obj: ObjectType[_, _] =>
       generateObject(obj)
 
     case enum: EnumType[_] =>
       val values = enum.values.map(_.name)
-      Tree.Enum(enum.name, values)
+      TypedDocument.Enum(enum.name, values)
 
     case union: UnionType[_] =>
-      Tree.Union(union.name, union.types.map(generateObject))
+      TypedDocument.Union(union.name, union.types.map(generateObject))
 
     case inputObj: InputObjectType[_] =>
       val fields = inputObj.fields.map { field =>
         touchType(field.fieldType)
-        Tree.Field(field.name, field.fieldType)
+        TypedDocument.Field(field.name, field.fieldType)
       }
-      Tree.Object(inputObj.name, fields)
+      TypedDocument.Object(inputObj.name, fields)
 
     case IDType =>
-      Tree.TypeAlias("ID", "String")
+      TypedDocument.TypeAlias("ID", "String")
   }
 }
