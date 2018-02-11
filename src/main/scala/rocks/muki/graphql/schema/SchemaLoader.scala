@@ -59,6 +59,7 @@ object SchemaLoader {
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] = {
+    //  TODO check if it's a json or graphql file and parse accordingly
     val schemaJson = IO.read(file)
     QueryParser.parse(schemaJson) match {
       case Success(document) => Schema.buildFromAst(document)

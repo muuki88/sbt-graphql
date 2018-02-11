@@ -16,15 +16,20 @@
 
 package rocks.muki.graphql.codegen
 
-import org.scalatest.WordSpec
+import org.scalatest.{EitherValues, WordSpec}
 import java.io.File
+import sbt._
+
+import rocks.muki.graphql.schema.SchemaLoader
+
 import scala.io.Source
 import scala.meta._
 import sangria.schema.Schema
 
 abstract class CodegenBaseSpec(name: String,
                                schema: Option[Schema[_, _]] = None)
-    extends WordSpec {
+    extends WordSpec
+    with EitherValues {
   def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))
 
   val inputDir = new File("src/test/resources", name)
@@ -42,13 +47,14 @@ abstract class CodegenBaseSpec(name: String,
     } {
       s"generate code for ${input.getName}" in {
         val generator = ScalametaGenerator(s"${name}Api")
-        val builder = schema match {
-          case Some(schema) => Builder(schema)
-          case None => Builder(new File(inputDir, "schema.graphql"))
-        }
-        val Right(out) = builder
-          .withQuery(input)
-          .generate(generator)
+        val schema =
+          SchemaLoader.fromFile(inputDir / "schema.graphql").loadSchema()
+
+        val document = DocumentLoader.single(schema, input).right.value
+        val typedDocument =
+          TypedDocumentParser(schema, document).parse().right.value
+        val out = generator(typedDocument).right.value
+
         val actual = out.show[Syntax]
 
         if (actual.trim != contentOf(expected).trim)

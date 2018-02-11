@@ -13,25 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rocks.muki.graphql.codegen.neo
-
+package rocks.muki.graphql.codegen.apollo
 
 import org.scalatest.{EitherValues, TryValues, WordSpec}
 import java.io.File
 
-import rocks.muki.graphql.codegen.{Builder, Generator}
+import rocks.muki.graphql.codegen.{
+  DocumentLoader,
+  Generator,
+  TypedDocumentParser
+}
+import rocks.muki.graphql.schema.SchemaLoader
 
-import scala.io
+import scala.io.{Source => IOSource, Codec}
 import scala.meta._
+import sbt._
 
-abstract class NeoCodegenBaseSpec(name: String, generator: (String => Generator[List[Stat]]))  extends WordSpec with EitherValues with TryValues {
+abstract class ApolloCodegenBaseSpec(
+    name: String,
+    generator: (String => Generator[List[Stat]]))
+    extends WordSpec
+    with EitherValues
+    with TryValues {
 
   val inputDir = new File(s"src/test/resources/$name")
 
-  def contentOf(file: File): String = io.Source.fromFile(file)(io.Codec.UTF8).mkString
+  def contentOf(file: File): String =
+    IOSource.fromFile(file)(Codec.UTF8).mkString
 
-
-  "Neo Sangria Codegen" should {
+  "Apollo Sangria Codegen" should {
     for {
       input <- inputDir.listFiles()
       if input.getName.endsWith(".graphql")
@@ -40,21 +50,19 @@ abstract class NeoCodegenBaseSpec(name: String, generator: (String => Generator[
       if expected.exists
     } {
       s"generate code for ${input.getName}" in {
-        val builder = Builder(new File(inputDir, "schema.graphql"))
 
-        val stats = builder
-          .withQuery(input)
-          .generate(generator(name))
-          .right.value
-
+        val schema =
+          SchemaLoader.fromFile(inputDir / "schema.graphql").loadSchema()
+        val document = DocumentLoader.single(schema, input).right.value
+        val typedDocument =
+          TypedDocumentParser(schema, document).parse().right.value
+        val stats = generator(input.getName)(typedDocument).right.value
 
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-
-        assert(actual === expectedSource.show[Syntax])
+        assert(actual === expectedSource.show[Syntax].trim, actual)
       }
     }
   }
 }
-

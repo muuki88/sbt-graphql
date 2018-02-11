@@ -20,12 +20,3 @@ package rocks.muki.graphql.codegen
   * Generate a result from the loaded tree.
   */
 trait Generator[T] extends (TypedDocument.Api => Result[T])
-
-object Generator {
-
-  /**
-    * A pass-through generator which generates the original tree.
-    */
-  implicit val TreeGenerator: Generator[TypedDocument.Api] = (tree: TypedDocument.Api) =>
-    Right(tree)
-}

@@ -24,52 +24,37 @@ import sangria.validation.QueryValidator
 import sangria.schema._
 import sangria.ast.Document
 
-case class Builder private (
-    schema: Result[Schema[_, _]],
-    document: Result[Document] = Builder.emptyDocumentResult
-) {
-  private def withQuery(query: => Result[Document]): Builder = {
-    val validatedQuery = schema.flatMap { validSchema =>
-      query.flatMap { loadedQuery =>
-        val violations =
-          QueryValidator.default.validateQuery(validSchema, loadedQuery)
-        if (violations.isEmpty)
-          query
-        else
-          Left(Failure(
-            s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
-      }
-    }
 
-    if (document == Builder.emptyDocumentResult)
-      copy(document = validatedQuery)
-    else
-      copy(document = document.flatMap(doc => validatedQuery.map(doc.merge)))
+object DocumentLoader {
+
+  /**
+    * Loads and parses all files and merge them into a single document
+    * @param schema used to validate parsed files
+    * @param files the files that should be loaded
+    * @return
+    */
+  def merged(schema: Schema[_, _], files: List[File]): Result[Document] = {
+    files.map(single(schema, _)).foldLeft[Result[Document]](Right(Document.emptyStub)) {
+      case (Left(failure), Left(nextFailure)) => Left(Failure(failure.message + "\n" + nextFailure.message))
+      case (Left(failure), _) => Left(failure)
+      case (_, Left(firstFailure) ) => Left(firstFailure)
+      case (Right(document), Right(nextDocument)) => Right(document.merge(nextDocument))
+    }
   }
 
-  def withQuery(query: Document): Builder =
-    withQuery(Right(query))
-
-  def withQuery(queryFiles: File*): Builder =
-    queryFiles.foldLeft(this) {
-      case (builder, file) =>
-        builder.withQuery(Builder.parseDocument(file))
-    }
-
-  def generate[T](implicit generator: Generator[T]): Result[T] =
+  /**
+    * Load a single, validated query file.
+    * @param schema
+    * @param file
+    * @return
+    */
+  def single(schema: Schema[_, _], file: File): Result[Document] = {
     for {
-      validSchema <- schema
-      validDocument <- document
-      api <- Importer(validSchema, validDocument).parse
-      result <- generator(api)
-    } yield result
-}
-
-object Builder {
-  def apply(schema: Schema[_, _]): Builder = new Builder(Right(schema))
-  def apply(schemaFile: File): Builder = new Builder(parseSchema(schemaFile))
-
-  private val emptyDocumentResult: Result[Document] = Right(Document.emptyStub)
+      document <- parseDocument(file)
+      violations = QueryValidator.default.validateQuery(schema, document)
+      _ <- Either.cond(violations.isEmpty, document, Failure(s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
+    } yield document
+  }
 
   private def parseSchema(file: File): Result[Schema[_, _]] =
     for {

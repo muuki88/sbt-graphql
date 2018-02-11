@@ -23,18 +23,7 @@ import scala.meta._
 /**
   * Generate code using Scalameta.
   */
-case class NeoScalametaGenerator(fileName: String, additionalImports: List[Import]) extends Generator[List[Stat]] {
-
-
-  private val GraphQLQueryTrait: Defn.Trait =
-    q"""trait GraphQLQuery {
-          type Document
-          type Variables
-          type Data
-        }
-     """
-
-  private val GraphQLQuery: Init = Init(Type.Name("GraphQLQuery"), Name.Anonymous(), Nil)
+case class ApolloSourceGenerator(fileName: String, additionalImports: List[Import], additionalInits: List[Init]) extends Generator[List[Stat]] {
 
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
@@ -55,7 +44,7 @@ case class NeoScalametaGenerator(fileName: String, additionalImports: List[Impor
         val document = Term.Interpolate(Term.Name("graphql"), Lit.String(escapedDocumentString) :: Nil, Nil)
 
         q"""
-          object $typeName extends $GraphQLQuery {
+          object $typeName extends ..$additionalInits {
            val Document = $document
            case class Variables(..$inputParams)
            case class Data(..$dataParams)
@@ -63,13 +52,14 @@ case class NeoScalametaGenerator(fileName: String, additionalImports: List[Impor
           }"""
     }
     val interfaces = document.interfaces.map(generateInterface)
+    val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
     Right(
       additionalImports ++
       List(
       q"import sangria.macros._",
       q"""
-       object ${Term.Name(fileName)} {
+       object ${Term.Name(objectName)} {
           ..$operations
           ..$interfaces
        }

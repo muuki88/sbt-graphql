@@ -20,7 +20,7 @@ import sangria.validation.TypeInfo
 import sangria.schema._
 import sangria.ast
 
-case class Importer(schema: Schema[_, _], document: ast.Document) {
+case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
 
   /**
     * We need the schema to generate any type info from a parsed ast.Document

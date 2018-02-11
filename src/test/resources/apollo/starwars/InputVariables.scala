@@ -1,3 +1,4 @@
+import com.example.GraphQLQuery
 import sangria.macros._
 object InputVariables {
   object InputVariables extends GraphQLQuery {
