@@ -1,0 +1,6 @@
+query BlogArticleQuery($query: ArticleQuery!) {
+  articles(query: $query) {
+    id
+    status
+  }
+}
