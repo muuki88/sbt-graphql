@@ -1,0 +1,74 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  blogs(pagination: Pagination!, query: String): [Blog!]!
+  blog(id: ID!): Blog!
+  articles(query: ArticleQuery): [Article!]!
+  search(text: String!, pagination: Pagination!): [SearchResult!]!
+}
+
+input Pagination {
+  first: Int!
+  count: Int!
+  order: PaginationOrder = ASC
+}
+
+enum PaginationOrder {
+  ASC
+  DESC
+}
+
+input ArticleQuery {
+  ids: [ID!]
+  statuses: [ArticleStatus!]
+}
+
+interface Identifiable {
+  id: ID!
+}
+
+type Blog implements Identifiable {
+  id: ID!
+  title: String!
+  url: String! @deprecated(reason: "Use `uri` instead")
+  uri: String!
+  articles(pagination: Pagination!, statuses: [ArticleStatus!] = [PUBLISHED]): [Article!]!
+}
+
+type Article implements Identifiable {
+  id: ID!
+  title: String!
+  body: String!
+  status: ArticleStatus!
+  author: Author!
+  tags: [String!]!
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+type Author implements Identifiable {
+  id: ID!
+  name: String!
+  articles(pagination: Pagination!): [Article!]!
+}
+
+union SearchResult = Blog | Article | Author
+
+type Mutation {
+  addBlog(title: String!, uri: String!): Blog!
+  addArticle(content: ArticleContent!): Article!
+  updateArticle(id: ID!, content: ArticleContent!): Article!
+  publishArticle(id: ID!): Article!
+}
+
+input ArticleContent {
+  title: String!
+  body: String!
+  tags: [String!]
+}

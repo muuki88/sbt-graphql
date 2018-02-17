@@ -23,27 +23,35 @@ import scala.meta._
 /**
   * Generate code using Scalameta.
   */
-case class ApolloSourceGenerator(fileName: String, additionalImports: List[Import], additionalInits: List[Init]) extends Generator[List[Stat]] {
-
+case class ApolloSourceGenerator(fileName: String,
+                                 additionalImports: List[Import],
+                                 additionalInits: List[Init])
+    extends Generator[List[Stat]] {
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
 
     // TODO refactor Generator trait into something more flexible
 
-
     val operations = document.operations.map { operation =>
-        val typeName = Term.Name(operation.name.getOrElse(throw new IllegalArgumentException("Anonymous operations are not support")))
-        // TODO input variables can be recursive. Generate case classes along
-        val inputParams = generateFieldParams(operation.variables, List.empty)
-        val dataParams = generateFieldParams(operation.selection.fields, List.empty)
-        val data = operation.selection.fields.flatMap(selectionStats(_, List.empty))
+      val typeName = Term.Name(
+        operation.name.getOrElse(throw new IllegalArgumentException(
+          "Anonymous operations are not support")))
+      // TODO input variables can be recursive. Generate case classes along
+      val inputParams = generateFieldParams(operation.variables, List.empty)
+      val dataParams =
+        generateFieldParams(operation.selection.fields, List.empty)
+      val data =
+        operation.selection.fields.flatMap(selectionStats(_, List.empty))
 
-        // render the document into the query object.
-        // replacing single $ with $$ for escaping
-        val escapedDocumentString = operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
-        val document = Term.Interpolate(Term.Name("graphql"), Lit.String(escapedDocumentString) :: Nil, Nil)
+      // render the document into the query object.
+      // replacing single $ with $$ for escaping
+      val escapedDocumentString =
+        operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
+      val document = Term.Interpolate(Term.Name("graphql"),
+                                      Lit.String(escapedDocumentString) :: Nil,
+                                      Nil)
 
-        q"""
+      q"""
           object $typeName extends ..$additionalInits {
            val Document = $document
            case class Variables(..$inputParams)
@@ -52,79 +60,90 @@ case class ApolloSourceGenerator(fileName: String, additionalImports: List[Impor
           }"""
     }
     val interfaces = document.interfaces.map(generateInterface)
+    val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
     Right(
       additionalImports ++
-      List(
-      q"import sangria.macros._",
-      q"""
+        List(
+          q"import sangria.macros._",
+          q"""
        object ${Term.Name(objectName)} {
           ..$operations
           ..$interfaces
+          ..$types
        }
-     """))
+     """
+        ))
   }
 
-  private def selectionStats(field: TypedDocument.Field, typeQualifiers: List[String]): List[Stat] = field match {
-    // render enumerations (union types)
-    case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
-      // create the union types
+  private def selectionStats(field: TypedDocument.Field,
+                             typeQualifiers: List[String]): List[Stat] =
+    field match {
+      // render enumerations (union types)
+      case TypedDocument.Field(name, _, None, unionTypes)
+          if unionTypes.nonEmpty =>
+        // create the union types
 
-      val unionName = Type.Name(name.capitalize)
-      val unionCompanionObject = Term.Name(unionName.value)
-      val unionTrait = generateTemplate(List(unionName.value))
+        val unionName = Type.Name(name.capitalize)
+        val unionCompanionObject = Term.Name(unionName.value)
+        val unionTrait = generateTemplate(List(unionName.value))
 
-      // create concrete case classes for each union type
-      val unionValues = unionTypes.flatMap {
-        case TypedDocument.UnionSelection(unionType, unionSelection) =>
-          // get nested selections
-          val innerSelections = unionSelection.fields.flatMap(field => selectionStats(field, List.empty))
-          val params = generateFieldParams(unionSelection.fields, typeQualifiers :+ unionName.value)
-          val unionTypeName = Type.Name(unionType.name)
-          val unionTermName = Term.Name(unionType.name)
+        // create concrete case classes for each union type
+        val unionValues = unionTypes.flatMap {
+          case TypedDocument.UnionSelection(unionType, unionSelection) =>
+            // get nested selections
+            val innerSelections = unionSelection.fields.flatMap(field =>
+              selectionStats(field, List.empty))
+            val params = generateFieldParams(unionSelection.fields,
+                                             typeQualifiers :+ unionName.value)
+            val unionTypeName = Type.Name(unionType.name)
+            val unionTermName = Term.Name(unionType.name)
 
-          List(q"case class $unionTypeName(..$params) extends $unionTrait") ++
-            Option(innerSelections)
-              .filter(_.nonEmpty)
-              .map { stats =>
-                q"object $unionTermName { ..$stats }"
-              }
-              .toList
-      }
+            List(q"case class $unionTypeName(..$params) extends $unionTrait") ++
+              Option(innerSelections)
+                .filter(_.nonEmpty)
+                .map { stats =>
+                  q"object $unionTermName { ..$stats }"
+                }
+                .toList
+        }
 
-      List[Stat](
-        q"sealed trait $unionName",
-        q"object $unionCompanionObject { ..$unionValues }"
-      )
+        List[Stat](
+          q"sealed trait $unionName",
+          q"object $unionCompanionObject { ..$unionValues }"
+        )
 
-    // render a nested case class for a deeper selection
-    case TypedDocument.Field(name, tpe, Some(fieldSelection), _) =>
-      // Recursive call - create more case classes
+      // render a nested case class for a deeper selection
+      case TypedDocument.Field(name, tpe, Some(fieldSelection), _) =>
+        // Recursive call - create more case classes
 
-      val fieldName = Type.Name(name.capitalize)
-      val termName = Term.Name(name.capitalize)
-      val template = generateTemplate(fieldSelection.interfaces)
+        val fieldName = Type.Name(name.capitalize)
+        val termName = Term.Name(name.capitalize)
+        val template = generateTemplate(fieldSelection.interfaces)
 
-      // The inner stats don't require the typeQualifiers as they are packed into a separate
-      // object, which is like a fresh start.
-      val innerStats = fieldSelection.fields.flatMap(selectionStats(_, List.empty))
+        // The inner stats don't require the typeQualifiers as they are packed into a separate
+        // object, which is like a fresh start.
+        val innerStats =
+          fieldSelection.fields.flatMap(selectionStats(_, List.empty))
 
-      // Add
-      val params = generateFieldParams(fieldSelection.fields, typeQualifiers :+ termName.value)
-      List(
-        // "// nice comment".parse[Stat].get,
-        q"case class $fieldName(..$params) extends $template"
-      ) ++ Option(innerStats).filter(_.nonEmpty).map {
-        stats => q"object $termName { ..$stats }"
-      }
-    case TypedDocument.Field(_, _, _, _) =>
-      // scalar types, e.g. String, Option, List
-      List.empty
-  }
+        // Add
+        val params = generateFieldParams(fieldSelection.fields,
+                                         typeQualifiers :+ termName.value)
+        List(
+          // "// nice comment".parse[Stat].get,
+          q"case class $fieldName(..$params) extends $template"
+        ) ++ Option(innerStats).filter(_.nonEmpty).map { stats =>
+          q"object $termName { ..$stats }"
+        }
+      case TypedDocument.Field(_, _, _, _) =>
+        // scalar types, e.g. String, Option, List
+        List.empty
+    }
 
-
-  private def generateFieldParams(fields: List[TypedDocument.Field], typeQualifiers: List[String]): List[Term.Param] =
+  private def generateFieldParams(
+      fields: List[TypedDocument.Field],
+      typeQualifiers: List[String]): List[Term.Param] =
     fields.map { field =>
       val tpe = parameterFieldType(field, typeQualifiers)
       termParam(field.name, tpe)
@@ -138,7 +157,8 @@ case class ApolloSourceGenerator(fileName: String, additionalImports: List[Impor
     * @param field
     * @return
     */
-  private def parameterFieldType(field: TypedDocument.Field, typeQualifiers: List[String]): Type =
+  private def parameterFieldType(field: TypedDocument.Field,
+                                 typeQualifiers: List[String]): Type =
     generateFieldType(field) { tpe =>
       if (field.isObjectLike || field.isUnion) {
         // prepend the type qualifier for nested object/case class structures
@@ -157,7 +177,8 @@ case class ApolloSourceGenerator(fileName: String, additionalImports: List[Impor
     * @param genType
     * @return scala type
     */
-  private def generateFieldType(field: TypedDocument.Field)(genType: schema.Type => Type): Type = {
+  private def generateFieldType(field: TypedDocument.Field)(
+      genType: schema.Type => Type): Type = {
     // recursive function
     def typeOf(tpe: schema.Type): Type = tpe match {
       case schema.OptionType(wrapped) =>
@@ -176,12 +197,12 @@ case class ApolloSourceGenerator(fileName: String, additionalImports: List[Impor
     typeOf(field.tpe)
   }
 
-
   private def generateTemplate(traits: List[String]): Template = {
 
     // val ctorNames = traits.map(Ctor.Name.apply)
     val emptySelf = Self(Name.Anonymous(), None)
-    val templateInits = traits.map(name => Init(Type.Name(name), Name.Anonymous(), Nil))
+    val templateInits =
+      traits.map(name => Init(Type.Name(name), Name.Anonymous(), Nil))
     Template(early = Nil, inits = templateInits, emptySelf, stats = Nil)
   }
 
@@ -200,6 +221,59 @@ case class ApolloSourceGenerator(fileName: String, additionalImports: List[Impor
     }
     val traitName = Type.Name(interface.name)
     q"trait $traitName { ..$defs }"
+  }
+
+  private def generateObject(obj: TypedDocument.Object,
+                             interfaces: List[String]): Stat = {
+    val params = obj.fields.map { field =>
+      val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
+      termParam(field.name, tpe)
+    }
+    val className = Type.Name(obj.name)
+    val template = generateTemplate(interfaces)
+    q"case class $className(..$params) extends $template": Stat
+  }
+
+  /**
+    * Generates the general types for this document.
+    *
+    * @param tree input node
+    * @return generated code
+    */
+  private def generateType(tree: TypedDocument.Type): List[Stat] = tree match {
+    case interface: TypedDocument.Interface =>
+      List(generateInterface(interface))
+
+    case obj: TypedDocument.Object =>
+      List(generateObject(obj, List.empty))
+
+    case TypedDocument.Enum(name, values) =>
+      val enumValues = values.map { value =>
+        val template = generateTemplate(List(name))
+        val valueName = Term.Name(value)
+        q"case object $valueName extends $template"
+      }
+
+      val enumName = Type.Name(name)
+      val objectName = Term.Name(name)
+      List[Stat](
+        q"sealed trait $enumName",
+        q"object $objectName { ..$enumValues }"
+      )
+
+    case TypedDocument.TypeAlias(from, to) =>
+      val alias = Type.Name(from)
+      val underlying = Type.Name(to)
+      List(q"type $alias = $underlying": Stat)
+
+    case TypedDocument.Union(name, types) =>
+      val unionValues = types.map(obj => generateObject(obj, List(name)))
+      val unionName = Type.Name(name)
+      val objectName = Term.Name(name)
+      List[Stat](
+        q"sealed trait $unionName",
+        q"object $objectName { ..$unionValues }"
+      )
   }
 
 }

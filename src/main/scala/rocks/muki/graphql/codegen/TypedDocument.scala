@@ -41,7 +41,8 @@ object TypedDocument {
     def isUnion = union.nonEmpty
   }
 
-  case class Selection(fields: List[Field], interfaces: List[String] = List.empty)
+  case class Selection(fields: List[Field],
+                       interfaces: List[String] = List.empty)
       extends TypedDocument {
     def +(that: Selection) =
       Selection((this.fields ++ that.fields).distinct,
@@ -79,7 +80,7 @@ object TypedDocument {
   }
   case class Object(name: String, fields: List[Field]) extends Type
   case class Interface(name: String, fields: List[Field]) extends Type
-  case class Enum(name: String, vaules: List[String]) extends Type
+  case class Enum(name: String, values: List[String]) extends Type
   case class TypeAlias(name: String, tpe: String) extends Type
   case class Union(name: String, types: List[Object]) extends Type
 
@@ -88,6 +89,12 @@ object TypedDocument {
     *
     * It includes only the operations, interfaces and input/output types
     * referenced in the query documents.
+    *
+    * @param operations all operations
+    * @param interfaces defined interfaces
+    * @param types all types that are not operations related. This includes predefined types (e.g. ID)
+    *              and input variable types.
+    *
     */
   case class Api(operations: List[Operation],
                  interfaces: List[Interface],
