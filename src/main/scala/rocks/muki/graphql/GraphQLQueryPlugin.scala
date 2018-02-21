@@ -19,7 +19,7 @@ object GraphQLQueryPlugin extends AutoPlugin {
       taskKey[Unit]("validate all queries in the graphql source directory")
 
     val graphqlQueryDirectory: SettingKey[File] =
-      settingKey[File]("graphql files")
+      settingKey[File]("directory that contains all graphql queries")
   }
 
   import autoImport._
@@ -44,7 +44,7 @@ object GraphQLQueryPlugin extends AutoPlugin {
             )
           val schema = Schema.buildFromAst(schemaDocument)
 
-          log.info(s"Checking graphl files in ${graphqlQueryDirectory.value}")
+          log.info(s"Checking graphql files in ${graphqlQueryDirectory.value}")
           val graphqlFiles = (graphqlQueryDirectory.value ** "*.graphql").get
           val violations = graphqlFiles.flatMap {
             file =>
