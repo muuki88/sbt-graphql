@@ -14,13 +14,22 @@ object GraphQLCodegenPlugin extends AutoPlugin {
   object autoImport {
     val graphqlCodegenSchema = taskKey[File]("GraphQL schema file")
     val graphqlCodegenQueries = taskKey[Seq[File]]("GraphQL query documents")
+
+    val graphqlCodegenStyle = settingKey[CodeGenStyles.Style]("The resulting code generation style")
+
     val graphqlCodegenPackage =
       settingKey[String]("Package for the generated code")
     val graphqlCodegen = taskKey[Seq[File]]("Generate GraphQL API code")
+
+
+    val Apollo = CodeGenStyles.Apollo
+    val Sangria = CodeGenStyles.Sangria
+
   }
   import autoImport._
 
   override def projectSettings: Seq[Setting[_]] = Seq(
+    graphqlCodegenStyle := Apollo,
     graphqlCodegenSchema := (resourceDirectory in Compile).value / "schema.graphql",
     resourceDirectories in graphqlCodegen := (resourceDirectories in Compile).value,
     includeFilter in graphqlCodegen := "*.graphql",
@@ -47,7 +56,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
 
       val context = CodeGenContext(schema, targetDir, queries, packageName, log)
 
-      CodeGenStyles.Apollo(context)
+      graphqlCodegenStyle.value(context)
     }
   )
 

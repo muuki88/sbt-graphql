@@ -4,6 +4,8 @@ name := "test"
 enablePlugins(GraphQLCodegenPlugin)
 scalaVersion := "2.12.4"
 
+graphqlCodegenStyle := Sangria
+
 val StarWarsDir = file(sys.props("codegen.samples.dir")) / "starwars"
 
 graphqlCodegenSchema := StarWarsDir / "schema.graphql"
@@ -12,7 +14,7 @@ includeFilter in graphqlCodegen := "MultiQuery.graphql"
 name in graphqlCodegen := "MultiQueryApi"
 
 TaskKey[Unit]("check") := {
-  val file     = graphqlCodegen.value
+  val file     = graphqlCodegen.value.head
   val expected = StarWarsDir / "MultiQuery.scala"
 
   assert(file.exists)

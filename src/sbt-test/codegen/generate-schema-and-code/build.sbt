@@ -1,7 +1,10 @@
 import scala.sys.process._
 
 name := "test"
-scalaVersion in ThisBuild := "2.12.3"
+scalaVersion in ThisBuild := "2.12.4"
+
+
+graphqlCodegenStyle := Sangria
 
 val StarWarsDir = file(sys.props("codegen.samples.dir")) / "starwars"
 
@@ -24,7 +27,7 @@ val client = project
   )
 
 TaskKey[Unit]("check") := {
-  val file     = (graphqlCodegen in client).value
+  val file     = (graphqlCodegen in client).value.head
   val expected = StarWarsDir / "MultiQuery.scala"
 
   assert(file.exists)

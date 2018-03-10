@@ -1,9 +1,11 @@
 name := "test"
 enablePlugins(GraphQLCodegenPlugin)
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.4"
+
+graphqlCodegenStyle := Sangria
 
 TaskKey[Unit]("check") := {
-  val file = (graphqlCodegen in Compile).value
+  val file = (graphqlCodegen in Compile).value.head
   val expected =
     """package graphql.codegen
       |
