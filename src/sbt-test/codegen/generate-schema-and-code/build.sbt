@@ -3,9 +3,6 @@ import scala.sys.process._
 name := "test"
 scalaVersion in ThisBuild := "2.12.4"
 
-
-graphqlCodegenStyle := Sangria
-
 val StarWarsDir = file(sys.props("codegen.samples.dir")) / "starwars"
 
 val server = project
@@ -19,6 +16,7 @@ val server = project
 val client = project
   .enablePlugins(GraphQLCodegenPlugin)
   .settings(
+    graphqlCodegenStyle := Sangria,
     graphqlCodegenSchema := (graphqlSchemaGen in server).value,
     resourceDirectories in graphqlCodegen += StarWarsDir,
     includeFilter in graphqlCodegen := "MultiQuery.graphql",

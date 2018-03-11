@@ -54,7 +54,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       val schema =
         SchemaLoader.fromFile(graphqlCodegenSchema.value).loadSchema()
 
-      val context = CodeGenContext(schema, targetDir, queries, packageName, log)
+      val moduleName = (name in graphqlCodegen).value
+      val context = CodeGenContext(schema, targetDir, queries, packageName, moduleName, log)
 
       graphqlCodegenStyle.value(context)
     }

@@ -14,6 +14,7 @@ import sbt.Logger
   * @param targetDirectory the target directory where the source code will be placed
   * @param graphQLFiles input files that should be processed
   * @param packageName the scala package name
+  * @param moduleName optional module name for single-file based generators
   * @param log output log
   */
 case class CodeGenContext(
@@ -21,5 +22,6 @@ case class CodeGenContext(
     targetDirectory: File,
     graphQLFiles: Seq[File],
     packageName: String,
+    moduleName: String,
     log: Logger
 )

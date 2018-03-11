@@ -19,6 +19,7 @@ lazy val client = project.in(file("client"))
     .enablePlugins(GraphQLCodegenPlugin, GraphQLQueryPlugin)
     .settings(commonSettings)
     .settings(
+      graphqlCodegenStyle := Sangria,
       graphqlCodegenSchema := graphqlRenderSchema.toTask("starwars").value,
       resourceDirectories in graphqlCodegen := List(
         (sourceDirectory in Compile).value / "graphql",

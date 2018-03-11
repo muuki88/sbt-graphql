@@ -4,7 +4,9 @@ import java.io.File
 
 import sangria.schema.Schema
 import sbt._
+
 import scala.meta._
+import scala.util.Success
 
 /**
   * == CodeGen Styles ==
@@ -82,52 +84,31 @@ object CodeGenStyles {
     val inputFiles = context.graphQLFiles
     val packageName = Term.Name(context.packageName)
 
-    val additionalImports = GraphQLQueryGenerator.imports(context.packageName)
-    val additionalInits = GraphQLQueryGenerator.inits
-
-    for {
+    val result = for {
       queryDocument <- DocumentLoader.merged(schema, inputFiles.toList)
       typedDocument <- TypedDocumentParser(schema, queryDocument)
         .parse()
-      sourceCode <- ScalametaGenerator("Api")(typedDocument)
-    } yield ""
-
-    // Process all the graphql files
-    val files = inputFiles.map { inputFile =>
-      for {
-        queryDocument <- DocumentLoader.single(schema, inputFile)
-        typedDocument <- TypedDocumentParser(schema, queryDocument)
-          .parse()
-        sourceCode <- ApolloSourceGenerator(inputFile.getName,
-          additionalImports,
-          additionalInits)(typedDocument)
-      } yield {
-        val stats =
-          q"""package $packageName {
-               ..$sourceCode
+      sourceCode <- ScalametaGenerator(context.moduleName)(typedDocument)
+    } yield {
+      val sourceCodeStats: List[Stat] = List(sourceCode)
+      val pkg =
+        q"""package $packageName {
+               ..$sourceCodeStats
              }"""
 
-        val outputFile = SourceCodeWriter.write(context, inputFile, stats)
-        context.log.info(s"Generated source $outputFile from $inputFile ")
-        outputFile
-      }
+      val outputFile = context.targetDirectory / s"${context.moduleName.capitalize}.scala"
+      SourceCodeWriter.write(outputFile, pkg)
+    }
+
+    result match {
+      case Right(file) =>
+        List(file)
+      case Left(error) =>
+        context.log.err(s"Error during code genreation $error")
+        sys.error("Code generation failed")
     }
 
 
-    val errors = files.collect {
-      case Left(error) => error
-    }
-
-    if (errors.nonEmpty) {
-      context.log.err(s"${errors.size} error(s) during code generation")
-      errors.foreach(error => context.log.error(error.message))
-      sys.error("Code generation failed")
-    }
-
-    // return all generated files
-    files.collect {
-      case Right(file) => file
-    }
   }
 
 }
