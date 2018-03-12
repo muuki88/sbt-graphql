@@ -1,6 +1,9 @@
 package rocks.muki.graphql.codegen.apollo
 
-import rocks.muki.graphql.codegen.{ApolloSourceGenerator, GraphQLQueryGenerator}
+import rocks.muki.graphql.codegen.{
+  ApolloSourceGenerator,
+  GraphQLQueryGenerator
+}
 
 class ApolloBlogCodegenSpec
     extends ApolloCodegenBaseSpec(

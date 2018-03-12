@@ -25,15 +25,13 @@ object GraphQLQueryGenerator {
   val termName: Term.Name = Term.Name(name)
   val typeName: Type.Name = Type.Name(name)
 
-
   private val traitDefinition: Defn.Trait =
-     q"""trait $typeName {
+    q"""trait $typeName {
           type Document
           type Variables
           type Data
         }
      """
-
 
   /**
     * Generates the actual source code.
@@ -53,7 +51,8 @@ object GraphQLQueryGenerator {
     * @return
     */
   def imports(packageName: String): List[Import] = {
-    val importer = Importer(Term.Name(packageName), List(Importee.Name(Name(name))))
+    val importer =
+      Importer(Term.Name(packageName), List(Importee.Name(Name(name))))
     List(
       q"import ..${List(importer)}"
     )

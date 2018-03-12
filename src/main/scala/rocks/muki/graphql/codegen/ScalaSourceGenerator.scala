@@ -27,7 +27,6 @@ case class ScalametaGenerator(moduleName: Term.Name,
                               stats: List[Stat] = List.empty)
     extends Generator[Defn.Object] {
 
-
   override def apply(api: TypedDocument.Api): Result[Defn.Object] = {
     val operations = api.operations.flatMap(generateOperation)
     val fragments =
@@ -55,7 +54,9 @@ case class ScalametaGenerator(moduleName: Term.Name,
   def generateTemplate(traits: List[String],
                        prefix: String = moduleName.value + "."): Template = {
     // TODO fix constructor names
-    val templateInits = traits.map(prefix + _).map(name => Init(Type.Name(name), Name.Anonymous(), Nil))
+    val templateInits = traits
+      .map(prefix + _)
+      .map(name => Init(Type.Name(name), Name.Anonymous(), Nil))
     val emptySelf = Self(Name.Anonymous(), None)
 
     Template(Nil, templateInits, emptySelf, List.empty)
@@ -100,7 +101,8 @@ case class ScalametaGenerator(moduleName: Term.Name,
         selection: TypedDocument.Selection): List[Stat] =
       selection.fields.flatMap {
         // render enumerations (union types)
-        case TypedDocument.Field(name, tpe, None, unionTypes) if unionTypes.nonEmpty =>
+        case TypedDocument.Field(name, tpe, None, unionTypes)
+            if unionTypes.nonEmpty =>
           val unionName = Type.Name(name.capitalize)
           val objectName = Term.Name(unionName.value)
           val template = generateTemplate(List(unionName.value), prefix)
@@ -193,7 +195,8 @@ case class ScalametaGenerator(moduleName: Term.Name,
     q"trait $traitName { ..$defs }"
   }
 
-  def generateObject(obj: TypedDocument.Object, interfaces: List[String]): Stat = {
+  def generateObject(obj: TypedDocument.Object,
+                     interfaces: List[String]): Stat = {
     val params = obj.fields.map { field =>
       val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
       termParam(field.name, tpe)

@@ -23,13 +23,16 @@ object SourceCodeWriter {
     * @param sourceCode the generated source code
     * @return the generated scala source file
     */
-  def write(context: CodeGenContext, graphqlFile: File, sourceCode: Pkg): File = {
-    val fileName = graphqlFile.getName.replaceAll("\\.graphql$|\\.gql$", ".scala").capitalize
+  def write(context: CodeGenContext,
+            graphqlFile: File,
+            sourceCode: Pkg): File = {
+    val fileName = graphqlFile.getName
+      .replaceAll("\\.graphql$|\\.gql$", ".scala")
+      .capitalize
     val outputFile = context.targetDirectory / fileName
     IO.write(outputFile, sourceCode.show[Syntax])
     outputFile
   }
-
 
   /**
     * Writes the `sourceCode` to the given `file`.

@@ -74,7 +74,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
 
   private def generateSelection(typeConditions: Set[Type])(
       node: ast.Selection): TypedDocument.Selection = {
-    def conditionalFragment(f: => TypedDocument.Selection): TypedDocument.Selection =
+    def conditionalFragment(
+        f: => TypedDocument.Selection): TypedDocument.Selection =
       if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
         f
       else
@@ -93,12 +94,14 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
               val selection = generateSelections(field.selections, conditions)
               TypedDocument.UnionSelection(tpe, selection)
             }
-            TypedDocument.Selection(TypedDocument.Field(field.outputName, tpe, union = types))
+            TypedDocument.Selection(
+              TypedDocument.Field(field.outputName, tpe, union = types))
 
           case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
             val gen = generateSelections(field.selections)
             TypedDocument.Selection(
-              TypedDocument.Field(field.outputName, tpe, selection = Some(gen)))
+              TypedDocument
+                .Field(field.outputName, tpe, selection = Some(gen)))
 
           case _ =>
             touchType(tpe)
@@ -127,7 +130,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     result
   }
 
-  private def generateOperation(operation: ast.OperationDefinition): TypedDocument.Operation = {
+  private def generateOperation(
+      operation: ast.OperationDefinition): TypedDocument.Operation = {
     typeInfo.enter(operation)
     val variables = operation.variables.toList.map { varDef =>
       schema.getInputType(varDef.tpe) match {
@@ -144,7 +148,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     TypedDocument.Operation(operation.name, variables, selection, operation)
   }
 
-  private def generateFragment(fragment: ast.FragmentDefinition): TypedDocument.Interface = {
+  private def generateFragment(
+      fragment: ast.FragmentDefinition): TypedDocument.Interface = {
     typeInfo.enter(fragment)
     val selection = generateSelections(fragment.selections)
     typeInfo.leave(fragment)

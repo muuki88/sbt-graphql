@@ -24,7 +24,6 @@ import sangria.validation.QueryValidator
 import sangria.schema._
 import sangria.ast.Document
 
-
 object DocumentLoader {
 
   /**
@@ -34,12 +33,16 @@ object DocumentLoader {
     * @return
     */
   def merged(schema: Schema[_, _], files: List[File]): Result[Document] = {
-    files.map(single(schema, _)).foldLeft[Result[Document]](Right(Document.emptyStub)) {
-      case (Left(failure), Left(nextFailure)) => Left(Failure(failure.message + "\n" + nextFailure.message))
-      case (Left(failure), _) => Left(failure)
-      case (_, Left(firstFailure) ) => Left(firstFailure)
-      case (Right(document), Right(nextDocument)) => Right(document.merge(nextDocument))
-    }
+    files
+      .map(single(schema, _))
+      .foldLeft[Result[Document]](Right(Document.emptyStub)) {
+        case (Left(failure), Left(nextFailure)) =>
+          Left(Failure(failure.message + "\n" + nextFailure.message))
+        case (Left(failure), _) => Left(failure)
+        case (_, Left(firstFailure)) => Left(firstFailure)
+        case (Right(document), Right(nextDocument)) =>
+          Right(document.merge(nextDocument))
+      }
   }
 
   /**
@@ -52,7 +55,11 @@ object DocumentLoader {
     for {
       document <- parseDocument(file)
       violations = QueryValidator.default.validateQuery(schema, document)
-      _ <- Either.cond(violations.isEmpty, document, Failure(s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
+      _ <- Either.cond(
+        violations.isEmpty,
+        document,
+        Failure(
+          s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
     } yield document
   }
 

@@ -108,7 +108,6 @@ object CodeGenStyles {
         sys.error("Code generation failed")
     }
 
-
   }
 
 }
