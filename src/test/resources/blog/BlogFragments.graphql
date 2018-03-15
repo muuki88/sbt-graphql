@@ -1,0 +1,37 @@
+query BlogFragments($blogId: ID!, $pagination: Pagination!) {
+  blog(id: $blogId) {
+    title
+    articles(pagination: $pagination) {
+      ...ArticleFragment
+    }
+
+    articlesWithAuthorId: articles(pagination: $pagination) {
+      ...IdFragment
+      ...ArticleWithAuthorIdFragment
+    }
+  }
+}
+
+fragment ArticleFragment on Article {
+  title
+  author {
+    ...AuthorFragment
+  }
+}
+
+fragment AuthorFragment on Author {
+  id
+  name
+}
+
+fragment IdFragment on Identifiable {
+  id
+}
+
+fragment ArticleWithAuthorIdFragment on Article {
+  title
+  author {
+    ...IdFragment
+    ...AuthorFragment
+  }
+}

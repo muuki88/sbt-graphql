@@ -69,4 +69,3 @@ class ProductRepo {
 
   def products: List[Product] = Products
 }
-

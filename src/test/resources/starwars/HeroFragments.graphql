@@ -1,0 +1,51 @@
+query HeroAppearances {
+  hero {
+    ...Appearances
+  }
+}
+
+query HeroAppearancesAndInline {
+  hero {
+    ...Appearances
+    ... on Character {
+      id
+    }
+  }
+}
+
+query HeroAppearancesAndInlineAlias {
+  hero {
+    ...Appearances
+    ... on Character {
+      heroId: id
+    }
+  }
+}
+
+query HeroNameAliasAndAppearances {
+  hero {
+    ...NameAlias
+    ...Appearances
+  }
+}
+
+query HeroFragmentOverlap {
+  hero {
+    ...Identifiable
+    ...Appearances
+  }
+}
+
+fragment Appearances on Character {
+  name
+  appearsIn
+}
+
+fragment Identifiable on Character {
+  id
+  name
+}
+
+fragment NameAlias on Character {
+  alias: name
+}

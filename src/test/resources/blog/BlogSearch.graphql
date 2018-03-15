@@ -1,0 +1,81 @@
+query BlogSearch($text: String!, $pagination: Pagination!) {
+  search(text: $text, pagination: $pagination) {
+    ... on Identifiable {
+      ...IdFragment
+    }
+    ... on Blog {
+      ...BlogFragment
+    }
+    ... on Article {
+      ...ArticleFragment
+    }
+    ... on Author {
+      ...AuthorFragment
+    }
+  }
+
+  searchWithFragmentSpread: search(text: $text, pagination: $pagination) {
+    ...SearchResultFragment
+  }
+
+  searchOnImplements: search(text: $text, pagination: $pagination) {
+    ...SearchResultOnIdentifiableFragment
+  }
+}
+
+fragment IdFragment on Identifiable {
+  id
+}
+
+fragment BlogFragment on Blog {
+  __typename
+  title
+}
+
+fragment ArticleFragment on Article {
+  __typename
+  title
+  status
+  author {
+    ...AuthorFragment
+  }
+}
+
+fragment AuthorFragment on Author {
+  __typename
+  name
+}
+
+fragment SearchResultFragment on SearchResult {
+  ... on Identifiable {
+    ...IdFragment
+  }
+  ... on Blog {
+    ...BlogFragment
+  }
+  ... on Article {
+    ...ArticleFragment
+  }
+  ... on Author {
+    ...AuthorFragment
+  }
+}
+
+fragment SearchResultOnIdentifiableFragment on Identifiable {
+  id
+  ... on Blog {
+    ...BlogFragment
+  }
+  ... on Article {
+    __typename
+    title
+    status
+    author {
+      name
+    }
+  }
+  ... on Author {
+    __typename
+    name
+  }
+}
