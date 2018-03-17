@@ -17,6 +17,7 @@ it with another schema, e.g. the production schema, to avoid breaking changes.
 
 All features are based on the excellent [Sangria GraphQL library](http://sangria-graphql.org)
 
+* Code generation from `graphql` queries
 * Schema generation - inspired by [mediative/sangria-codegen](https://github.com/mediative/sangria-codegen)
 * Schema validation - [sangria schema validation](http://sangria-graphql.org/learn/#schema-validation)
 * Schema validation against another schema - [sangria schema comparison](http://sangria-graphql.org/learn/#schema-comparison)
@@ -173,6 +174,149 @@ You can create release notes for the `build` and `prod` schema with
 $ sbt
 > graphqlReleaseNotes build prod
 ```
+
+## Code Generation
+
+A graphql query result is usually modelled with case classes, enums and traits.
+Writing these query result classes is tedious and error prone. `sbt-grapqhl` can
+generate the correct models for every graphql query.
+
+A lot of insipration came from [apollo codegen](https://github.com/apollographql/apollo-codegen).
+Make sure to check it out for scalajs, typescript and plain javascript projects.
+
+### Configuration
+
+Enable the code generation plugin in your `build.sbt`
+
+```scala
+enablePlugins(GraphQLCodegenPlugin)
+```
+
+You need a grapqhl schema for the code generation. The schema is necessary
+to figure out the types for each query field. By the default the codgen plugin
+looks for at `src/main/resources/schema.graphql`.
+
+We recommend to configure a graphql schema in your `graphqlSchemas` and use the label
+to render the schema to a specific file.
+
+```scala
+// add a 'starwars' schema to the `graphqlSchemas` list
+graphqlSchemas += GraphQLSchema(
+  "starwars",
+  "starwars schema at http://try.sangria-graphql.org/graphql",
+  Def.task(
+   GraphQLSchemaLoader
+     .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+     .withHeaders("User-Agent" -> s"sbt-graphql/${version.value}")
+      .loadSchema()
+  ).taskValue
+
+
+// use this schema for the code generation
+graphqlCodegenSchema := graphqlRenderSchema.toTask("starwars").value
+```
+
+The `graphqlCodegenSchema` requires a `File` that points to a valid graphql schema file.
+`graphqlRenderSchema` is a tasks that renders any given schema in the `graphqlSchemas` into
+a schema file. It takes on input parameter, the unique label that identifies the schema.
+The `toTask("starwars")` invocation, converts the `graphqlRenderSchema` input task with the
+input parameter `starwars` to plain `task` that can be evaluated as usual with `.value`.
+
+By default all `*.graphql` files in your `resourceDirectories` will be used for code generation.
+
+### Settings
+
+You can configure the output in various ways
+
+
+* `graphqlCodegenStyle` - Configure the code output style. Default is `Apollo`.
+  You can choose between [Sangria](#codegen-style-sangria) and  [Apollo](#codegen-style-apollo)
+* `graphqlCodegenSchema` - The graphql schema file used for code generation
+* `resourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
+  Default is `resourceDirectories in Compile`.
+* `includeFilter in graphqlCodegen` - Filter graphql files. Default is `"*.graphql"`
+* `excludeFilter in graphqlCodegen` - Filter graphql files. Default is `HiddenFileFilter`
+* `graphqlCodegenQueries` - Contains all graphql query files. By default this setting contains all
+  files that reside in `resourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
+* `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
+* `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
+
+#### Codegen Style Apollo
+
+As the name suggests the output is similar to the one in apollo codegen.
+
+A basic `GraphQLQuery` trait is generated, which all queries extend.
+
+```scala
+trait GraphQLQuery {
+  type Document
+  type Variables
+  type Data
+}
+```
+
+The `Document` contains the query document parsed with sangria.
+The `Variables` type represents the input variables for the particular query.
+The `Data` type represents the shape of the query result.
+
+For each query a new object is created with the name of the query.
+
+Example:
+
+```graphql
+query HeroNameQuery {
+  hero {
+    name
+  }
+}
+```
+
+Generated code:
+
+```scala
+package graphql.codegen
+import graphql.codegen.GraphQLQuery
+import sangria.macros._
+object HeroNameQuery {
+  object HeroNameQuery extends GraphQLQuery {
+    val Document = graphql"""query HeroNameQuery {
+                                  hero {
+                                    name
+                                  }
+                                }"""
+    case class Variables()
+    case class Data(hero: Hero)
+    case class Hero(name: Option[String])
+  }
+}
+```
+
+#### Codegen Style Sangria
+
+This style generates one object with a specified `moduleName` and puts everything in there.
+
+Example:
+
+```graphql
+query HeroNameQuery {
+  hero {
+    name
+  }
+}
+```
+
+Generated code:
+
+```scala
+object HeroNameQueryApi {
+  case class HeroNameQuery(hero: HeroNameQueryApi.HeroNameQuery.Hero)
+  object HeroNameQuery {
+    case class HeroNameQueryVariables()
+    case class Hero(name: Option[String])
+  }
+}
+```
+ 
 
 ## Query validation
 
