@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-package rocks.muki.graphql.codegen
+package rocks.muki.graphql.codegen.sangria
+
+import java.io.File
 
 import org.scalatest.{EitherValues, WordSpec}
-import java.io.File
-import sbt._
-
+import rocks.muki.graphql.codegen.{
+  DocumentLoader,
+  ScalametaGenerator,
+  TypedDocumentParser
+}
 import rocks.muki.graphql.schema.SchemaLoader
+import sangria.schema.Schema
+import sbt._
 
 import scala.io.Source
 import scala.meta._
-import sangria.schema.Schema
 
-abstract class CodegenBaseSpec(name: String,
-                               schema: Option[Schema[_, _]] = None)
+abstract class SangriaCodegenBaseSpec(name: String,
+                                      schema: Option[Schema[_, _]] = None)
     extends WordSpec
     with EitherValues {
   def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))
 
-  val inputDir = new File("src/test/resources", name)
+  val inputDir = new File("src/test/resources/sangria", name)
 
   def contentOf(file: File) =
     Source.fromFile(file).mkString

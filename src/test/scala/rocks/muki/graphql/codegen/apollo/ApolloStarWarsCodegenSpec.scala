@@ -7,7 +7,7 @@ import rocks.muki.graphql.codegen.{
 
 class ApolloStarWarsCodegenSpec
     extends ApolloCodegenBaseSpec(
-      "apollo/starwars",
+      "starwars",
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
                               GraphQLQueryGenerator.imports("com.example"),

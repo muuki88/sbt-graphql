@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rocks.muki.graphql.codegen.starwars
+package rocks.muki.graphql.codegen.sangria
 
 import sangria.execution.UserFacingError
 import sangria.schema._

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package rocks.muki.graphql.codegen
-package starwars
+package rocks.muki.graphql.codegen.sangria
 
-class StarWarsCodegenSpec
-    extends CodegenBaseSpec("starwars", TestSchema.StarWarsSchema)
+class BlogSpecSangria extends SangriaCodegenBaseSpec("blog")

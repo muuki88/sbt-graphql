@@ -36,7 +36,7 @@ abstract class ApolloCodegenBaseSpec(
     with EitherValues
     with TryValues {
 
-  val inputDir = new File(s"src/test/resources/$name")
+  val inputDir = new File(s"src/test/resources/apollo", name)
 
   def contentOf(file: File): String =
     IOSource.fromFile(file)(Codec.UTF8).mkString
