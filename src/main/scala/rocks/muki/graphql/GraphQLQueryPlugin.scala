@@ -25,9 +25,7 @@ object GraphQLQueryPlugin extends AutoPlugin {
   import autoImport._
   import GraphQLSchemaPlugin.autoImport._
 
-  // TODO separate these into two auto plugins
-  override def projectSettings: Seq[Setting[_]] =
-    pluginSettings(Compile) ++ pluginSettings(IntegrationTest)
+  override def projectSettings: Seq[Setting[_]] = pluginSettings(Compile)
 
   private def pluginSettings(config: Configuration): Seq[Setting[_]] =
     inConfig(config)(
