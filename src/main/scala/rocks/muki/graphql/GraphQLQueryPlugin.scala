@@ -23,7 +23,7 @@ object GraphQLQueryPlugin extends AutoPlugin {
   import autoImport._
   import GraphQLSchemaPlugin.autoImport._
 
-  override def projectSettings: Seq[Setting[_]] =  Seq(
+  override def projectSettings: Seq[Setting[_]] = Seq(
     sourceDirectory in (Test, graphqlValidateQueries) := (sourceDirectory in Test).value / "graphql",
     graphqlValidateQueries := {
       val log = streams.value.log
@@ -36,7 +36,8 @@ object GraphQLQueryPlugin extends AutoPlugin {
         )
       val schema = Schema.buildFromAst(schemaDocument)
 
-      val graphqlQueryDirectory = (sourceDirectory in (Test, graphqlValidateQueries)).value
+      val graphqlQueryDirectory =
+        (sourceDirectory in (Test, graphqlValidateQueries)).value
       log.info(s"Checking graphql files in $graphqlQueryDirectory")
       val graphqlFiles = (graphqlQueryDirectory ** "*.graphql").get
       val violations = graphqlFiles.flatMap {
