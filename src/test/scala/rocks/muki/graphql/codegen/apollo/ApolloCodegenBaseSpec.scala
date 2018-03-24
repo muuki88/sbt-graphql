@@ -52,7 +52,9 @@ abstract class ApolloCodegenBaseSpec(
       s"generate code for ${input.getName}" in {
 
         val schema =
-          SchemaLoader.fromFile(inputDir / "starwars-schema.graphql").loadSchema()
+          SchemaLoader
+            .fromFile(inputDir / "starwars-schema.graphql")
+            .loadSchema()
         val document = DocumentLoader.single(schema, input).right.value
         val typedDocument =
           TypedDocumentParser(schema, document).parse().right.value
