@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
 
 // scripted test settings
 scriptedLaunchOpts += "-Dproject.version=" + version.value
-scriptedLaunchOpts += "-Dcodegen.samples.dir=" + ((baseDirectory in ThisBuild).value / "src/test/resources")
 
 // project meta data
 licenses := Seq(
