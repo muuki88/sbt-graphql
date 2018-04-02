@@ -54,7 +54,7 @@ abstract class SangriaCodegenBaseSpec(name: String,
         val generator = ScalametaGenerator(s"${name}Api")
         val schema =
           SchemaLoader
-            .fromFile(inputDir / "starwars-schema.graphql")
+            .fromFile(inputDir / "schema.graphql")
             .loadSchema()
 
         val document = DocumentLoader.single(schema, input).right.value
