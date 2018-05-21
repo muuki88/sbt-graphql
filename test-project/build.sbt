@@ -4,12 +4,9 @@ lazy val root = project.in(file("."))
 
 lazy val server = project.in(file("server"))
     .enablePlugins(GraphQLSchemaPlugin, GraphQLQueryPlugin)
-    .configs(IntegrationTest)
-    .settings(commonSettings, Defaults.itSettings)
+    .settings(commonSettings)
     .settings(
-      graphqlSchemaSnippet := "example.StarWarsSchema.schema",
-      // integration settings
-      graphqlQueryDirectory in IntegrationTest := (sourceDirectory in IntegrationTest).value / "graphql"
+      graphqlSchemaSnippet := "example.StarWarsSchema.schema"
     )
     .settings(
       addCommandAlias("validateStarWars", "graphqlValidateSchema build starwars")

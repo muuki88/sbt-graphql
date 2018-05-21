@@ -1,0 +1,53 @@
+query HeroAndFriends {
+  hero {
+    name
+    friends {
+      name
+    }
+  }
+}
+
+query HeroAndNestedFriends {
+  hero {
+    name
+    friends {
+      name
+      friends {
+        name
+        friends {
+          name
+          friends {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+
+query FragmentExample {
+  human(id: "1003") {
+    ...Common
+    homePlanet
+  }
+
+  droid(id: "2001") {
+    ...Common
+    primaryFunction
+  }
+}
+
+query VariableExample($humanId: String!){
+  human(id: $humanId) {
+    name,
+    homePlanet,
+    friends {
+      name
+    }
+  }
+}
+
+fragment Common on Character {
+  name
+  appearsIn
+}

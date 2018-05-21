@@ -6,22 +6,19 @@ scalaVersion := "2.12.4"
 
 graphqlCodegenStyle := Sangria
 
-val StarWarsDir = file(sys.props("codegen.samples.dir")) / "starwars"
-
-graphqlCodegenSchema := StarWarsDir / "schema.graphql"
-resourceDirectories in graphqlCodegen += StarWarsDir
+graphqlCodegenSchema := baseDirectory.value / "schema.graphql"
 includeFilter in graphqlCodegen := "MultiQuery.graphql"
 name in graphqlCodegen := "MultiQueryApi"
 
+
 TaskKey[Unit]("check") := {
-  val file     = graphqlCodegen.value.head
-  val expected = StarWarsDir / "MultiQuery.scala"
+  val files  = graphqlCodegen.value
 
-  assert(file.exists)
+  assert(files.length == 1, s"Sangria code should only generated one file, but got ${files.length}.\n${files.mkString("\n")}")
 
-  // Drop the package line before comparing
-  val compare = IO.readLines(file).drop(1).mkString("\n").trim == IO.read(expected).trim
-  if (!compare)
-    s"diff -u $expected $file".!
-  assert(compare, s"$file does not equal $expected")
+  val file = files.head
+  assert(file.exists, s"$file could not be found")
+
+  val content = IO.read(file)
+  assert(content.contains("object MultiQueryApi"), s"MultiQueryApi not presented in generated code\n${content}")
 }

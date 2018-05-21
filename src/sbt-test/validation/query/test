@@ -1,4 +1,4 @@
 # validation should fail with the broken.graphql file
--> graphqlValidateQueries
-$ delete src/main/graphql/broken.graphql
-> graphqlValidateQueries
+-> test:graphqlValidateQueries
+$ delete src/test/graphql/broken.graphql
+> test:graphqlValidateQueries
