@@ -22,7 +22,10 @@ object SearchQuery {
 }"""
     case class Variables(text: String)
     case class Data(search: List[Search])
-    sealed trait Search
+    sealed trait Search {
+      def __typename: String
+      def name: Option[String]
+    }
     object Search {
       case class Human(__typename: String, name: Option[String], secretBackstory: Option[String]) extends Search
       object Human { implicit val jsonDecoder: Decoder[Human] = deriveDecoder[Human] }
