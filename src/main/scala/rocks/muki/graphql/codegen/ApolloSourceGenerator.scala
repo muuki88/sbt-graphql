@@ -25,7 +25,8 @@ import scala.meta._
   */
 case class ApolloSourceGenerator(fileName: String,
                                  additionalImports: List[Import],
-                                 additionalInits: List[Init])
+                                 additionalInits: List[Init],
+                                 jsonCodeGen: JsonCodeGen)
     extends Generator[List[Stat]] {
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
@@ -65,6 +66,7 @@ case class ApolloSourceGenerator(fileName: String,
 
     Right(
       additionalImports ++
+        jsonCodeGen.imports ++
         List(
           q"import sangria.macros._",
           q"""
@@ -124,8 +126,8 @@ case class ApolloSourceGenerator(fileName: String,
 
         // The inner stats don't require the typeQualifiers as they are packed into a separate
         // object, which is like a fresh start.
-        val innerStats =
-          fieldSelection.fields.flatMap(selectionStats(_, List.empty))
+        val innerStats = jsonCodeGen.generateFieldDecoder(fieldName) ++ fieldSelection.fields
+          .flatMap(selectionStats(_, List.empty))
 
         // Add
         val params = generateFieldParams(fieldSelection.fields,

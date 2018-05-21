@@ -16,7 +16,8 @@ lazy val client = project.in(file("client"))
     .enablePlugins(GraphQLCodegenPlugin, GraphQLQueryPlugin)
     .settings(commonSettings)
     .settings(
-      graphqlCodegenStyle := Sangria,
+      graphqlCodegenStyle := Apollo,
+      graphqlCodegenJson := JsonCodec.Circe,
       graphqlCodegenSchema := graphqlRenderSchema.toTask("starwars").value,
       resourceDirectories in graphqlCodegen := List(
         (sourceDirectory in Compile).value / "graphql",
@@ -24,6 +25,11 @@ lazy val client = project.in(file("client"))
       graphqlCodegenPackage := "rocks.muki.graphql",
       name in graphqlCodegen := "Api",
       // includeFilter in graphqlCodegen := "product.graphql"
+      libraryDependencies ++= Seq(
+        "io.circe" %% "circe-core",
+        "io.circe" %% "circe-generic",
+        "io.circe" %% "circe-parser"
+      ).map(_ %  "0.9.3")
     )
 
 lazy val commonSettings = Seq(
