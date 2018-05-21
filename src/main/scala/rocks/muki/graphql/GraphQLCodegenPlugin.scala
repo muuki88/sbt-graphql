@@ -53,7 +53,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       //val generator = ScalametaGenerator((name in graphqlCodegen).value)
       val queries = graphqlCodegenQueries.value
       log.info(s"Generate code for ${queries.length} queries")
-      log.info(s"Use schema ${graphqlCodegenSchema.value} for query validation")
+      log.info(
+        s"Use schema ${graphqlCodegenSchema.value} for query validation")
 
       val packageName = graphqlCodegenPackage.value
       val schema =
