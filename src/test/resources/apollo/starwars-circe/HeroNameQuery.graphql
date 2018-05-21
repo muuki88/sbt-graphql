@@ -1,0 +1,5 @@
+query HeroNameQuery {
+  hero {
+    name
+  }
+}

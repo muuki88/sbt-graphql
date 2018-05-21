@@ -1,0 +1,12 @@
+query HeroFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    ...CharacterInfo
+  }
+}
+
+fragment CharacterInfo on Character {
+    name
+}
