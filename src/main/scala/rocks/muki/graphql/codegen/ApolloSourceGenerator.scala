@@ -60,7 +60,8 @@ case class ApolloSourceGenerator(fileName: String,
            ..$data
           }"""
     }
-    val interfaces = document.interfaces.map(generateInterface(_, isSealed = false))
+    val interfaces =
+      document.interfaces.map(generateInterface(_, isSealed = false))
     val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
@@ -95,12 +96,13 @@ case class ApolloSourceGenerator(fileName: String,
         // the "__typename" field has a special use-case for json codec
         // derivation as it should guide the json codec to the concrete
         // case class that should be decoded
-        val unionCommonFields = unionTypes.flatMap {
-          case TypedDocument.UnionSelection(unionType, unionSelection) =>
-            unionSelection.fields.map { field =>
-              (field.name, field.tpe) -> field
-            }
-        }
+        val unionCommonFields = unionTypes
+          .flatMap {
+            case TypedDocument.UnionSelection(unionType, unionSelection) =>
+              unionSelection.fields.map { field =>
+                (field.name, field.tpe) -> field
+              }
+          }
           // group the fields together by name and type
           .groupBy { case (nameAndType, _) => nameAndType }
           // collect all that have
@@ -114,7 +116,6 @@ case class ApolloSourceGenerator(fileName: String,
           TypedDocument.Interface(unionName.value, unionCommonFields),
           isSealed = true
         )
-
 
         // create concrete case classes for each union type
         val unionValues = unionTypes.flatMap {
@@ -235,7 +236,8 @@ case class ApolloSourceGenerator(fileName: String,
     Template(early = Nil, inits = templateInits, emptySelf, stats = Nil)
   }
 
-  private def generateInterface(interface: TypedDocument.Interface, isSealed: Boolean): Stat = {
+  private def generateInterface(interface: TypedDocument.Interface,
+                                isSealed: Boolean): Stat = {
     val defs = interface.fields.map { field =>
       val fieldName = Term.Name(field.name)
       val tpe = generateFieldType(field) { tpe =>
