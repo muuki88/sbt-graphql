@@ -2,7 +2,8 @@ package rocks.muki.graphql.codegen.apollo
 
 import rocks.muki.graphql.codegen.{
   ApolloSourceGenerator,
-  GraphQLQueryGenerator
+  GraphQLQueryGenerator,
+  JsonCodeGens
 }
 
 class ApolloStarWarsCodegenSpec
@@ -11,4 +12,6 @@ class ApolloStarWarsCodegenSpec
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
                               GraphQLQueryGenerator.imports("com.example"),
-                              GraphQLQueryGenerator.inits))
+                              GraphQLQueryGenerator.inits,
+                              JsonCodeGens.None)
+    )
