@@ -91,6 +91,7 @@ case class ApolloSourceGenerator(fileName: String,
         val unionCompanionObject = Term.Name(unionName.value)
         val unionTrait = generateTemplate(List(unionName.value))
 
+
         // create concrete case classes for each union type
         val unionValues = unionTypes.flatMap {
           case TypedDocument.UnionSelection(unionType, unionSelection) =>
@@ -102,8 +103,10 @@ case class ApolloSourceGenerator(fileName: String,
             val unionTypeName = Type.Name(unionType.name)
             val unionTermName = Term.Name(unionType.name)
 
+            val jsonCodec = jsonCodeGen.generateFieldDecoder(unionTypeName)
+
             List(q"case class $unionTypeName(..$params) extends $unionTrait") ++
-              Option(innerSelections)
+              Option(innerSelections ++ jsonCodec)
                 .filter(_.nonEmpty)
                 .map { stats =>
                   q"object $unionTermName { ..$stats }"
