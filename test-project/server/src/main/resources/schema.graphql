@@ -11,6 +11,9 @@ interface Character {
 
   # Which movies they appear in.
   appearsIn: [Episode]
+
+  # Where are they from and how they came to be who they are.
+  secretBackstory: String
 }
 
 # A mechanical creature in the Star Wars universe.
@@ -29,6 +32,9 @@ type Droid implements Character {
 
   # The primary function of the droid.
   primaryFunction: String
+
+  # Where are they from and how they came to be who they are.
+  secretBackstory: String
 }
 
 # One of the films in the Star Wars Trilogy
@@ -58,18 +64,30 @@ type Human implements Character {
   appearsIn: [Episode]
 
   # The home planet of the human, or null if unknown.
-  # NOTE: we comment this out to trigger a breaking change
-  # homePlanet: String
+  homePlanet: String
+
+  # Where are they from and how they came to be who they are.
+  secretBackstory: String
 }
+
+type Starship {
+  id: ID!
+  name: String
+}
+
+# A search result can have different types
+union SearchResult = Human | Droid | Starship
 
 type Query {
   hero(
     # If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.
-    episode: Episode): Character! @deprecated(reason: "Use `human` or `droid` fields instead")
+    episode: Episode): Character!
   human(
     # id of the character
     id: String!): Human
   droid(
     # id of the character
     id: String!): Droid!
+
+   search(text: String!): [SearchResult!]!
 }

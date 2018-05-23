@@ -33,6 +33,16 @@ object SearchQuery {
       object Droid { implicit val jsonDecoder: Decoder[Droid] = deriveDecoder[Droid] }
       case class Starship(__typename: String, name: Option[String]) extends Search
       object Starship { implicit val jsonDecoder: Decoder[Starship] = deriveDecoder[Starship] }
+      implicit val jsonDecoder: Decoder[Search] = for (typeDiscriminator <- Decoder[String].prepare(_.downField("__typename")); value <- typeDiscriminator match {
+        case "Human" =>
+          Decoder[Human]
+        case "Droid" =>
+          Decoder[Droid]
+        case "Starship" =>
+          Decoder[Starship]
+        case other =>
+          Decoder.failedWithMessage("invalid type: " + other)
+      }) yield value
     }
   }
 }
