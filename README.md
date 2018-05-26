@@ -1,3 +1,4 @@
+
 # sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql) [ ![Download](https://api.bintray.com/packages/sbt/sbt-plugin-releases/sbt-graphql/images/download.svg) ](https://bintray.com/sbt/sbt-plugin-releases/sbt-graphql/_latestVersion) 
 
 > This plugin is an experiment at this moment.
@@ -232,12 +233,12 @@ You can configure the output in various ways
 * `graphqlCodegenStyle` - Configure the code output style. Default is `Apollo`.
   You can choose between [Sangria](#codegen-style-sangria) and  [Apollo](#codegen-style-apollo)
 * `graphqlCodegenSchema` - The graphql schema file used for code generation
-* `resourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
-  Default is `resourceDirectories in Compile`.
+* `sourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
+  Default is `sourceDirectory in graphqlCodegen`, which defaults to `sourceDirectory in Compile / "graphql"`
 * `includeFilter in graphqlCodegen` - Filter graphql files. Default is `"*.graphql"`
 * `excludeFilter in graphqlCodegen` - Filter graphql files. Default is `HiddenFileFilter`
 * `graphqlCodegenQueries` - Contains all graphql query files. By default this setting contains all
-  files that reside in `resourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
+  files that reside in `sourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
 * `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
 * `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
 
