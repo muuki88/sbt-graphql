@@ -111,6 +111,8 @@ case class ApolloSourceGenerator(fileName: String,
               fields.map(_._2).head
           }
           .toList
+          // sort fields for a stable code generation
+          .sortBy(_.name)
 
         val unionInterface = generateInterface(
           TypedDocument.Interface(unionName.value, unionCommonFields),
