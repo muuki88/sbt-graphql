@@ -37,7 +37,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     graphqlCodegenSchema := (resourceDirectory in Compile).value / "schema.graphql",
     graphqlCodegenJson := JsonCodeGens.None,
     sourceDirectory in graphqlCodegen := (sourceDirectory in Compile).value / "graphql",
-    sourceDirectories in graphqlCodegen := List((sourceDirectory in graphqlCodegen).value),
+    sourceDirectories in graphqlCodegen := List(
+      (sourceDirectory in graphqlCodegen).value),
     includeFilter in graphqlCodegen := "*.graphql",
     excludeFilter in graphqlCodegen := HiddenFileFilter,
     graphqlCodegenQueries := Defaults
