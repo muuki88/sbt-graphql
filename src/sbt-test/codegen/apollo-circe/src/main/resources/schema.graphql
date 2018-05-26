@@ -7,7 +7,7 @@ interface Character {
   name: String
 
   # The friends of the character, or an empty list if they have none.
-  friends: [Character]
+  friends: [Character!]!
 
   # Which movies they appear in.
   appearsIn: [Episode]
@@ -25,7 +25,7 @@ type Droid implements Character {
   name: String
 
   # The friends of the droid, or an empty list if they have none.
-  friends: [Character]
+  friends: [Character!]!
 
   # Which movies they appear in.
   appearsIn: [Episode]
@@ -58,7 +58,7 @@ type Human implements Character {
   name: String
 
   # The friends of the human, or an empty list if they have none.
-  friends: [Character]
+  friends: [Character!]!
 
   # Which movies they appear in.
   appearsIn: [Episode]
@@ -70,6 +70,14 @@ type Human implements Character {
   secretBackstory: String
 }
 
+type Starship {
+  id: ID!
+  name: String
+}
+
+# A search result can have different types
+union SearchResult = Human | Droid | Starship
+
 type Query {
   hero(
     # If omitted, returns the hero of the whole saga. If provided, returns the hero of that particular episode.
@@ -80,4 +88,6 @@ type Query {
   droid(
     # id of the character
     id: String!): Droid!
+
+   search(text: String!): [SearchResult!]!
 }

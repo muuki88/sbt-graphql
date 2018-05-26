@@ -36,11 +36,12 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     graphqlCodegenStyle := Apollo,
     graphqlCodegenSchema := (resourceDirectory in Compile).value / "schema.graphql",
     graphqlCodegenJson := JsonCodeGens.None,
-    resourceDirectories in graphqlCodegen := (resourceDirectories in Compile).value,
+    sourceDirectory in graphqlCodegen := (sourceDirectory in Compile).value / "graphql",
+    sourceDirectories in graphqlCodegen := List((sourceDirectory in graphqlCodegen).value),
     includeFilter in graphqlCodegen := "*.graphql",
     excludeFilter in graphqlCodegen := HiddenFileFilter,
     graphqlCodegenQueries := Defaults
-      .collectFiles(resourceDirectories in graphqlCodegen,
+      .collectFiles(sourceDirectories in graphqlCodegen,
                     includeFilter in graphqlCodegen,
                     excludeFilter in graphqlCodegen)
       .value,
