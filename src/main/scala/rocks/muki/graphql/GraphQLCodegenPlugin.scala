@@ -14,6 +14,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
   object autoImport {
     val graphqlCodegenSchema = taskKey[File]("GraphQL schema file")
     val graphqlCodegenQueries = taskKey[Seq[File]]("GraphQL query documents")
+    val graphqlCodegenJson =
+      taskKey[JsonCodeGen]("Configure a json decoder code generator")
 
     val graphqlCodegenStyle =
       settingKey[CodeGenStyles.Style]("The resulting code generation style")
@@ -25,17 +27,22 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     val Apollo = CodeGenStyles.Apollo
     val Sangria = CodeGenStyles.Sangria
 
+    val JsonCodec = JsonCodeGens
+
   }
   import autoImport._
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlCodegenStyle := Apollo,
     graphqlCodegenSchema := (resourceDirectory in Compile).value / "schema.graphql",
-    resourceDirectories in graphqlCodegen := (resourceDirectories in Compile).value,
+    graphqlCodegenJson := JsonCodeGens.None,
+    sourceDirectory in graphqlCodegen := (sourceDirectory in Compile).value / "graphql",
+    sourceDirectories in graphqlCodegen := List(
+      (sourceDirectory in graphqlCodegen).value),
     includeFilter in graphqlCodegen := "*.graphql",
     excludeFilter in graphqlCodegen := HiddenFileFilter,
     graphqlCodegenQueries := Defaults
-      .collectFiles(resourceDirectories in graphqlCodegen,
+      .collectFiles(sourceDirectories in graphqlCodegen,
                     includeFilter in graphqlCodegen,
                     excludeFilter in graphqlCodegen)
       .value,
@@ -55,12 +62,17 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       val schema =
         SchemaLoader.fromFile(graphqlCodegenSchema.value).loadSchema()
 
+      val jsonCodeGen = graphqlCodegenJson.value
+      log.info(
+        s"Generating json decoding with: ${jsonCodeGen.getClass.getSimpleName}")
+
       val moduleName = (name in graphqlCodegen).value
       val context = CodeGenContext(schema,
                                    targetDir,
                                    queries,
                                    packageName,
                                    moduleName,
+                                   jsonCodeGen,
                                    log)
 
       graphqlCodegenStyle.value(context)

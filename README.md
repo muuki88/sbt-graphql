@@ -1,3 +1,4 @@
+
 # sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql) [ ![Download](https://api.bintray.com/packages/sbt/sbt-plugin-releases/sbt-graphql/images/download.svg) ](https://bintray.com/sbt/sbt-plugin-releases/sbt-graphql/_latestVersion) 
 
 > This plugin is an experiment at this moment.
@@ -232,16 +233,37 @@ You can configure the output in various ways
 * `graphqlCodegenStyle` - Configure the code output style. Default is `Apollo`.
   You can choose between [Sangria](#codegen-style-sangria) and  [Apollo](#codegen-style-apollo)
 * `graphqlCodegenSchema` - The graphql schema file used for code generation
-* `resourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
-  Default is `resourceDirectories in Compile`.
+* `sourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
+  Default is `sourceDirectory in graphqlCodegen`, which defaults to `sourceDirectory in Compile / "graphql"`
 * `includeFilter in graphqlCodegen` - Filter graphql files. Default is `"*.graphql"`
 * `excludeFilter in graphqlCodegen` - Filter graphql files. Default is `HiddenFileFilter`
 * `graphqlCodegenQueries` - Contains all graphql query files. By default this setting contains all
-  files that reside in `resourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
+  files that reside in `sourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
 * `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
 * `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
+* `graphqlCodegenJson` - Generate json encoders/decoders with your graphql query. Default is `JsonCodec.None`.
+  Note that not all styles support json encoder/decoder generation.
+  
+  
+#### JSON support
 
-#### Codegen Style Apollo
+The common serialization format for graphql results and input variables is json.
+sbt-graphql supports json decoder/encoder code generation.
+
+Supported JSON libraries and codegen styles
+
+* Apollo style
+  * [Circe](https://circe.github.io/circe/)
+* Sangria style
+  * _None_
+
+In your `build.sbt` you can configure the json library with
+
+```scala
+graphqlCodegenJson := JsonCodec.Circe
+```
+
+#### Codegen style Apollo
 
 As the name suggests the output is similar to the one in apollo codegen.
 

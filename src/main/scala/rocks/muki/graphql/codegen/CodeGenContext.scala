@@ -23,5 +23,6 @@ case class CodeGenContext(
     graphQLFiles: Seq[File],
     packageName: String,
     moduleName: String,
+    jsonCodeGen: JsonCodeGen,
     log: Logger
 )

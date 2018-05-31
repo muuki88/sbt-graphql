@@ -47,7 +47,8 @@ object CodeGenStyles {
           .parse()
         sourceCode <- ApolloSourceGenerator(inputFile.getName,
                                             additionalImports,
-                                            additionalInits)(typedDocument)
+                                            additionalInits,
+                                            context.jsonCodeGen)(typedDocument)
       } yield {
         val stats =
           q"""package $packageName {

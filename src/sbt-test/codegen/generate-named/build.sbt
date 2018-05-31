@@ -6,7 +6,6 @@ scalaVersion := "2.12.4"
 
 graphqlCodegenStyle := Sangria
 
-graphqlCodegenSchema := baseDirectory.value / "schema.graphql"
 includeFilter in graphqlCodegen := "MultiQuery.graphql"
 name in graphqlCodegen := "MultiQueryApi"
 

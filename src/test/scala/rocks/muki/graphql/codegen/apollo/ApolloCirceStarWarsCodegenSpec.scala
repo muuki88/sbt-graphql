@@ -6,12 +6,12 @@ import rocks.muki.graphql.codegen.{
   JsonCodeGens
 }
 
-class ApolloStarWarsCodegenSpec
+class ApolloCirceStarWarsCodegenSpec
     extends ApolloCodegenBaseSpec(
-      "starwars",
+      "starwars-circe",
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
                               GraphQLQueryGenerator.imports("com.example"),
                               GraphQLQueryGenerator.inits,
-                              JsonCodeGens.None)
+                              JsonCodeGens.Circe)
     )
