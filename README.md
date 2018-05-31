@@ -241,8 +241,29 @@ You can configure the output in various ways
   files that reside in `sourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
 * `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
 * `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
+* `graphqlCodegenJson` - Generate json encoders/decoders with your graphql query. Default is `JsonCodec.None`.
+  Note that not all styles support json encoder/decoder generation.
+  
+  
+#### JSON support
 
-#### Codegen Style Apollo
+The common serialization format for graphql results and input variables is json.
+sbt-graphql supports json decoder/encoder code generation.
+
+Supported JSON libraries and codegen styles
+
+* Apollo style
+  * [Circe](https://circe.github.io/circe/)
+* Sangria style
+  * _None_
+
+In your `build.sbt` you can configure the json library with
+
+```scala
+graphqlCodegenJson := JsonCodec.Circe
+```
+
+#### Codegen style Apollo
 
 As the name suggests the output is similar to the one in apollo codegen.
 
