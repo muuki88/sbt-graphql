@@ -1,8 +1,15 @@
 package example
 
+import java.time._
+import java.time.format.DateTimeFormatter
+
 import sangria._
+import sangria.marshalling._
+import sangria.validation._
 import sangria.schema._
 import sangria.macros.derive._
+
+import scala.util._
 
 // From the Sangria getting started guide
 // http://sangria-graphql.org/getting-started/
@@ -11,13 +18,42 @@ trait Identifiable {
   def id: String
 }
 
-case class Picture(width: Int, height: Int, url: Option[String])
+case class Picture(width: Int, height: Int, url: Option[String], createdAt: LocalDateTime)
 case class Product(id: String, name: String, description: String) extends Identifiable {
   def picture(size: Int): Picture =
-    Picture(width = size, height = size, url = Some(s"//cdn.com/$size/$id.jpg"))
+    Picture(width = size, height = size, url = Some(s"//cdn.com/$size/$id.jpg"), createdAt = LocalDateTime.now())
 }
 
+
+object LocalDateTimeScalar {
+
+  case object LocalDateTimeCoercionViolation extends ValueCoercionViolation("LocalDateTime value expected")
+
+  private def parseDate(s: String) = Try(LocalDateTime.parse(s)) match {
+    case Success(date) ⇒ Right(date)
+    case Failure(_) ⇒ Left(LocalDateTimeCoercionViolation)
+  }
+
+  val LocalDateTimeType = ScalarType[LocalDateTime]("LocalDateTime",
+    coerceOutput = (localDateTime, caps) =>
+      if (caps.contains(DateSupport)) localDateTime.toLocalDate
+      else DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime),
+    coerceUserInput = {
+      case s: String ⇒ parseDate(s)
+      case _ => Left(LocalDateTimeCoercionViolation)
+    },
+    coerceInput = {
+      case ast.StringValue(s, _, _) ⇒ parseDate(s)
+      case _ => Left(LocalDateTimeCoercionViolation)
+    })
+
+}
+
+
 object ProductSchema {
+
+  import LocalDateTimeScalar._
+
 
   implicit val PictureType = ObjectType(
     "Picture",
@@ -55,7 +91,10 @@ object ProductSchema {
       description = Some("Returns a list of all available products."),
       resolve = _.ctx.products)))
 
-  val schema = Schema(QueryType)
+  val schema = Schema(
+    query = QueryType,
+    additionalTypes = List(LocalDateTimeType)
+  )
 
 }
 
