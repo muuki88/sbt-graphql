@@ -67,8 +67,13 @@ type Mutation {
   publishArticle(id: ID!): Article!
 }
 
+input ArticleAuthor {
+  id: ID!
+}
+
 input ArticleContent {
   title: String!
   body: String!
   tags: [String!]
+  author: ArticleAuthor!
 }
