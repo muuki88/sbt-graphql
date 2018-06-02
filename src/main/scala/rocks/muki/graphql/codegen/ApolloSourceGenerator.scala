@@ -37,7 +37,9 @@ case class ApolloSourceGenerator(fileName: String,
       val typeName = Term.Name(
         operation.name.getOrElse(throw new IllegalArgumentException(
           "Anonymous operations are not support")))
-      // TODO input variables can be recursive. Generate case classes along
+
+      // input variables require "input types", which are generated separately and are
+      // available for all operations provided by the given document.
       val inputParams = generateFieldParams(operation.variables, List.empty)
       val dataParams =
         generateFieldParams(operation.selection.fields, List.empty)

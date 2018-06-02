@@ -1,0 +1,6 @@
+mutation addArticle($content: ArticleContent!) {
+  addArticle(content: $content) {
+    id
+    title
+  }
+}
