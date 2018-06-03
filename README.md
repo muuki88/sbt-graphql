@@ -1,12 +1,9 @@
 
 # sbt-graphql [![Build Status](https://travis-ci.org/muuki88/sbt-graphql.svg?branch=master)](https://travis-ci.org/muuki88/sbt-graphql) [ ![Download](https://api.bintray.com/packages/sbt/sbt-plugin-releases/sbt-graphql/images/download.svg) ](https://bintray.com/sbt/sbt-plugin-releases/sbt-graphql/_latestVersion) 
 
-> This plugin is an experiment at this moment.
-> SBT 1.x only
+> This plugin is sbt 1.x only and experimental.
 
-SBT plugin to generate and validate graphql schemas written with Sangria.
-
-See also: https://github.com/mediative/sangria-codegen
+sbt plugin to generate and validate graphql schemas written with Sangria.
 
 # Goals
 
@@ -33,7 +30,7 @@ Add this to your `plugins.sbt` and replace the `<version>` placeholder with the 
 addSbtPlugin("rocks.muki" % "sbt-graphql" % "<version>")
 ```
 
-In your `build.sbt` enable the plugins and add sangria. I'm using circe as a parser for my json response.
+In your `build.sbt` enable the plugins and add sangria. I'm using circe as a parser for my JSON response.
 
 ```scala
 enablePlugins(GraphQLSchemaPlugin, GraphQLQueryPlugin)
@@ -120,14 +117,11 @@ graphqlProductionSchema := GraphQLSchemaLoader
   .loadSchema()
 ```
 
-The introspection query doesn't support headers at this moment, but will be added
-soon.
-
 
 ## Schema comparison
 
 Sangria provides an API for comparing two Schemas. A change can be breaking or not.
-The `graphqlValidateSchema` tasks compares two given schemas defined in the `graphqlSchemas` setting.
+The `graphqlValidateSchema` task compares two given schemas defined in the `graphqlSchemas` setting.
 
 ```bash
 graphqlValidateSchema <old schema> <new schema>
@@ -179,7 +173,7 @@ $ sbt
 ## Code Generation
 
 A graphql query result is usually modelled with case classes, enums and traits.
-Writing these query result classes is tedious and error prone. `sbt-grapqhl` can
+Writing these query result classes is tedious and error prone. `sbt-graphql` can
 generate the correct models for every graphql query.
 
 A lot of insipration came from [apollo codegen](https://github.com/apollographql/apollo-codegen).
@@ -193,11 +187,11 @@ Enable the code generation plugin in your `build.sbt`
 enablePlugins(GraphQLCodegenPlugin)
 ```
 
-You need a grapqhl schema for the code generation. The schema is necessary
-to figure out the types for each query field. By the default the codgen plugin
-looks for at `src/main/resources/schema.graphql`.
+You need a graphql schema for the code generation. The schema is necessary
+to figure out the types for each query field. By default, the codegen plugin
+looks for a schema at `src/main/resources/schema.graphql`.
 
-We recommend to configure a graphql schema in your `graphqlSchemas` and use the label
+We recommend to configure a graphql schema in your `graphqlSchemas` and use the task
 to render the schema to a specific file.
 
 ```scala
@@ -206,24 +200,24 @@ graphqlSchemas += GraphQLSchema(
   "starwars",
   "starwars schema at http://try.sangria-graphql.org/graphql",
   Def.task(
-   GraphQLSchemaLoader
-     .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
-     .withHeaders("User-Agent" -> s"sbt-graphql/${version.value}")
+    GraphQLSchemaLoader
+      .fromIntrospection("http://try.sangria-graphql.org/graphql", streams.value.log)
+      .withHeaders("User-Agent" -> s"sbt-graphql/${version.value}")
       .loadSchema()
   ).taskValue
-
+)
 
 // use this schema for the code generation
 graphqlCodegenSchema := graphqlRenderSchema.toTask("starwars").value
 ```
 
 The `graphqlCodegenSchema` requires a `File` that points to a valid graphql schema file.
-`graphqlRenderSchema` is a tasks that renders any given schema in the `graphqlSchemas` into
-a schema file. It takes on input parameter, the unique label that identifies the schema.
-The `toTask("starwars")` invocation, converts the `graphqlRenderSchema` input task with the
-input parameter `starwars` to plain `task` that can be evaluated as usual with `.value`.
+`graphqlRenderSchema` is a task that renders any given schema in the `graphqlSchemas` into
+a schema file. It takes as input, the unique label that identifies the schema.
+The `toTask("starwars")` invocation converts the `graphqlRenderSchema` input task with the
+input parameter `starwars` to a plain `task` that can be evaluated as usual with `.value`.
 
-By default all `*.graphql` files in your `resourceDirectories` will be used for code generation.
+By default, all `*.graphql` files in your `resourceDirectories` will be used for code generation.
 
 ### Settings
 
@@ -241,14 +235,14 @@ You can configure the output in various ways
   files that reside in `sourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
 * `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
 * `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
-* `graphqlCodegenJson` - Generate json encoders/decoders with your graphql query. Default is `JsonCodec.None`.
-  Note that not all styles support json encoder/decoder generation.
-  
-  
+* `graphqlCodegenJson` - Generate JSON encoders/decoders with your graphql query. Default is `JsonCodec.None`.
+  Note that not all styles support JSON encoder/decoder generation.
+
+
 #### JSON support
 
-The common serialization format for graphql results and input variables is json.
-sbt-graphql supports json decoder/encoder code generation.
+The common serialization format for graphql results and input variables is JSON.
+sbt-graphql supports JSON decoder/encoder code generation.
 
 Supported JSON libraries and codegen styles
 
@@ -257,7 +251,7 @@ Supported JSON libraries and codegen styles
 * Sangria style
   * _None_
 
-In your `build.sbt` you can configure the json library with
+In your `build.sbt` you can configure the JSON library with
 
 ```scala
 graphqlCodegenJson := JsonCodec.Circe
@@ -302,10 +296,10 @@ import sangria.macros._
 object HeroNameQuery {
   object HeroNameQuery extends GraphQLQuery {
     val Document = graphql"""query HeroNameQuery {
-                                  hero {
-                                    name
-                                  }
-                                }"""
+  hero {
+    name
+  }
+}"""
     case class Variables()
     case class Data(hero: Hero)
     case class Hero(name: Option[String])
