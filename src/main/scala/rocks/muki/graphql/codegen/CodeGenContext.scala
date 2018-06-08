@@ -15,6 +15,8 @@ import sbt.Logger
   * @param graphQLFiles input files that should be processed
   * @param packageName the scala package name
   * @param moduleName optional module name for single-file based generators
+  * @param jsonCodeGen
+  * @param imports list of imports to be added to the generated file
   * @param log output log
   */
 case class CodeGenContext(
@@ -24,5 +26,6 @@ case class CodeGenContext(
     packageName: String,
     moduleName: String,
     jsonCodeGen: JsonCodeGen,
+    imports: Seq[String],
     log: Logger
 )

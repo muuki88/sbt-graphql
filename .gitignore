@@ -1,5 +1,6 @@
 /project/.gnupg/sec.asc
 target
+.idea/
 
 *.class
 *.log

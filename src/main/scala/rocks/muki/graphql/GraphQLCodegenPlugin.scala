@@ -22,6 +22,11 @@ object GraphQLCodegenPlugin extends AutoPlugin {
 
     val graphqlCodegenPackage =
       settingKey[String]("Package for the generated code")
+
+    val graphqlCodegenImports =
+      settingKey[Seq[String]](
+        "Additional imports to add to the generated code")
+
     val graphqlCodegen = taskKey[Seq[File]]("Generate GraphQL API code")
 
     val Apollo = CodeGenStyles.Apollo
@@ -48,6 +53,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       .value,
     sourceGenerators in Compile += graphqlCodegen.taskValue,
     graphqlCodegenPackage := "graphql.codegen",
+    graphqlCodegenImports := Seq.empty,
     name in graphqlCodegen := "GraphQLCodegen",
     graphqlCodegen := {
       val log = streams.value.log
@@ -62,9 +68,13 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       val schema =
         SchemaLoader.fromFile(graphqlCodegenSchema.value).loadSchema()
 
+      val imports = graphqlCodegenImports.value
+
       val jsonCodeGen = graphqlCodegenJson.value
       log.info(
         s"Generating json decoding with: ${jsonCodeGen.getClass.getSimpleName}")
+
+      log.info(s"Adding imports: ${imports.mkString(",")}")
 
       val moduleName = (name in graphqlCodegen).value
       val context = CodeGenContext(schema,
@@ -73,6 +83,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
                                    packageName,
                                    moduleName,
                                    jsonCodeGen,
+                                   imports,
                                    log)
 
       graphqlCodegenStyle.value(context)
