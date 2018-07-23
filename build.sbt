@@ -43,7 +43,7 @@ bintrayRepository := "sbt-plugin-releases"
 enablePlugins(GitVersioning)
 
 // The BaseVersion setting represents the in-development (upcoming) version, as an alternative to SNAPSHOTS.
-git.baseVersion := "0.1.5"
+git.baseVersion := "0.7.0"
 
 // Create a release for every release tag
 val ReleaseTag = """^v([\d\.]+)$""".r
