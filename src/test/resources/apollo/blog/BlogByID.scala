@@ -2,7 +2,8 @@ import com.example.GraphQLQuery
 import sangria.macros._
 object BlogByID {
   object Blog extends GraphQLQuery {
-    val Document = graphql"""query Blog($$blogId: ID!) {
+    type Document = sangria.ast.Document
+    val document: Document = graphql"""query Blog($$blogId: ID!) {
   blog(id: $$blogId) {
     title
   }

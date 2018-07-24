@@ -2,7 +2,8 @@ import com.example.GraphQLQuery
 import sangria.macros._
 object BlogArticleQuery {
   object BlogArticleQuery extends GraphQLQuery {
-    val Document = graphql"""query BlogArticleQuery($$query: ArticleQuery!) {
+    type Document = sangria.ast.Document
+    val document: Document = graphql"""query BlogArticleQuery($$query: ArticleQuery!) {
   articles(query: $$query) {
     id
     status

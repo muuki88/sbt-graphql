@@ -4,7 +4,8 @@ import io.circe.generic.semiauto.deriveDecoder
 import sangria.macros._
 object HeroNameQuery {
   object HeroNameQuery extends GraphQLQuery {
-    val Document = graphql"""query HeroNameQuery {
+    type Document = sangria.ast.Document
+    val document: Document = graphql"""query HeroNameQuery {
   hero {
     name
   }
