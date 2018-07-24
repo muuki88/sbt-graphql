@@ -45,20 +45,6 @@ object GraphQLQueryGenerator {
      }"""
 
   /**
-    * Add these imports to your generated code.
-    *
-    * @param packageName the GraphQLQuery package
-    * @return
-    */
-  def imports(packageName: String): List[Import] = {
-    val importer =
-      Importer(Term.Name(packageName), List(Importee.Name(Name(name))))
-    List(
-      q"import ..${List(importer)}"
-    )
-  }
-
-  /**
     * Scala meta `Init` definitions. Use these to extend a generated class with the
     * GraphQLQuery trait.
     */
