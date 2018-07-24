@@ -54,11 +54,13 @@ case class ApolloSourceGenerator(fileName: String,
                                       Lit.String(escapedDocumentString) :: Nil,
                                       Nil)
 
-      val dataJsonDecoder = Option(jsonCodeGen.generateFieldDecoder(Type.Name("Data")))
-        .filter(_.nonEmpty)
-        .map { stats =>
-          List[Stat](q"""object Data { ..$stats }""")
-        }.getOrElse(List.empty[Stat])
+      val dataJsonDecoder =
+        Option(jsonCodeGen.generateFieldDecoder(Type.Name("Data")))
+          .filter(_.nonEmpty)
+          .map { stats =>
+            List[Stat](q"""object Data { ..$stats }""")
+          }
+          .getOrElse(List.empty[Stat])
 
       q"""
           object $typeName extends ..$additionalInits {
