@@ -22,6 +22,7 @@ object SearchQuery {
 }"""
     case class Variables(text: String)
     case class Data(search: List[Search])
+    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     sealed trait Search {
       def __typename: String
       def name: Option[String]

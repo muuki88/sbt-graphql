@@ -12,6 +12,7 @@ object InputVariables {
 }"""
     case class Variables(humanId: String)
     case class Data(human: Option[Human])
+    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     case class Human(name: Option[String], homePlanet: Option[String])
     object Human { implicit val jsonDecoder: Decoder[Human] = deriveDecoder[Human] }
   }

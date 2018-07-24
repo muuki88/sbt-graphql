@@ -14,6 +14,7 @@ object HeroFragmentQuery {
 }"""
     case class Variables()
     case class Data(hero: Hero, human: Option[Human])
+    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     case class Hero(name: Option[String]) extends CharacterInfo
     object Hero { implicit val jsonDecoder: Decoder[Hero] = deriveDecoder[Hero] }
     case class Human(name: Option[String]) extends CharacterInfo
