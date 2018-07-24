@@ -52,7 +52,7 @@ object CodeGenStyles {
       }
     }
 
-    val additionalImports = GraphQLQueryGenerator.imports(context.packageName) ++ customImports
+    val additionalImports = customImports
     val additionalInits = GraphQLQueryGenerator.inits
 
     // Process all the graphql files

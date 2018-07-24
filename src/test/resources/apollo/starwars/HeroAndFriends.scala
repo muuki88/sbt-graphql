@@ -1,4 +1,3 @@
-import com.example.GraphQLQuery
 import sangria.macros._
 object HeroAndFriends {
   object HeroAndFriends extends GraphQLQuery {

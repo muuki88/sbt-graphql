@@ -11,7 +11,7 @@ class ApolloStarWarsCodegenSpec
       "starwars",
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
-                              GraphQLQueryGenerator.imports("com.example"),
+                              Nil,
                               GraphQLQueryGenerator.inits,
                               JsonCodeGens.None)
     )

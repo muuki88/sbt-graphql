@@ -11,7 +11,7 @@ class ApolloCirceStarWarsCodegenSpec
       "starwars-circe",
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
-                              GraphQLQueryGenerator.imports("com.example"),
+                              Nil,
                               GraphQLQueryGenerator.inits,
                               JsonCodeGens.Circe)
     )

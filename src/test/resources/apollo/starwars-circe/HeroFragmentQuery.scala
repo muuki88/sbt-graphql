@@ -1,4 +1,3 @@
-import com.example.GraphQLQuery
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import sangria.macros._
