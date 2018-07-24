@@ -30,6 +30,7 @@ object GraphQLQueryGenerator {
           type Document
           type Variables
           type Data
+          val document: Document
         }
      """
 
