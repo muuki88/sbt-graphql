@@ -23,6 +23,7 @@ object HeroAndFriends {
 }"""
     case class Variables()
     case class Data(hero: Hero)
+    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     case class Hero(name: Option[String], friends: Option[List[Option[Hero.Friends]]])
     object Hero {
       implicit val jsonDecoder: Decoder[Hero] = deriveDecoder[Hero]

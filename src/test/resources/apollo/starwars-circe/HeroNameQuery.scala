@@ -11,6 +11,7 @@ object HeroNameQuery {
 }"""
     case class Variables()
     case class Data(hero: Hero)
+    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     case class Hero(name: Option[String])
     object Hero { implicit val jsonDecoder: Decoder[Hero] = deriveDecoder[Hero] }
   }
