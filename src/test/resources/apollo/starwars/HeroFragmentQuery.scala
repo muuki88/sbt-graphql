@@ -1,8 +1,7 @@
 import sangria.macros._
 object HeroFragmentQuery {
   object HeroFragmentQuery extends GraphQLQuery {
-    type Document = sangria.ast.Document
-    val document: Document = graphql"""query HeroFragmentQuery {
+    val document: sangria.ast.Document = graphql"""query HeroFragmentQuery {
   hero {
     ...CharacterInfo
   }
