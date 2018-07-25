@@ -77,7 +77,8 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
 case class IntrospectSchemaLoader(url: String,
                                   log: Logger,
                                   headers: Seq[(String, String)] = Seq.empty,
-                                  method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET)
+                                  method: IntrospectSchemaLoader.Method =
+                                    IntrospectSchemaLoader.GET)
     extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
@@ -103,10 +104,15 @@ case class IntrospectSchemaLoader(url: String,
 
     val response = method match {
       case IntrospectSchemaLoader.POST =>
-        val body = Json.obj("query" -> Json.fromString(introspectionQuery.renderCompact)).noSpaces
+        val body = Json
+          .obj("query" -> Json.fromString(introspectionQuery.renderCompact))
+          .noSpaces
         Http(url).headers(headers).method("POST").postData(body).asString
       case IntrospectSchemaLoader.GET =>
-        Http(url).headers(headers).param("query", introspectionQuery.renderCompact).asString
+        Http(url)
+          .headers(headers)
+          .param("query", introspectionQuery.renderCompact)
+          .asString
     }
 
     parse(response.body) match {
@@ -116,7 +122,8 @@ case class IntrospectSchemaLoader(url: String,
         log.error(error.message)
         log.error("Body received")
         log.error(response.body)
-        sys.error(s"Invalid JSON was returned from graphql endpoint ${method.name} : $url")
+        sys.error(
+          s"Invalid JSON was returned from graphql endpoint ${method.name} : $url")
     }
   }
 }
@@ -126,7 +133,7 @@ object IntrospectSchemaLoader {
   /**
     * http method for introspection query
     */
-    sealed abstract class Method(val name: String)
-    case object POST extends Method("POST")
-    case object GET extends Method("GET")
+  sealed abstract class Method(val name: String)
+  case object POST extends Method("POST")
+  case object GET extends Method("GET")
 }
