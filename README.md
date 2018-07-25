@@ -115,6 +115,12 @@ graphqlProductionSchema := GraphQLSchemaLoader
   .fromIntrospection("http://prod.your-graphql.net/graphql", streams.value.log)
   .withHeaders("X-Api-Version" -> "1", "X-Api-Key" -> "4198ab84-e992-42b0-8742-225ed15a781e")
   .loadSchema()
+  
+// from a graphql endpoint via introspection with post request
+graphqlProductionSchema := GraphQLSchemaLoader
+  .fromIntrospection("http://prod.your-graphql.net/graphql", streams.value.log)
+  .withPost()
+  .loadSchema()
 ```
 
 

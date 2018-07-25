@@ -76,7 +76,8 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
   */
 case class IntrospectSchemaLoader(url: String,
                                   log: Logger,
-                                  headers: Seq[(String, String)] = Seq.empty)
+                                  headers: Seq[(String, String)] = Seq.empty,
+                                  method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET)
     extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
@@ -87,21 +88,45 @@ case class IntrospectSchemaLoader(url: String,
   }
 
   /**
+    * @return a new schema loader that uses a POST requests instead of a get request
+    */
+  def withPost(): IntrospectSchemaLoader = {
+    copy(method = IntrospectSchemaLoader.POST)
+  }
+
+  /**
     * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
     * @return the introspect query result
     */
   private def introspect(): Json = {
-    log.info(s"Introspect graphql endpoint: $url")
-    val response = Http(url)
-      .headers(headers)
-      .param("query", introspectionQuery.renderCompact)
-      .asString
+    log.info(s"Introspect graphql endpoint: ${method.name} : $url")
+
+    val response = method match {
+      case IntrospectSchemaLoader.POST =>
+        val body = Json.obj("query" -> Json.fromString(introspectionQuery.renderCompact)).noSpaces
+        Http(url).headers(headers).method("POST").postData(body).asString
+      case IntrospectSchemaLoader.GET =>
+        Http(url).headers(headers).param("query", introspectionQuery.renderCompact).asString
+    }
+
     parse(response.body) match {
       case Right(json) => json
       case Left(error) =>
         log.error("JSON parse errors:")
         log.error(error.message)
-        sys.error(s"Invalid JSON was returned from graphql endpoint $url")
+        log.error("Body received")
+        log.error(response.body)
+        sys.error(s"Invalid JSON was returned from graphql endpoint ${method.name} : $url")
     }
   }
+}
+
+object IntrospectSchemaLoader {
+
+  /**
+    * http method for introspection query
+    */
+    sealed abstract class Method(val name: String)
+    case object POST extends Method("POST")
+    case object GET extends Method("GET")
 }
