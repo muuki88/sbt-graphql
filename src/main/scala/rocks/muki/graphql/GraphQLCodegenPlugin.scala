@@ -57,7 +57,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     name in graphqlCodegen := "GraphQLCodegen",
     graphqlCodegen := {
       val log = streams.value.log
-      val targetDir = sourceManaged.value / "sbt-graphql"
+      val targetDir = (sourceManaged in Compile).value / "sbt-graphql"
       //val generator = ScalametaGenerator((name in graphqlCodegen).value)
       val queries = graphqlCodegenQueries.value
       log.info(s"Generate code for ${queries.length} queries")
