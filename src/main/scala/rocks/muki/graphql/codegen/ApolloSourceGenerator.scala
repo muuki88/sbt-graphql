@@ -64,8 +64,7 @@ case class ApolloSourceGenerator(fileName: String,
 
       q"""
           object $typeName extends ..$additionalInits {
-           type Document = sangria.ast.Document
-           val document: Document = $document
+           val document: sangria.ast.Document = $document
            case class Variables(..$inputParams)
            case class Data(..$dataParams)
            ..$dataJsonDecoder

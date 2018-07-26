@@ -1,8 +1,7 @@
 import sangria.macros._
 object AddArticle {
   object addArticle extends GraphQLQuery {
-    type Document = sangria.ast.Document
-    val document: Document = graphql"""mutation addArticle($$content: ArticleContent!) {
+    val document: sangria.ast.Document = graphql"""mutation addArticle($$content: ArticleContent!) {
   addArticle(content: $$content) {
     id
     title

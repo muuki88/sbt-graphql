@@ -8,14 +8,14 @@ import scala.meta._
   *
   * {{{
   *   trait GraphQLQuery {
-  *      // the graphql document that should be executed
-  *      type Document
-  *
   *      // the input variables
   *      type Variables
   *
   *      // the returned data
   *      type Data
+  *
+  *      // the document that should be executed
+  *      val document: sangria.ast.Document
   *   }
   * }}}
   */
@@ -27,10 +27,9 @@ object GraphQLQueryGenerator {
 
   private val traitDefinition: Defn.Trait =
     q"""trait $typeName {
-          type Document
           type Variables
           type Data
-          val document: Document
+          val document: sangria.ast.Document
         }
      """
 
