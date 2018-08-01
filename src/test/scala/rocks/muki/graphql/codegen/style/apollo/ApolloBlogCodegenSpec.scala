@@ -1,4 +1,4 @@
-package rocks.muki.graphql.codegen.apollo
+package rocks.muki.graphql.codegen.style.apollo
 
 import rocks.muki.graphql.codegen.{
   ApolloSourceGenerator,

@@ -1,4 +1,4 @@
-package rocks.muki.graphql.codegen.apollo
+package rocks.muki.graphql.codegen.style.apollo
 
 import rocks.muki.graphql.codegen.{
   ApolloSourceGenerator,
@@ -6,12 +6,12 @@ import rocks.muki.graphql.codegen.{
   JsonCodeGens
 }
 
-class ApolloCirceStarWarsCodegenSpec
+class ApolloStarWarsCodegenSpec
     extends ApolloCodegenBaseSpec(
-      "starwars-circe",
+      "starwars",
       (fileName: String) =>
         ApolloSourceGenerator(fileName,
                               Nil,
                               GraphQLQueryGenerator.inits,
-                              JsonCodeGens.Circe)
+                              JsonCodeGens.None)
     )

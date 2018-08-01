@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rocks.muki.graphql.codegen.sangria
+package rocks.muki.graphql.codegen.style.sangria
 
 import sangria.execution.deferred.{Deferred, DeferredResolver}
 

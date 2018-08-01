@@ -13,35 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package rocks.muki.graphql.codegen.apollo
 
-import org.scalatest.{EitherValues, TryValues, WordSpec}
+package rocks.muki.graphql.codegen.style.sangria
+
 import java.io.File
 
+import org.scalatest.{EitherValues, WordSpec}
 import rocks.muki.graphql.codegen.{
   DocumentLoader,
-  Generator,
+  ScalametaGenerator,
   TypedDocumentParser
 }
 import rocks.muki.graphql.schema.SchemaLoader
-
-import scala.io.{Source => IOSource, Codec}
-import scala.meta._
+import sangria.schema.Schema
 import sbt._
 
-abstract class ApolloCodegenBaseSpec(
-    name: String,
-    generator: (String => Generator[List[Stat]]))
+import scala.io.Source
+import scala.meta._
+
+abstract class SangriaCodegenBaseSpec(name: String,
+                                      schema: Option[Schema[_, _]] = None)
     extends WordSpec
-    with EitherValues
-    with TryValues {
+    with EitherValues {
+  def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))
 
-  val inputDir = new File(s"src/test/resources/apollo", name)
+  val inputDir = new File("src/test/resources/sangria", name)
 
-  def contentOf(file: File): String =
-    IOSource.fromFile(file)(Codec.UTF8).mkString
+  def contentOf(file: File) =
+    Source.fromFile(file).mkString
 
-  "Apollo Sangria Codegen" should {
+  "SangriaCodegen" should {
     for {
       input <- inputDir.listFiles()
       if input.getName.endsWith(".graphql")
@@ -50,20 +51,23 @@ abstract class ApolloCodegenBaseSpec(
       if expected.exists
     } {
       s"generate code for ${input.getName}" in {
-
+        val generator = ScalametaGenerator(s"${name}Api")
         val schema =
           SchemaLoader
             .fromFile(inputDir / "schema.graphql")
             .loadSchema()
+
         val document = DocumentLoader.single(schema, input).right.value
         val typedDocument =
           TypedDocumentParser(schema, document).parse().right.value
-        val stats = generator(input.getName)(typedDocument).right.value
+        val out = generator(typedDocument).right.value
 
-        val actual = stats.map(_.show[Syntax]).mkString("\n")
-        val expectedSource = contentOf(expected).parse[Source].get
+        val actual = out.show[Syntax]
 
-        assert(actual === expectedSource.show[Syntax].trim, actual)
+        if (actual.trim != contentOf(expected).trim)
+          println(actual)
+
+        assert(actual.trim == contentOf(expected).trim)
       }
     }
   }

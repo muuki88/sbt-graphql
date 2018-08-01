@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package rocks.muki.graphql.codegen.sangria
+package rocks.muki.graphql.codegen.style.sangria
 
 class BlogSpecSangria extends SangriaCodegenBaseSpec("blog")
