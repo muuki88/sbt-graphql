@@ -243,6 +243,7 @@ You can configure the output in various ways
 * `name in graphqlCodegen` - Used as a module name in the `Sangria` code generator.
 * `graphqlCodegenJson` - Generate JSON encoders/decoders with your graphql query. Default is `JsonCodec.None`.
   Note that not all styles support JSON encoder/decoder generation.
+* `graphqlCodegenImports: Seq[String]` - A list of additional that are included in every generated file
 
 
 #### JSON support
@@ -261,6 +262,25 @@ In your `build.sbt` you can configure the JSON library with
 
 ```scala
 graphqlCodegenJson := JsonCodec.Circe
+```
+
+#### Scalar types
+
+The code generation doesn't know about your additional scalar types.
+sbt-graphql provides a setting `graphqlCodegenImports` to add an import to every
+generated query object.
+
+Example:
+
+```
+scalar ZoneDateTime
+```
+
+which is represented as `java.time.ZoneDateTime`. Add this as an import
+
+```sbt
+
+graphqlCodegenImports += "java.time.ZoneDateTime"
 ```
 
 #### Codegen style Apollo
