@@ -2,11 +2,10 @@ package rocks.muki.graphql.codegen
 
 import java.io.File
 
-import sangria.schema.Schema
 import sbt._
 
 import scala.meta._
-import scala.util.Success
+import sangria.ast
 
 /**
   * == CodeGen Styles ==
@@ -77,12 +76,37 @@ object CodeGenStyles {
       }
     }
 
+    val interfaceFile = for {
+      // use all queries to determine the interfaces & types we need
+      allQueries <- DocumentLoader.merged(schema, inputFiles.toList)
+      typedDocument <- TypedDocumentParser(schema, allQueries)
+        .parse()
+      codeGenerator = ApolloSourceGenerator("Interfaces.scala",
+        additionalImports,
+        additionalInits,
+        context.jsonCodeGen)
+      interfaces <- codeGenerator.generateInterfaces(typedDocument)
+      types <- codeGenerator.generateTypes(typedDocument)
+    } yield {
+      val stats = q"""package $packageName {
+             ..$interfaces
+             ..$types
+         }
+         """
+      val outputFile = context.targetDirectory / "Interfaces.scala"
+      SourceCodeWriter.write(outputFile, stats)
+      context.log.info(s"Generated source $outputFile")
+      outputFile
+    }
+
+    val allFiles = files :+ interfaceFile
+
     // split errors and success
-    val success = files.collect {
+    val success = allFiles.collect {
       case Right(file) => file
     }
 
-    val errors = files.collect {
+    val errors = allFiles.collect {
       case Left(error) => error
     }
 

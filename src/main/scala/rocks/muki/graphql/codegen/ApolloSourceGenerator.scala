@@ -29,6 +29,36 @@ case class ApolloSourceGenerator(fileName: String,
                                  jsonCodeGen: JsonCodeGen)
     extends Generator[List[Stat]] {
 
+
+  /**
+    * Generates only the interfaces (fragments) that appear in the given
+    * document.
+    *
+    * This method works great with DocumentLoader.merge, merging all
+    * fragments together and generating a single interface definition object.
+    *
+    * @param document schema + query
+    * @return interfaces
+    */
+  def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] = {
+    Right(document.interfaces.map(generateInterface(_, isSealed = false)))
+  }
+
+  /**
+    * Generates only the types that appear in the given
+    * document.
+    *
+    * This method works great with DocumentLoader.merge, merging all
+    * fragments together and generating a single type definition object.
+    *
+    *
+    * @param document schema + query
+    * @return types
+    */
+  def generateTypes(document: TypedDocument.Api): Result[List[Stat]] = {
+    Right(document.types.flatMap(generateType))
+  }
+
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
 
     // TODO refactor Generator trait into something more flexible
