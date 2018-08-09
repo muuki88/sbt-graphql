@@ -121,7 +121,6 @@ case class ApolloSourceGenerator(fileName: String,
           q"""
        object ${Term.Name(objectName)} {
           ..$operations
-          ..$types
        }
      """
         ))
