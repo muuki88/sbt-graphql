@@ -23,5 +23,4 @@ fragment CharacterInfo on Character {
     case class Human(name: Option[String]) extends CharacterInfo
     object Human { implicit val jsonDecoder: Decoder[Human] = deriveDecoder[Human] }
   }
-  trait CharacterInfo { def name: Option[String] }
 }

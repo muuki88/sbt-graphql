@@ -61,8 +61,6 @@ case class ApolloSourceGenerator(fileName: String,
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
 
-    // TODO refactor Generator trait into something more flexible
-
     val operations = document.operations.map { operation =>
       val typeName = Term.Name(
         operation.name.getOrElse(throw new IllegalArgumentException(
@@ -112,8 +110,6 @@ case class ApolloSourceGenerator(fileName: String,
            ..$data
           }"""
     }
-    val interfaces =
-      document.interfaces.map(generateInterface(_, isSealed = false))
     val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
@@ -125,7 +121,6 @@ case class ApolloSourceGenerator(fileName: String,
           q"""
        object ${Term.Name(objectName)} {
           ..$operations
-          ..$interfaces
           ..$types
        }
      """

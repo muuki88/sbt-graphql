@@ -26,9 +26,4 @@ fragment CharacterInfo on Character {
     case class Human(name: Option[String], friends: Option[List[Option[Human.Friends]]]) extends CharacterInfo
     object Human { case class Friends(name: Option[String]) extends CharacterFriends }
   }
-  trait CharacterFriends { def name: Option[String] }
-  trait CharacterInfo {
-    def name: Option[String]
-    def friends: Option[List[Option[CharacterFriends]]]
-  }
 }

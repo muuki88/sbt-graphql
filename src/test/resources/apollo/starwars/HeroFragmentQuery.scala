@@ -18,5 +18,4 @@ fragment CharacterInfo on Character {
     case class Hero(name: Option[String]) extends CharacterInfo
     case class Human(name: Option[String]) extends CharacterInfo
   }
-  trait CharacterInfo { def name: Option[String] }
 }
