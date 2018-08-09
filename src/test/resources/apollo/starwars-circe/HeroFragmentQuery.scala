@@ -1,6 +1,7 @@
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import sangria.macros._
+import types._
 object HeroFragmentQuery {
   object HeroFragmentQuery extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query HeroFragmentQuery {

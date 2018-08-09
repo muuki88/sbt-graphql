@@ -55,7 +55,12 @@ case class ApolloSourceGenerator(fileName: String,
     * @return types
     */
   def generateTypes(document: TypedDocument.Api): Result[List[Stat]] = {
-    Right(jsonCodeGen.imports ++ document.types.flatMap(generateType))
+    val typeStats = document.types.flatMap(generateType)
+    Right(
+      jsonCodeGen.imports ++ List(q"""object types {
+             ..$typeStats
+           }""")
+    )
   }
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
@@ -118,6 +123,7 @@ case class ApolloSourceGenerator(fileName: String,
         jsonCodeGen.imports ++
         List(
           q"import sangria.macros._",
+          q"import types._",
           q"""
        object ${Term.Name(objectName)} {
           ..$operations

@@ -1,4 +1,5 @@
 import sangria.macros._
+import types._
 object EpisodeEnum {
   object EpisodeEnum extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query EpisodeEnum {
