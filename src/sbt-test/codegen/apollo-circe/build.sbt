@@ -16,5 +16,5 @@ libraryDependencies ++= Seq(
 
 TaskKey[Unit]("check") := {
   val generatedFiles = (graphqlCodegen in Compile).value
-  assert(generatedFiles.length == 5, s"Expected 5 files to be generated, but got\n${generatedFiles.mkString("\n")}")
+  assert(generatedFiles.length == 6, s"Expected 6 files to be generated, but got\n${generatedFiles.mkString("\n")}")
 }
