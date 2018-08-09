@@ -82,9 +82,9 @@ object CodeGenStyles {
       typedDocument <- TypedDocumentParser(schema, allQueries)
         .parse()
       codeGenerator = ApolloSourceGenerator("Interfaces.scala",
-        additionalImports,
-        additionalInits,
-        context.jsonCodeGen)
+                                            additionalImports,
+                                            additionalInits,
+                                            context.jsonCodeGen)
       interfaces <- codeGenerator.generateInterfaces(typedDocument)
       types <- codeGenerator.generateTypes(typedDocument)
     } yield {

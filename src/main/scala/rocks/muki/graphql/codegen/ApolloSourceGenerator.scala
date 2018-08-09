@@ -29,7 +29,6 @@ case class ApolloSourceGenerator(fileName: String,
                                  jsonCodeGen: JsonCodeGen)
     extends Generator[List[Stat]] {
 
-
   /**
     * Generates only the interfaces (fragments) that appear in the given
     * document.
@@ -81,17 +80,18 @@ case class ApolloSourceGenerator(fileName: String,
 
       // add the fragments to the query as well
       val escapedFragmentString = Option(document.original.fragments)
-          .filter(_.nonEmpty)
-          .map { fragments =>
-            fragments.values
-              .map(_.renderPretty.replaceAll("\\$", "\\$\\$"))
-              .mkString("\n\n", "\n", "")
-          }.getOrElse("")
+        .filter(_.nonEmpty)
+        .map { fragments =>
+          fragments.values
+            .map(_.renderPretty.replaceAll("\\$", "\\$\\$"))
+            .mkString("\n\n", "\n", "")
+        }
+        .getOrElse("")
 
       val documentString = escapedDocumentString + escapedFragmentString
       val graphqlDocument = Term.Interpolate(Term.Name("graphql"),
-                                      Lit.String(documentString) :: Nil,
-                                      Nil)
+                                             Lit.String(documentString) :: Nil,
+                                             Nil)
 
       val dataJsonDecoder =
         Option(jsonCodeGen.generateFieldDecoder(Type.Name("Data")))
