@@ -55,7 +55,7 @@ case class ApolloSourceGenerator(fileName: String,
     * @return types
     */
   def generateTypes(document: TypedDocument.Api): Result[List[Stat]] = {
-    Right(document.types.flatMap(generateType))
+    Right(jsonCodeGen.imports ++ document.types.flatMap(generateType))
   }
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
@@ -350,9 +350,12 @@ case class ApolloSourceGenerator(fileName: String,
 
       val enumName = Type.Name(name)
       val objectName = Term.Name(name)
+      val jsonDecoder = jsonCodeGen.generateEnumFieldDecoder(enumName, values)
+      val enumStats: List[Stat] = enumValues ++ jsonDecoder
+
       List[Stat](
         q"sealed trait $enumName",
-        q"object $objectName { ..$enumValues }"
+        q"object $objectName { ..$enumStats }"
       )
 
     case TypedDocument.TypeAlias(from, to) =>

@@ -92,7 +92,7 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim, actual)
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
       }
     }
 
@@ -120,7 +120,7 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim, actual)
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
       }
     }
 
