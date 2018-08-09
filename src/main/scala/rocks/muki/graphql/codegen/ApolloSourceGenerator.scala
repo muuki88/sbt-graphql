@@ -80,8 +80,19 @@ case class ApolloSourceGenerator(fileName: String,
       // replacing single $ with $$ for escaping
       val escapedDocumentString =
         operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
-      val document = Term.Interpolate(Term.Name("graphql"),
-                                      Lit.String(escapedDocumentString) :: Nil,
+
+      // add the fragments to the query as well
+      val escapedFragmentString = Option(document.original.fragments)
+          .filter(_.nonEmpty)
+          .map { fragments =>
+            fragments.values
+              .map(_.renderPretty.replaceAll("\\$", "\\$\\$"))
+              .mkString("\n\n", "\n", "")
+          }.getOrElse("")
+
+      val documentString = escapedDocumentString + escapedFragmentString
+      val graphqlDocument = Term.Interpolate(Term.Name("graphql"),
+                                      Lit.String(documentString) :: Nil,
                                       Nil)
 
       val dataJsonDecoder =
@@ -94,7 +105,7 @@ case class ApolloSourceGenerator(fileName: String,
 
       q"""
           object $typeName extends ..$additionalInits {
-           val document: sangria.ast.Document = $document
+           val document: sangria.ast.Document = $graphqlDocument
            case class Variables(..$inputParams)
            case class Data(..$dataParams)
            ..$dataJsonDecoder

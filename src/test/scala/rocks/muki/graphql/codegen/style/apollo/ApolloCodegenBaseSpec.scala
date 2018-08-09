@@ -67,4 +67,6 @@ abstract class ApolloCodegenBaseSpec(
       }
     }
   }
+
+  ""
 }

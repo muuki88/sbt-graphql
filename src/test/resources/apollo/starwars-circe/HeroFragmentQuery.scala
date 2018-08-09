@@ -10,6 +10,10 @@ object HeroFragmentQuery {
   human(id: "Lea") {
     ...CharacterInfo
   }
+}
+
+fragment CharacterInfo on Character {
+  name
 }"""
     case class Variables()
     case class Data(hero: Hero, human: Option[Human])

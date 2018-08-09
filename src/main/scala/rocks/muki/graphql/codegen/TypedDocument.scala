@@ -98,5 +98,6 @@ object TypedDocument {
     */
   case class Api(operations: List[Operation],
                  interfaces: List[Interface],
-                 types: List[Type])
+                 types: List[Type],
+                 original: ast.Document)
 }

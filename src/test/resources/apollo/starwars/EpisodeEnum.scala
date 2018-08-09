@@ -1,5 +1,3 @@
-import io.circe.Decoder
-import io.circe.generic.semiauto.deriveDecoder
 import sangria.macros._
 object EpisodeEnum {
   object EpisodeEnum extends GraphQLQuery {
@@ -11,9 +9,7 @@ object EpisodeEnum {
 }"""
     case class Variables()
     case class Data(hero: Hero)
-    object Data { implicit val jsonDecoder: Decoder[Data] = deriveDecoder[Data] }
     case class Hero(name: Option[String], appearsIn: Option[List[Option[Episode]]])
-    object Hero { implicit val jsonDecoder: Decoder[Hero] = deriveDecoder[Hero] }
   }
   sealed trait Episode
   object Episode {
