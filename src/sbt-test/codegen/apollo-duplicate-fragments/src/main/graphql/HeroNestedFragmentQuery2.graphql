@@ -1,0 +1,20 @@
+query HeroNestedFragmentQuery2 {
+  droid(id: "23") {
+    name
+    appearsIn
+  }
+  hero {
+    ...CharacterInfo
+  }
+}
+
+fragment CharacterFriends on Character {
+  name
+}
+
+fragment CharacterInfo on Character {
+  name
+  friends {
+    ...CharacterFriends
+  }
+}

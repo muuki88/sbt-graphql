@@ -1,4 +1,5 @@
 import sangria.macros._
+import types._
 object BlogArticleQuery {
   object BlogArticleQuery extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query BlogArticleQuery($$query: ArticleQuery!) {
@@ -11,11 +12,4 @@ object BlogArticleQuery {
     case class Data(articles: List[Articles])
     case class Articles(id: ID, status: ArticleStatus)
   }
-  case class ArticleQuery(ids: Option[List[ID]], statuses: Option[List[ArticleStatus]])
-  sealed trait ArticleStatus
-  object ArticleStatus {
-    case object DRAFT extends ArticleStatus
-    case object PUBLISHED extends ArticleStatus
-  }
-  type ID = String
 }

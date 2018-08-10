@@ -38,7 +38,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
         document.operations.values.map(generateOperation).toList,
         document.fragments.values.toList.map(generateFragment),
         // Include only types that have been used in the document
-        schema.typeList.filter(types).collect(generateType).toList
+        schema.typeList.filter(types).collect(generateType).toList,
+        document
       ))
 
   /**

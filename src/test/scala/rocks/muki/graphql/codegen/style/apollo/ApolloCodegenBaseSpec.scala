@@ -19,19 +19,19 @@ import org.scalatest.{EitherValues, TryValues, WordSpec}
 import java.io.File
 
 import rocks.muki.graphql.codegen.{
+  ApolloSourceGenerator,
   DocumentLoader,
-  Generator,
   TypedDocumentParser
 }
 import rocks.muki.graphql.schema.SchemaLoader
 
-import scala.io.{Source => IOSource, Codec}
+import scala.io.{Codec, Source => IOSource}
 import scala.meta._
 import sbt._
 
 abstract class ApolloCodegenBaseSpec(
     name: String,
-    generator: (String => Generator[List[Stat]]))
+    generator: String => ApolloSourceGenerator)
     extends WordSpec
     with EitherValues
     with TryValues {
@@ -63,8 +63,69 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim, actual)
+        assert(actual === expectedSource.show[Syntax].trim,
+               s"------\n$actual\n------")
       }
     }
+
+    for {
+      input <- inputDir.listFiles()
+      if input.getName.endsWith(".graphql")
+      name = input.getName.replace(".graphql", "")
+      expected = new File(inputDir, s"${name}Interfaces.scala")
+      if expected.exists
+    } {
+      s"generate interface code for ${input.getName}" in {
+
+        val schema =
+          SchemaLoader
+            .fromFile(inputDir / "schema.graphql")
+            .loadSchema()
+        val document = DocumentLoader.single(schema, input).right.value
+        val typedDocument =
+          TypedDocumentParser(schema, document).parse().right.value
+        val stats = generator(input.getName)
+          .generateInterfaces(typedDocument)
+          .right
+          .value
+
+        val actual = stats.map(_.show[Syntax]).mkString("\n")
+        val expectedSource = contentOf(expected).parse[Source].get
+
+        assert(actual === expectedSource.show[Syntax].trim,
+               s"------\n$actual\n------")
+      }
+    }
+
+    for {
+      input <- inputDir.listFiles()
+      if input.getName.endsWith(".graphql")
+      name = input.getName.replace(".graphql", "")
+      expected = new File(inputDir, s"${name}Types.scala")
+      if expected.exists
+    } {
+      s"generate types code for ${input.getName}" in {
+
+        val schema =
+          SchemaLoader
+            .fromFile(inputDir / "schema.graphql")
+            .loadSchema()
+        val document = DocumentLoader.single(schema, input).right.value
+        val typedDocument =
+          TypedDocumentParser(schema, document).parse().right.value
+        val stats = generator(input.getName)
+          .generateTypes(typedDocument)
+          .right
+          .value
+
+        val actual = stats.map(_.show[Syntax]).mkString("\n")
+        val expectedSource = contentOf(expected).parse[Source].get
+
+        assert(actual === expectedSource.show[Syntax].trim,
+               s"------\n$actual\n------")
+      }
+    }
+
   }
+
 }

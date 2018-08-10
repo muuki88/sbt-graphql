@@ -29,9 +29,41 @@ case class ApolloSourceGenerator(fileName: String,
                                  jsonCodeGen: JsonCodeGen)
     extends Generator[List[Stat]] {
 
-  override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
+  /**
+    * Generates only the interfaces (fragments) that appear in the given
+    * document.
+    *
+    * This method works great with DocumentLoader.merge, merging all
+    * fragments together and generating a single interface definition object.
+    *
+    * @param document schema + query
+    * @return interfaces
+    */
+  def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] = {
+    Right(document.interfaces.map(generateInterface(_, isSealed = false)))
+  }
 
-    // TODO refactor Generator trait into something more flexible
+  /**
+    * Generates only the types that appear in the given
+    * document.
+    *
+    * This method works great with DocumentLoader.merge, merging all
+    * fragments together and generating a single type definition object.
+    *
+    *
+    * @param document schema + query
+    * @return types
+    */
+  def generateTypes(document: TypedDocument.Api): Result[List[Stat]] = {
+    val typeStats = document.types.flatMap(generateType)
+    Right(
+      jsonCodeGen.imports ++ List(q"""object types {
+             ..$typeStats
+           }""")
+    )
+  }
+
+  override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
 
     val operations = document.operations.map { operation =>
       val typeName = Term.Name(
@@ -50,9 +82,21 @@ case class ApolloSourceGenerator(fileName: String,
       // replacing single $ with $$ for escaping
       val escapedDocumentString =
         operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
-      val document = Term.Interpolate(Term.Name("graphql"),
-                                      Lit.String(escapedDocumentString) :: Nil,
-                                      Nil)
+
+      // add the fragments to the query as well
+      val escapedFragmentString = Option(document.original.fragments)
+        .filter(_.nonEmpty)
+        .map { fragments =>
+          fragments.values
+            .map(_.renderPretty.replaceAll("\\$", "\\$\\$"))
+            .mkString("\n\n", "\n", "")
+        }
+        .getOrElse("")
+
+      val documentString = escapedDocumentString + escapedFragmentString
+      val graphqlDocument = Term.Interpolate(Term.Name("graphql"),
+                                             Lit.String(documentString) :: Nil,
+                                             Nil)
 
       val dataJsonDecoder =
         Option(jsonCodeGen.generateFieldDecoder(Type.Name("Data")))
@@ -64,15 +108,13 @@ case class ApolloSourceGenerator(fileName: String,
 
       q"""
           object $typeName extends ..$additionalInits {
-           val document: sangria.ast.Document = $document
+           val document: sangria.ast.Document = $graphqlDocument
            case class Variables(..$inputParams)
            case class Data(..$dataParams)
            ..$dataJsonDecoder
            ..$data
           }"""
     }
-    val interfaces =
-      document.interfaces.map(generateInterface(_, isSealed = false))
     val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
@@ -81,11 +123,10 @@ case class ApolloSourceGenerator(fileName: String,
         jsonCodeGen.imports ++
         List(
           q"import sangria.macros._",
+          q"import types._",
           q"""
        object ${Term.Name(objectName)} {
           ..$operations
-          ..$interfaces
-          ..$types
        }
      """
         ))
@@ -315,9 +356,12 @@ case class ApolloSourceGenerator(fileName: String,
 
       val enumName = Type.Name(name)
       val objectName = Term.Name(name)
+      val jsonDecoder = jsonCodeGen.generateEnumFieldDecoder(enumName, values)
+      val enumStats: List[Stat] = enumValues ++ jsonDecoder
+
       List[Stat](
         q"sealed trait $enumName",
-        q"object $objectName { ..$enumValues }"
+        q"object $objectName { ..$enumStats }"
       )
 
     case TypedDocument.TypeAlias(from, to) =>

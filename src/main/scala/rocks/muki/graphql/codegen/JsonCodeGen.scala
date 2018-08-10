@@ -31,6 +31,15 @@ trait JsonCodeGen {
                                 unionNames: List[String],
                                 typeDiscriminatorField: String): List[Stat]
 
+  /**
+    *
+    * @param enumTrait the enum trait
+    * @param enumValues all enum field names
+    * @return a json decoder instance for enum types
+    */
+  def generateEnumFieldDecoder(enumTrait: Type.Name,
+                               enumValues: List[String]): List[Stat]
+
 }
 
 object JsonCodeGens {
@@ -42,6 +51,9 @@ object JsonCodeGens {
         unionTrait: Type.Name,
         unionNames: List[String],
         typeDiscriminatorField: String): List[Stat] = Nil
+
+    def generateEnumFieldDecoder(enumTrait: Type.Name,
+                                 enumValues: List[String]): List[Stat] = Nil
   }
 
   object Circe extends JsonCodeGen {
@@ -73,7 +85,23 @@ object JsonCodeGens {
           value <- typeDiscriminator match { ..case $patterns }
         } yield value
        """)
+    }
 
+    override def generateEnumFieldDecoder(
+        enumTrait: Type.Name,
+        enumValues: List[String]): List[Stat] = {
+      val patterns = enumValues.map { name =>
+        val nameLiteral = Lit.String(name)
+        val enumTerm = Term.Name(name)
+        p"case $nameLiteral => Right($enumTerm)"
+      } ++ List(
+        p"""case other => Left("invalid enum value: " + other)"""
+      )
+
+      List(q"""
+        implicit val jsonDecoder: Decoder[$enumTrait] = Decoder.decodeString.emap {
+            ..case $patterns
+        } """)
     }
   }
 }

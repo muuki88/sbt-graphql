@@ -1,0 +1,20 @@
+query HeroNestedFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    homePlanet
+    ...CharacterInfo
+  }
+}
+
+fragment CharacterFriends on Character {
+  name
+}
+
+fragment CharacterInfo on Character {
+  name
+  friends {
+    ...CharacterFriends
+  }
+}

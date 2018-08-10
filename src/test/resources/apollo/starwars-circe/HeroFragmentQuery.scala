@@ -1,6 +1,7 @@
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import sangria.macros._
+import types._
 object HeroFragmentQuery {
   object HeroFragmentQuery extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query HeroFragmentQuery {
@@ -10,6 +11,10 @@ object HeroFragmentQuery {
   human(id: "Lea") {
     ...CharacterInfo
   }
+}
+
+fragment CharacterInfo on Character {
+  name
 }"""
     case class Variables()
     case class Data(hero: Hero, human: Option[Human])
@@ -19,5 +24,4 @@ object HeroFragmentQuery {
     case class Human(name: Option[String]) extends CharacterInfo
     object Human { implicit val jsonDecoder: Decoder[Human] = deriveDecoder[Human] }
   }
-  trait CharacterInfo { def name: Option[String] }
 }

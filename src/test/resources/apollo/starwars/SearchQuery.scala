@@ -1,4 +1,5 @@
 import sangria.macros._
+import types._
 object SearchQuery {
   object SearchQuery extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query SearchQuery($$text: String!) {

@@ -1,4 +1,5 @@
 import sangria.macros._
+import types._
 object HeroNameQuery {
   object HeroNameQuery extends GraphQLQuery {
     val document: sangria.ast.Document = graphql"""query HeroNameQuery {
