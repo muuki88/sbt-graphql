@@ -246,7 +246,7 @@ You can configure the output in various ways
 * `graphqlCodegenImports: Seq[String]` - A list of additional that are included in every generated file
 
 
-#### JSON support
+### JSON support
 
 The common serialization format for graphql results and input variables is JSON.
 sbt-graphql supports JSON decoder/encoder code generation.
@@ -264,7 +264,7 @@ In your `build.sbt` you can configure the JSON library with
 graphqlCodegenJson := JsonCodec.Circe
 ```
 
-#### Scalar types
+### Scalar types
 
 The code generation doesn't know about your additional scalar types.
 sbt-graphql provides a setting `graphqlCodegenImports` to add an import to every
@@ -283,7 +283,7 @@ which is represented as `java.time.ZoneDateTime`. Add this as an import
 graphqlCodegenImports += "java.time.ZoneDateTime"
 ```
 
-#### Codegen style Apollo
+### Codegen style Apollo
 
 As the name suggests the output is similar to the one in apollo codegen.
 
@@ -321,7 +321,7 @@ import graphql.codegen.GraphQLQuery
 import sangria.macros._
 object HeroNameQuery {
   object HeroNameQuery extends GraphQLQuery {
-    val Document = graphql"""query HeroNameQuery {
+    val document: sangria.ast.Document = graphql"""query HeroNameQuery {
   hero {
     name
   }
@@ -333,7 +333,79 @@ object HeroNameQuery {
 }
 ```
 
-#### Codegen Style Sangria
+#### Interfaces, types and aliases
+
+The `ApolloSourceGenerator` generates an additional file `Interfaces.scala` with the following shape:
+
+```scala
+object types {
+   // contains all defined types like enums and aliases
+}
+// all used fragments and interfaces are generated as traits here
+```
+
+##### Use case
+
+> Share common business logic around a fragment that shouldn't be a directive
+
+You can now do this by defining a `fragment` and include it in every query that
+requires to apply this logic. `sbt-graphql` will generate the common `trait?`,
+all generated case classes will extend this fragment `trait`.
+
+##### Limitations
+
+You need  to **copy the fragments into every `graphql` query** that should use it.
+If you have a lot of queries that reuse the fragment and you want to apply changes,
+this is cumbersome.
+
+You **cannot nest fragments**. The code generation isn't capable of naming the nested data structure. This means that you need create fragments for every nesting.
+
+**Invalid**
+```graphql
+query HeroNestedFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    ...CharacterInfo
+  }
+}
+
+# This will generate code that may compile, but is not usable
+fragment CharacterInfo on Character {
+    name
+     friends {
+        name
+    }
+}
+```
+
+**correct**
+
+```graphql
+query HeroNestedFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    ...CharacterInfo
+  }
+}
+
+# create a fragment for the nested query
+fragment CharacterFriends on Character {
+    name
+}
+
+fragment CharacterInfo on Character {
+    name
+    friends {
+        ...CharacterFriends
+    }
+}
+```
+
+### Codegen Style Sangria
 
 This style generates one object with a specified `moduleName` and puts everything in there.
 
