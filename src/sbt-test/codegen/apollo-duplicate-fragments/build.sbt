@@ -10,7 +10,7 @@ graphqlCodegenStyle := Apollo
 
 TaskKey[Unit]("check") := {
   val generatedFiles = (graphqlCodegen in Compile).value
-  val queryFile = generatedFiles.find(_.getName == "HeroNameQuery.scala")
+  val interfacesFile = generatedFiles.find(_.getName == "Interfaces.scala")
 
-  assert(queryFile.isDefined, s"Could not find generated scala class. Available files\n  ${generatedFiles.mkString("\n  ")}")
+  assert(interfacesFile.isDefined, s"Could not find generated scala class. Available files\n  ${generatedFiles.mkString("\n  ")}")
 }
