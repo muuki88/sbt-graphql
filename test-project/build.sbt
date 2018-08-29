@@ -19,6 +19,7 @@ lazy val client = project.in(file("client"))
       graphqlCodegenStyle := Apollo,
       graphqlCodegenJson := JsonCodec.Circe,
       graphqlCodegenSchema := graphqlRenderSchema.toTask("starwars-local").value,
+      graphqlCodegenImports ++= List("java.time._"),
       graphqlCodegenPackage := "rocks.muki.graphql",
       graphqlSchemas += GraphQLSchema(
         "starwars-local",
