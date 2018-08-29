@@ -40,7 +40,7 @@ case class ApolloSourceGenerator(fileName: String,
     * @return interfaces
     */
   def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] = {
-    Right(document.interfaces.map(generateInterface(_, isSealed = false)))
+    Right(additionalImports ++ document.interfaces.map(generateInterface(_, isSealed = false)))
   }
 
   /**
