@@ -17,6 +17,7 @@ import sbt.Logger
   * @param moduleName optional module name for single-file based generators
   * @param jsonCodeGen
   * @param imports list of imports to be added to the generated file
+  * @param preProcessors pre processors that should be applied before the graphql file is parsed
   * @param log output log
   */
 case class CodeGenContext(
@@ -27,5 +28,6 @@ case class CodeGenContext(
     moduleName: String,
     jsonCodeGen: JsonCodeGen,
     imports: Seq[String],
+    preProcessors: Seq[PreProcessor],
     log: Logger
 )

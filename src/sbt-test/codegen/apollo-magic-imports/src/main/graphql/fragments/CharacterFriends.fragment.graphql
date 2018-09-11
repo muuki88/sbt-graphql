@@ -1,0 +1,3 @@
+fragment CharacterFriends on Character {
+    name
+}

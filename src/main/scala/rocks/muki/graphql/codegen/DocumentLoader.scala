@@ -59,7 +59,7 @@ object DocumentLoader {
         violations.isEmpty,
         document,
         Failure(
-          s"Invalid query: ${violations.map(_.errorMessage).mkString(", ")}"))
+          s"Invalid query in ${file.getAbsolutePath}:\n${violations.map(_.errorMessage).mkString(", ")}"))
     } yield document
   }
 

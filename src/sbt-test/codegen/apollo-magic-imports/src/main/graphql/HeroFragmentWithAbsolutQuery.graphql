@@ -1,0 +1,12 @@
+query HeroFragmentWithAbsolutQuery {
+  hero {
+    ...CharacterInfoWithAbsolutImport
+  }
+  human(id: "Lea") {
+    homePlanet
+    ...CharacterInfoWithAbsolutImport
+  }
+}
+
+#import fragments/CharacterInfoWithAbsolutImport.fragment.graphql
+

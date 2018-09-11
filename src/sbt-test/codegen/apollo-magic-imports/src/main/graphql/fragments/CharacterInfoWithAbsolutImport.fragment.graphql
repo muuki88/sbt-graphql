@@ -1,0 +1,8 @@
+#import fragments/CharacterFriends.fragment.graphql
+
+fragment CharacterInfoWithAbsolutImport on Character {
+    name
+    friends {
+        ...CharacterFriends
+    }
+}

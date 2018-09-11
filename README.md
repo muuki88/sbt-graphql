@@ -236,7 +236,7 @@ You can configure the output in various ways
 * `sourceDirectories in graphqlCodegen` - List of directories where graphql files should be looked up.
   Default is `sourceDirectory in graphqlCodegen`, which defaults to `sourceDirectory in Compile / "graphql"`
 * `includeFilter in graphqlCodegen` - Filter graphql files. Default is `"*.graphql"`
-* `excludeFilter in graphqlCodegen` - Filter graphql files. Default is `HiddenFileFilter`
+* `excludeFilter in graphqlCodegen` - Filter graphql files. Default is `HiddenFileFilter || "*.fragment.graphql"`
 * `graphqlCodegenQueries` - Contains all graphql query files. By default this setting contains all
   files that reside in `sourceDirectories in graphqlCodegen` and that match the `includeFilter` / `excludeFilter` settings.
 * `graphqlCodegenPackage` - The package where all generated code is placed. Default is `graphql.codegen`
@@ -244,6 +244,8 @@ You can configure the output in various ways
 * `graphqlCodegenJson` - Generate JSON encoders/decoders with your graphql query. Default is `JsonCodec.None`.
   Note that not all styles support JSON encoder/decoder generation.
 * `graphqlCodegenImports: Seq[String]` - A list of additional that are included in every generated file
+* `graphqlCodegenPreProcessors: Seq[PreProcessor]` - A list of preprocessors that can alter the original graphql query before it is being parsed.
+   By default the `magic #imports` for including fragments are enabled. See the `magic #imports` section for more details.
 
 
 ### JSON support
@@ -282,6 +284,62 @@ which is represented as `java.time.ZoneDateTime`. Add this as an import
 
 graphqlCodegenImports += "java.time.ZoneDateTime"
 ```
+
+### Magic #imports
+
+This is a feature tries to replicate the [apollographql/graphql-tag loader.js](https://github.com/apollographql/graphql-tag/blob/ae792b67ef16ae23a0a7a8d78af8b698e8acd7d2/loader.js#L29-L37)
+feature, which enables including (or actually inlining) partials into a graphql query with magic comments.
+
+#### Explained
+
+The syntax is straightforward
+
+```graphql
+#import path/to/included.fragment.graphql
+```
+
+The fragment files should be named liked this
+
+```
+<name>.fragment.graphql
+```
+
+There is a `excludeFilter in graphqlCodegen`, which removes them from code generation so they are just used for inlining
+and interface generation.
+
+The resolving of paths works like this
+
+- The path is resolved by checking all `sourceDirectories in graphqlCodegen` for the given path
+- No relative paths like `./foo.fragment.graphql` are supported
+- Imports are resolved recursively. This means you can `#import` fragments in a fragment.
+
+#### Example
+
+I have a file `CharacterInfo.fragment.graphql` which contains only a single fragment
+
+```graphql
+fragment CharacterInfo on Character {
+    name
+}
+```
+
+And the actual graphql query file
+
+
+```graphql
+query HeroFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    homePlanet
+    ...CharacterInfo
+  }
+}
+
+#import fragments/CharacterInfo.fragment.graphql
+```
+
 
 ### Codegen style Apollo
 

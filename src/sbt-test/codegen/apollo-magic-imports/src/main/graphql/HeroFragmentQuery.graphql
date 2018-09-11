@@ -1,0 +1,13 @@
+query HeroFragmentQuery {
+  hero {
+    ...CharacterInfo
+  }
+  human(id: "Lea") {
+    homePlanet
+    ...CharacterInfo
+  }
+}
+
+#import fragments/CharacterFriends.fragment.graphql
+#import fragments/CharacterInfo.fragment.graphql
+

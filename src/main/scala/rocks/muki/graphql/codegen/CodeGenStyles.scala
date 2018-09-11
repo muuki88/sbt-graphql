@@ -57,7 +57,10 @@ object CodeGenStyles {
     // Process all the graphql files
     val files = inputFiles.map { inputFile =>
       for {
-        queryDocument <- DocumentLoader.single(schema, inputFile)
+        processedFile <- PreProcessors(inputFile,
+                                       context.targetDirectory,
+                                       context.preProcessors)
+        queryDocument <- DocumentLoader.single(schema, processedFile)
         typedDocument <- TypedDocumentParser(schema, queryDocument)
           .parse()
         sourceCode <- ApolloSourceGenerator(inputFile.getName,
@@ -78,7 +81,10 @@ object CodeGenStyles {
 
     val interfaceFile = for {
       // use all queries to determine the interfaces & types we need
-      allQueries <- DocumentLoader.merged(schema, inputFiles.toList)
+      processedFiles <- PreProcessors(inputFiles,
+                                      context.targetDirectory,
+                                      context.preProcessors)
+      allQueries <- DocumentLoader.merged(schema, processedFiles.toList)
       typedDocument <- TypedDocumentParser(schema, allQueries)
         .parse()
       codeGenerator = ApolloSourceGenerator("Interfaces.scala",
