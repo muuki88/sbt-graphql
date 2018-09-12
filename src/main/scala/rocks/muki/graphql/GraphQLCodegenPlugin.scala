@@ -27,6 +27,9 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       settingKey[Seq[String]](
         "Additional imports to add to the generated code")
 
+    val graphqlCodegenPreProcessors = taskKey[Seq[PreProcessor]](
+      "Preprocessors that should be applied before the graphql file is parsed")
+
     val graphqlCodegen = taskKey[Seq[File]]("Generate GraphQL API code")
 
     val Apollo = CodeGenStyles.Apollo
@@ -45,7 +48,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     sourceDirectories in graphqlCodegen := List(
       (sourceDirectory in graphqlCodegen).value),
     includeFilter in graphqlCodegen := "*.graphql",
-    excludeFilter in graphqlCodegen := HiddenFileFilter,
+    excludeFilter in graphqlCodegen := HiddenFileFilter || "*.fragment.graphql",
     graphqlCodegenQueries := Defaults
       .collectFiles(sourceDirectories in graphqlCodegen,
                     includeFilter in graphqlCodegen,
@@ -54,6 +57,9 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     sourceGenerators in Compile += graphqlCodegen.taskValue,
     graphqlCodegenPackage := "graphql.codegen",
     graphqlCodegenImports := Seq.empty,
+    graphqlCodegenPreProcessors := List(
+      PreProcessors.magicImports((sourceDirectories in graphqlCodegen).value)
+    ),
     name in graphqlCodegen := "GraphQLCodegen",
     graphqlCodegen := {
       val log = streams.value.log
@@ -69,8 +75,8 @@ object GraphQLCodegenPlugin extends AutoPlugin {
         SchemaLoader.fromFile(graphqlCodegenSchema.value).loadSchema()
 
       val imports = graphqlCodegenImports.value
-
       val jsonCodeGen = graphqlCodegenJson.value
+      val preProcessors = graphqlCodegenPreProcessors.value
       log.info(
         s"Generating json decoding with: ${jsonCodeGen.getClass.getSimpleName}")
 
@@ -84,6 +90,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
                                    moduleName,
                                    jsonCodeGen,
                                    imports,
+                                   preProcessors,
                                    log)
 
       graphqlCodegenStyle.value(context)

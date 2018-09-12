@@ -1,0 +1,6 @@
+fragment CharacterInfo on Character {
+    name
+    friends {
+        ...CharacterFriends
+    }
+}

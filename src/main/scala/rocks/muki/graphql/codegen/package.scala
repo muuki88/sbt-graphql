@@ -17,5 +17,17 @@
 package rocks.muki.graphql
 
 package object codegen {
+
+  /**
+    * Type alias for a processing result during a code generation step
+    * @tparam T the success type
+    */
   type Result[T] = Either[Failure, T]
+
+  /**
+    * Type alias for a graphql file pre-processing function.
+    * _ The input is the raw graphql file content
+    * _ The output is the transformed graphql file content or an error
+    */
+  type PreProcessor = String => Result[String]
 }
