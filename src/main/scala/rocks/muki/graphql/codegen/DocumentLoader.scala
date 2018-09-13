@@ -17,12 +17,15 @@
 package rocks.muki.graphql.codegen
 
 import java.io.File
-import scala.io.Source
-import cats.syntax.either._
-import sangria.parser.QueryParser
-import sangria.validation.QueryValidator
-import sangria.schema._
+
+import cats.implicits._
+import rocks.muki.graphql.instances.monoidDocument
 import sangria.ast.Document
+import sangria.parser.QueryParser
+import sangria.schema._
+import sangria.validation.QueryValidator
+
+import scala.io.Source
 
 object DocumentLoader {
 
@@ -33,16 +36,11 @@ object DocumentLoader {
     * @return
     */
   def merged(schema: Schema[_, _], files: List[File]): Result[Document] = {
+    /*_*/
     files
-      .map(single(schema, _))
-      .foldLeft[Result[Document]](Right(Document.emptyStub)) {
-        case (Left(failure), Left(nextFailure)) =>
-          Left(Failure(failure.message + "\n" + nextFailure.message))
-        case (Left(failure), _) => Left(failure)
-        case (_, Left(firstFailure)) => Left(firstFailure)
-        case (Right(document), Right(nextDocument)) =>
-          Right(document.merge(nextDocument))
-      }
+      .traverse(file => single(schema, file))
+      .map(documents => documents.combineAll)
+    /*_*/
   }
 
   /**
