@@ -1,8 +1,7 @@
 package rocks.muki.graphql.codegen
 
+import cats.implicits._
 import sbt._
-
-import cats.syntax.either._
 
 object PreProcessors {
 
@@ -23,12 +22,11 @@ object PreProcessors {
       input <- Either.catchNonFatal(IO.read(graphqlFile)).leftMap { error =>
         Failure(s"Failed to read $graphqlFile: ${error.getMessage}")
       }
-      // poor-mans traverse
-      processedContent <- preProcessors.foldLeft(Right(input): Result[String]) {
-        case (Right(processedContent), processor) =>
-          processor(processedContent)
-        case (error, _) => error
-      }
+      /*_*/ // Iteratively apply all preprocessors after one another. Fail-fast semantics through Either.
+      processedContent <- preProcessors.toList.foldM(input)(
+        (previousValue, processor) => processor(previousValue)
+      )
+      /*_*/
     } yield {
       IO.write(processedFile, processedContent)
       processedFile
@@ -46,15 +44,13 @@ object PreProcessors {
   def apply(graphqlFiles: Seq[File],
             targetDir: File,
             preProcessors: Seq[PreProcessor]): Result[Seq[File]] = {
-    graphqlFiles
-      .map(file => apply(file, targetDir, preProcessors))
-      .foldLeft[Result[List[File]]](Right(List.empty)) {
-        case (Left(failure), Left(nextFailure)) =>
-          Left(Failure(failure.message + "\n" + nextFailure.message))
-        case (Left(failure), _) => Left(failure)
-        case (_, Left(failure)) => Left(failure)
-        case (Right(files), Right(file)) => Right(files :+ file)
-      }
+
+    /*_*/ // Apply preprocessor list to all files. Accumulated errors through ValidatedNel.
+    graphqlFiles.toList
+      .traverse(file => apply(file, targetDir, preProcessors).toValidatedNel)
+      .toEither
+      .leftMap(errorMessages => errorMessages.reduce) // reduce NonEmptyList[Failure] to one Failure
+    /*_*/
   }
 
   /**
@@ -75,7 +71,7 @@ object PreProcessors {
     // match the import file path
     val Import = "#import\\s*([\\w\\/\\.]*)".r
 
-    val processed = graphQLFile.split(IO.Newline).map {
+    val processedLines = graphQLFile.split(IO.Newline).map {
       case Import(filePath) =>
         rootDirectories.map(dir => dir / filePath).find(_.exists()) match {
           case Some(importedGraphQLFile) =>
@@ -90,24 +86,15 @@ object PreProcessors {
       case line => Right(line)
     }
 
-    // poor mans cats.Validated
-    val errors = processed.collect {
-      case Left(error) => error
-    }
-
-    if (errors.isEmpty) {
-      Right(
-        processed
-          .collect {
-            case Right(line) => line
-          }
-          .mkString(IO.Newline))
-    } else {
-      Left(errors.reduce[Failure] {
-        case (reduced, nextFailure) =>
-          Failure(reduced.message + IO.Newline + reduced.message)
-      })
-    }
+    /*_*/
+    processedLines.toList
+      .traverse(_.toValidatedNel)
+      .toEither
+      .bimap(
+        errorMessages => errorMessages.reduce,
+        lines => lines.mkString(IO.Newline)
+      )
+    /*_*/
   }
 
 }

@@ -3,11 +3,14 @@ organization := "rocks.muki"
 sbtPlugin := true
 
 val circeVersion = "0.9.3"
+val catsVersion = "1.3.1"
 libraryDependencies ++= Seq(
   "org.sangria-graphql" %% "sangria" % "1.3.2",
   "org.sangria-graphql" %% "sangria-circe" % "1.2.1",
   "io.circe" %% "circe-core" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
+  "org.typelevel" %% "cats-core" % catsVersion,
+  "org.typelevel" %% "cats-testkit" % catsVersion % Test,
   "org.scalaj" %% "scalaj-http" % "2.3.0",
   "org.scalameta" %% "scalameta" % "3.7.4",
   "org.scalatest" %% "scalatest" % "3.0.4" % Test
@@ -15,6 +18,8 @@ libraryDependencies ++= Seq(
 
 // scripted test settings
 scriptedLaunchOpts += "-Dproject.version=" + version.value
+
+scalacOptions += "-Ypartial-unification"
 
 // project meta data
 licenses := Seq(
