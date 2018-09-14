@@ -12,7 +12,29 @@ object ScalametaUtils {
     typeTerm.parse[Type].get.asInstanceOf[Type.Ref]
   }
 
-  def termRefOf(typeTerm: String): Term.Ref = {
-    typeTerm.parse[Term].get.asInstanceOf[Term.Ref]
+  def typeRefOf(term: String, typeTerm: String): Type.Ref = {
+    typeRefOf(term.split('.'), typeTerm)
+  }
+
+  def typeRefOf(terms: Seq[String], typeTerm: String): Type.Ref = {
+    if (terms.isEmpty) {
+      Type.Name(typeTerm)
+    } else {
+      Type.Select(termRefOf(terms), Type.Name(typeTerm))
+    }
+  }
+
+  // terms must not be empty
+  def termRefOf(terms: Seq[String]): Term.Ref = {
+    val termArray = terms.map(Term.Name(_))
+    termArray.headOption.fold(
+      throw new IllegalStateException("Term must not be empty")
+    ) { head =>
+      termArray.drop(1).foldLeft[Term.Ref](head) ((r, t) => Term.Select(r, t))
+    }
+  }
+
+  def termRefOf(term: String): Term.Ref = {
+    termRefOf(term.split('.'))
   }
 }

@@ -54,9 +54,10 @@ case class ScalametaGenerator(moduleName: Term.Name,
   def generateTemplate(traits: List[String],
                        prefix: String = moduleName.value + "."): Template = {
     // TODO fix constructor names
+    val prefixList = prefix.split('.')
     val templateInits = traits
-      .map(prefix + _)
-      .map(name => Init(ScalametaUtils.typeRefOf(name), Name.Anonymous(), Nil))
+      .map(name =>
+        Init(ScalametaUtils.typeRefOf(prefixList, name), Name.Anonymous(), Nil))
     val emptySelf = Self(Name.Anonymous(), None)
 
     Template(Nil, templateInits, emptySelf, List.empty)
@@ -74,7 +75,7 @@ case class ScalametaGenerator(moduleName: Term.Name,
       case schema.ListInputType(wrapped) =>
         t"List[${typeOf(wrapped)}]"
       case tpe: schema.ScalarType[_] if tpe == schema.IDType =>
-        ScalametaUtils.typeRefOf(moduleName.value + ".ID")
+        ScalametaUtils.typeRefOf(moduleName.value, "ID")
       case tpe: schema.Type =>
         genType(tpe)
     }
@@ -85,9 +86,9 @@ case class ScalametaGenerator(moduleName: Term.Name,
     def fieldType(field: TypedDocument.Field, prefix: String = ""): Type =
       generateFieldType(field) { tpe =>
         if (field.isObjectLike || field.isUnion)
-          ScalametaUtils.typeRefOf(prefix + field.name.capitalize)
+          ScalametaUtils.typeRefOf(prefix, field.name.capitalize)
         else
-          ScalametaUtils.typeRefOf(tpe.namedType.name)
+          Type.Name(tpe.namedType.name)
       }
 
     def generateSelectionParams(prefix: String)(
