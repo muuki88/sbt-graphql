@@ -27,7 +27,7 @@ object CodeGenStyles {
   val Apollo: Style = context => {
     val schema = context.schema
     val inputFiles = context.graphQLFiles
-    val packageName = Term.Name(context.packageName)
+    val packageName = ScalametaUtils.termRefOf(context.packageName)
 
     // Generate the GraphQLQuery trait
     val graphQLQueryFile = context.targetDirectory / s"${GraphQLQueryGenerator.name}.scala"
@@ -129,7 +129,7 @@ object CodeGenStyles {
   val Sangria: Style = context => {
     val schema = context.schema
     val inputFiles = context.graphQLFiles
-    val packageName = Term.Name(context.packageName)
+    val packageName = ScalametaUtils.termRefOf(context.packageName)
 
     val result = for {
       queryDocument <- DocumentLoader.merged(schema, inputFiles.toList)
@@ -151,7 +151,7 @@ object CodeGenStyles {
       case Right(file) =>
         List(file)
       case Left(error) =>
-        context.log.err(s"Error during code genreation $error")
+        context.log.err(s"Error during code generation $error")
         sys.error("Code generation failed")
     }
 

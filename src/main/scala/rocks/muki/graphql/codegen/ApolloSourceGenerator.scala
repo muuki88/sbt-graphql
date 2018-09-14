@@ -259,11 +259,11 @@ case class ApolloSourceGenerator(fileName: String,
     generateFieldType(field) { tpe =>
       if (field.isObjectLike || field.isUnion) {
         // prepend the type qualifier for nested object/case class structures
-        Type.Name((typeQualifiers :+ field.name.capitalize).mkString("."))
+        ScalametaUtils.typeRefOf((typeQualifiers :+ field.name.capitalize).mkString("."))
       } else {
         // this branch handles non-enum or case class types, which means we don't need the
         // typeQualifiers here.
-        Type.Name(tpe.namedType.name)
+        ScalametaUtils.typeRefOf(tpe.namedType.name)
       }
     }
 
@@ -310,9 +310,9 @@ case class ApolloSourceGenerator(fileName: String,
       val tpe = generateFieldType(field) { tpe =>
         field.selection.map(_.interfaces).filter(_.nonEmpty) match {
           case Some(interfaces) =>
-            interfaces.map(x => Type.Name(x): Type).reduce(Type.With(_, _))
+            interfaces.map(t => ScalametaUtils.typeRefOf(t): Type).reduce(Type.With(_, _))
           case None =>
-            Type.Name(tpe.namedType.name)
+            ScalametaUtils.typeRefOf(tpe.namedType.name)
         }
       }
       q"def $fieldName: $tpe"
@@ -328,7 +328,7 @@ case class ApolloSourceGenerator(fileName: String,
   private def generateObject(obj: TypedDocument.Object,
                              interfaces: List[String]): Stat = {
     val params = obj.fields.map { field =>
-      val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
+      val tpe = generateFieldType(field)(t => ScalametaUtils.typeRefOf(t.namedType.name))
       termParam(field.name, tpe)
     }
     val className = Type.Name(obj.name)
