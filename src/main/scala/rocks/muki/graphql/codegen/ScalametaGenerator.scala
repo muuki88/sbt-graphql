@@ -56,8 +56,11 @@ case class ScalametaGenerator(moduleName: Term.Name,
     // TODO fix constructor names
     val prefixList = prefix.split('.')
     val templateInits = traits
-      .map(name =>
-        Init(ScalametaUtils.typeRefOf(prefixList, name), Name.Anonymous(), Nil))
+      .map(
+        name =>
+          Init(ScalametaUtils.typeRefOf(prefixList, name),
+               Name.Anonymous(),
+               Nil))
     val emptySelf = Self(Name.Anonymous(), None)
 
     Template(Nil, templateInits, emptySelf, List.empty)

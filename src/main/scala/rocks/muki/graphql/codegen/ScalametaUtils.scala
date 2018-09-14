@@ -30,7 +30,7 @@ object ScalametaUtils {
     termArray.headOption.fold(
       throw new IllegalStateException("Term must not be empty")
     ) { head =>
-      termArray.drop(1).foldLeft[Term.Ref](head) ((r, t) => Term.Select(r, t))
+      termArray.drop(1).foldLeft[Term.Ref](head)((r, t) => Term.Select(r, t))
     }
   }
 
