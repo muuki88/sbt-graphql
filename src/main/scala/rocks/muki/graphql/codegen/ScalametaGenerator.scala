@@ -54,13 +54,9 @@ case class ScalametaGenerator(moduleName: Term.Name,
   def generateTemplate(traits: List[String],
                        prefix: String = moduleName.value + "."): Template = {
     // TODO fix constructor names
-    val prefixList = prefix.split('.')
-    val templateInits = traits
-      .map(
-        name =>
-          Init(ScalametaUtils.typeRefOf(prefixList, name),
-               Name.Anonymous(),
-               Nil))
+    val templateInits = traits.map(name =>
+      Init(ScalametaUtils.typeRefOf(prefix, name), Name.Anonymous(), Nil))
+
     val emptySelf = Self(Name.Anonymous(), None)
 
     Template(Nil, templateInits, emptySelf, List.empty)
@@ -105,7 +101,7 @@ case class ScalametaGenerator(moduleName: Term.Name,
         selection: TypedDocument.Selection): List[Stat] =
       selection.fields.flatMap {
         // render enumerations (union types)
-        case TypedDocument.Field(name, tpe, None, unionTypes)
+        case TypedDocument.Field(name, _, None, unionTypes)
             if unionTypes.nonEmpty =>
           val unionName = Type.Name(name.capitalize)
           val objectName = Term.Name(unionName.value)
@@ -133,7 +129,7 @@ case class ScalametaGenerator(moduleName: Term.Name,
           )
 
         // render a nested case class for a deeper selection
-        case TypedDocument.Field(name, tpe, Some(selection), _) =>
+        case TypedDocument.Field(name, _, Some(selection), _) =>
           val stats =
             generateSelectionStats(prefix + name.capitalize + ".")(selection)
           val params =
@@ -162,14 +158,14 @@ case class ScalametaGenerator(moduleName: Term.Name,
       termParam(varDef.name, fieldType(varDef))
     }
 
-    val name = operation.name.getOrElse(sys.error("found unnamed operation"))
-    val prefix = moduleName.value + "." + name + "."
+    val operationName = operation.name.getOrElse(sys.error("found unnamed operation"))
+    val prefix = moduleName.value + "." + operationName + "."
     val stats = generateSelectionStats(prefix)(operation.selection)
     val params = generateSelectionParams(prefix)(operation.selection)
 
-    val tpeName = Type.Name(name)
-    val termName = Term.Name(name)
-    val variableTypeName = Type.Name(name + "Variables")
+    val tpeName = Type.Name(operationName)
+    val termName = Term.Name(operationName)
+    val variableTypeName = Type.Name(operationName + "Variables")
 
     List[Stat](
       q"case class $tpeName(..$params)",
