@@ -40,7 +40,7 @@ object GraphQLQueryGenerator {
     * @return the GraphQLTrait source code
     */
   def sourceCode(packageName: String): Pkg =
-    q"""package ${Term.Name(packageName)} {
+    q"""package ${ScalametaUtils.termRefOf(packageName)} {
        $traitDefinition
      }"""
 
