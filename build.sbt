@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-testkit" % catsVersion % Test,
   "org.scalaj" %% "scalaj-http" % "2.3.0",
-  "org.scalameta" %% "scalameta" % "4.0.0-RC1",
+  "org.scalameta" %% "scalameta" % "4.0.0",
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
