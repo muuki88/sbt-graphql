@@ -6,7 +6,7 @@ matrix:
     env: COMMAND=validate
 
 script:
-  - sbt -J-Xmx1024m ++$TRAVIS_SCALA_VERSION $COMMAND
+  - sbt ++$TRAVIS_SCALA_VERSION $COMMAND
 
 env:
   global:
