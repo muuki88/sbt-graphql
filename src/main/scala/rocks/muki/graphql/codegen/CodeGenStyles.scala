@@ -35,7 +35,6 @@ object CodeGenStyles {
       graphQLQueryFile,
       GraphQLQueryGenerator.sourceCode(context.packageName))
 
-
     val additionalImports = ScalametaUtils.imports(context.imports.toList)
     val additionalInits = GraphQLQueryGenerator.inits
 

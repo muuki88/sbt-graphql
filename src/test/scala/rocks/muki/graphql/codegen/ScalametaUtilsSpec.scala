@@ -4,7 +4,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.meta._
 
-class ScalametaUtilsSpec extends  WordSpec with Matchers {
+class ScalametaUtilsSpec extends WordSpec with Matchers {
 
   "The ScalametaUtils" should {
 

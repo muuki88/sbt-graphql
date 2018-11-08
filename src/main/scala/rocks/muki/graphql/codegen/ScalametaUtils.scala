@@ -55,10 +55,13 @@ object ScalametaUtils {
       q"import ..$i"
     }
   }
-  
+
   private def importer(imports: List[String]): List[Importer] = {
     val reversedImportNames = imports.init.map(Term.Name(_)).reverse
-    val select = if(reversedImportNames.length > 1) recursiveTermSelect(reversedImportNames) else reversedImportNames.head
+    val select =
+      if (reversedImportNames.length > 1)
+        recursiveTermSelect(reversedImportNames)
+      else reversedImportNames.head
 
     if (imports.last == "_") {
       Importer(select, List(Importee.Wildcard())) :: Nil
@@ -74,10 +77,15 @@ object ScalametaUtils {
     * @param names to fold into a tree structure
     * @return names folded into a Term.Select from left to right
     */
-  private def recursiveTermSelect(names: List[Term.Name]): Term.Select = names match {
-    case Nil => throw new IllegalStateException("Cannot create an empty import")
-    case name :: Nil => throw new IllegalStateException(s"Cannot create a import tree for a single name: $name")
-    case name :: qual :: Nil => Term.Select(qual, name)
-    case name :: qualifiers => Term.Select(recursiveTermSelect(qualifiers), name)
-  }
+  private def recursiveTermSelect(names: List[Term.Name]): Term.Select =
+    names match {
+      case Nil =>
+        throw new IllegalStateException("Cannot create an empty import")
+      case name :: Nil =>
+        throw new IllegalStateException(
+          s"Cannot create a import tree for a single name: $name")
+      case name :: qual :: Nil => Term.Select(qual, name)
+      case name :: qualifiers =>
+        Term.Select(recursiveTermSelect(qualifiers), name)
+    }
 }
