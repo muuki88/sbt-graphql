@@ -35,23 +35,7 @@ object CodeGenStyles {
       graphQLQueryFile,
       GraphQLQueryGenerator.sourceCode(context.packageName))
 
-    val customImports = {
-      def importer(c: List[String]): List[Importer] = {
-        if (c.last == "_") {
-          Importer(Term.Name(c.init.mkString(".")), List(Importee.Wildcard())) :: Nil
-        } else {
-          Importer(Term.Name(c.init.mkString(".")),
-                   List(Importee.Name(Name(c.last)))) :: Nil
-        }
-      }
-
-      context.imports.toList.map { x =>
-        val i = importer(x.split("\\.").toList)
-        q"import ..$i"
-      }
-    }
-
-    val additionalImports = customImports
+    val additionalImports = ScalametaUtils.imports(context.imports.toList)
     val additionalInits = GraphQLQueryGenerator.inits
 
     // Process all the graphql files
