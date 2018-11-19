@@ -95,7 +95,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   )
 
   /**
-    * Generates a small code snippet that accessres the schema definition in the original
+    * Generates a small code snippet that accesses the schema definition in the original
     * code base and renders it as a graphql schema definition file.
     *
     * @see https://github.com/mediative/sangria-codegen/blob/master/sbt-sangria-codegen/src/main/scala/com.mediative.sangria.codegen.sbt/SangriaSchemagenPlugin.scala#L121-L153
@@ -103,7 +103,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     */
   private def generateSchemaGeneratorClass() = Def.task {
     val schemaCode = graphqlSchemaSnippet.value
-    val file = sourceManaged.value / "sbt-sangria-codegen" / s"$mainClass.scala"
+    val file = (sourceManaged in Compile).value / "sbt-sangria-codegen" / s"$mainClass.scala"
 
     val content = s"""|package $packageName
                       |object $mainClass {
