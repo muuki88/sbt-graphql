@@ -104,4 +104,56 @@ object JsonCodeGens {
         } """)
     }
   }
+
+  object PlayJson extends JsonCodeGen {
+    override def imports: List[Stat] = List(
+      q"import play.api.libs.json._",
+      q"import play.api.libs.json.Json._"
+    )
+
+    override def generateFieldDecoder(name: Type.Name): List[Stat] = List(
+      q"implicit val jsonDecoder: Reads[$name] = reads[$name]"
+    )
+
+    override def generateUnionFieldDecoder(
+      unionTrait: Type.Name,
+      unionNames: List[String],
+      typeDiscriminatorField: String): List[Stat] = {
+
+      val discriminatorFieldLiteral = Lit.String(typeDiscriminatorField)
+      val patterns = unionNames.map { name =>
+        val nameLiteral = Lit.String(name)
+        val nameType = Type.Name(name)
+        p"case $nameLiteral => jsValue.validate[$nameType]"
+      } ++ List(
+        p"""case other => JsError("invalid type: " + other)"""
+      )
+
+      List(
+        q"""
+        implicit val jsonDecoder: Reads[$unionTrait] = jsValue => {
+                    (jsValue \ $discriminatorFieldLiteral).validate[String] match {
+                      case JsSuccess(typeTag, _) => typeTag match { ..case $patterns }
+                      case err @ JsError(_) => err
+                    }
+                  }
+       """)
+
+    }
+
+    override def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = {
+      val patterns: List[Case] = enumValues.map { name =>
+        val nameLiteral = Lit.String(name)
+        val objName = Term.Name(enumTrait.value)
+        val memberName = Term.Name(name)
+        val selection = q"$objName.$memberName"
+
+        p"case $nameLiteral => JsSuccess($selection)"
+      } ++ List(
+        p"""case other => JsError("invalid enum value: " + other)"""
+      )
+
+      q"""implicit val jsonDecoder: Reads[$enumTrait] = Reads[$enumTrait](_.validate[String].flatMap({ ..case $patterns })) """ :: Nil
+    }
+  }
 }
