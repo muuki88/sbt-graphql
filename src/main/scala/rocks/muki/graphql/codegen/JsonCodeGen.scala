@@ -116,9 +116,9 @@ object JsonCodeGens {
     )
 
     override def generateUnionFieldDecoder(
-      unionTrait: Type.Name,
-      unionNames: List[String],
-      typeDiscriminatorField: String): List[Stat] = {
+        unionTrait: Type.Name,
+        unionNames: List[String],
+        typeDiscriminatorField: String): List[Stat] = {
 
       val discriminatorFieldLiteral = Lit.String(typeDiscriminatorField)
       val patterns = unionNames.map { name =>
@@ -129,8 +129,7 @@ object JsonCodeGens {
         p"""case other => JsError("invalid type: " + other)"""
       )
 
-      List(
-        q"""
+      List(q"""
         implicit val jsonDecoder: Reads[$unionTrait] = jsValue => {
                     (jsValue \ $discriminatorFieldLiteral).validate[String] match {
                       case JsSuccess(typeTag, _) => typeTag match { ..case $patterns }
@@ -141,7 +140,9 @@ object JsonCodeGens {
 
     }
 
-    override def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = {
+    override def generateEnumFieldDecoder(
+        enumTrait: Type.Name,
+        enumValues: List[String]): List[Stat] = {
       val patterns: List[Case] = enumValues.map { name =>
         val nameLiteral = Lit.String(name)
         val objName = Term.Name(enumTrait.value)
