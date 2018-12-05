@@ -257,6 +257,7 @@ Supported JSON libraries and codegen styles
 
 * Apollo style
   * [Circe](https://circe.github.io/circe/)
+  * [Play JSON](https://github.com/playframework/play-json)
 * Sangria style
   * _None_
 
@@ -264,6 +265,11 @@ In your `build.sbt` you can configure the JSON library with
 
 ```scala
 graphqlCodegenJson := JsonCodec.Circe
+```
+
+or
+```scala
+graphqlCodegenJson := JsonCodec.PlayJson
 ```
 
 ### Scalar types
