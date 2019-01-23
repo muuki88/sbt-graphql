@@ -90,7 +90,7 @@ git.baseVersion := "0.7.0"
 val ReleaseTag = """^v([\d\.]+)$""".r
 git.gitTagToVersionNumber := {
   case ReleaseTag(v) => Some(v)
-  case _             => None
+  case _ => None
 }
 
 git.formattedShaVersion := {
