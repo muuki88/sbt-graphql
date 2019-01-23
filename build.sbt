@@ -23,15 +23,15 @@ libraryDependencies ++= Seq(
 //[info] rocks.muki:sbt-graphql:0.12.0-SNAPSHOT
 //[info]   +-io.circe:circe-core_2.12:0.9.3 [S]
 //[info]   | ...
-//[info]   |     
+//[info]   |
 //[info]   +-io.circe:circe-parser_2.12:0.9.3 [S]
 //[info]   | +-io.circe:circe-core_2.12:0.9.3 [S]
 //[info]   | | ...
-//[info]   | |     
+//[info]   | |
 //[info]   | +-io.circe:circe-jawn_2.12:0.9.3 [S]
 //[info]   |   +-io.circe:circe-core_2.12:0.9.3 [S]
 //[info]   |   | ...
-//[info]   |   |     
+//[info]   |   |
 //[info]   |   +-org.spire-math:jawn-parser_2.12:0.11.1 [S]
 
 assemblyShadeRules in assembly := Seq(
@@ -41,14 +41,14 @@ assemblyShadeRules in assembly := Seq(
 assemblyJarName in assembly := s"${name.value}-shaded-${version.value}.jar"
 
 addArtifact(
-  Artifact(
-    name="sbt-graphql-shaded",
-    `type`="jar",
-    extension="jar",
-    classifier=None,
-    configurations=Vector(Compile.toConfigRef),
-    url=None),
-  sbtassembly.AssemblyKeys.assembly)
+  Artifact(name = "sbt-graphql-shaded",
+           `type` = "jar",
+           extension = "jar",
+           classifier = None,
+           configurations = Vector(Compile.toConfigRef),
+           url = None),
+  sbtassembly.AssemblyKeys.assembly
+)
 
 publishArtifact in (Compile, packageBin) := false
 
@@ -90,7 +90,7 @@ git.baseVersion := "0.7.0"
 val ReleaseTag = """^v([\d\.]+)$""".r
 git.gitTagToVersionNumber := {
   case ReleaseTag(v) => Some(v)
-  case _ => None
+  case _             => None
 }
 
 git.formattedShaVersion := {
