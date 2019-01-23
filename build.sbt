@@ -17,6 +17,41 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.5" % Test
 )
 
+// Sbt 1.2.8 uses version 0.10.4 of jawn-parser; however, circe brings in version 0.11.1.
+// To avoid this conflict, we're shading all libraries leading to jawn-parser.
+//
+//[info] rocks.muki:sbt-graphql:0.12.0-SNAPSHOT
+//[info]   +-io.circe:circe-core_2.12:0.9.3 [S]
+//[info]   | ...
+//[info]   |     
+//[info]   +-io.circe:circe-parser_2.12:0.9.3 [S]
+//[info]   | +-io.circe:circe-core_2.12:0.9.3 [S]
+//[info]   | | ...
+//[info]   | |     
+//[info]   | +-io.circe:circe-jawn_2.12:0.9.3 [S]
+//[info]   |   +-io.circe:circe-core_2.12:0.9.3 [S]
+//[info]   |   | ...
+//[info]   |   |     
+//[info]   |   +-org.spire-math:jawn-parser_2.12:0.11.1 [S]
+
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("io.circe.**" -> "rocks.muki.shaded.io.@1").inAll,
+  ShadeRule.rename("jawn.**" -> "rocks.muki.shaded.jawn.@1").inAll
+)
+assemblyJarName in assembly := s"${name.value}-shaded-${version.value}.jar"
+
+addArtifact(
+  Artifact(
+    name="sbt-graphql-shaded",
+    `type`="jar",
+    extension="jar",
+    classifier=None,
+    configurations=Vector(Compile.toConfigRef),
+    url=None),
+  sbtassembly.AssemblyKeys.assembly)
+
+publishArtifact in (Compile, packageBin) := false
+
 // scripted test settings
 scriptedLaunchOpts += "-Dproject.version=" + version.value
 
