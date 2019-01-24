@@ -105,7 +105,12 @@ graphqlSchemas += GraphQLSchema(
 places.
 
 ```scala
-// from a file
+// from a Json file
+graphqlProductionSchema := GraphQLSchemaLoader
+  .fromFile((resourceManaged in Compile).value / "prod.json")
+  .loadSchema()
+
+// from a GraphQL file
 graphqlProductionSchema := GraphQLSchemaLoader
   .fromFile((resourceManaged in Compile).value / "prod.graphql")
   .loadSchema()
