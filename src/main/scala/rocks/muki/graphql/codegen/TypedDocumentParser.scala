@@ -52,8 +52,9 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     case IDType =>
       types += tpe
       ()
-    case _: ScalarType[_] =>
-      // Nothing
+    case sc: ScalarType[_] =>
+      if (sc.name == "URI")
+        types += sc
       ()
     case input: InputObjectType[_] =>
       types += input
@@ -193,6 +194,9 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
         TypedDocument.Field(field.name, field.fieldType)
       }
       TypedDocument.Object(inputObj.name, fields)
+
+    case uriType: ScalarType[_] if uriType.name == "URI" =>
+      TypedDocument.TypeAlias("URI", "String")
 
     case IDType =>
       TypedDocument.TypeAlias("ID", "String")
