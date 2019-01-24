@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
 //[info]   |   +-org.spire-math:jawn-parser_2.12:0.11.1 [S]
 
 assemblyShadeRules in assembly := Seq(
-  ShadeRule.rename("io.circe.**" -> "rocks.muki.shaded.io.@1").inAll,
+  ShadeRule.rename("io.circe.**" -> "rocks.muki.shaded.io.circe.@1").inAll,
   ShadeRule.rename("jawn.**" -> "rocks.muki.shaded.jawn.@1").inAll
 )
 assemblyJarName in assembly := s"${name.value}-shaded-${version.value}.jar"
