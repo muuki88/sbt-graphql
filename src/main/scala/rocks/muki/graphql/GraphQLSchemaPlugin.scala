@@ -2,8 +2,10 @@ package rocks.muki.graphql
 
 import rocks.muki.graphql.releasenotes.MarkdownReleaseNotes
 import rocks.muki.graphql.schema.SchemaLoader
+import rocks.muki.graphql.schema.SchemaFilterName
 import sangria.schema._
 import sbt._
+import sangria.renderer.SchemaFilter.default
 import sbt.Keys._
 
 object GraphQLSchemaPlugin extends AutoPlugin {
@@ -35,6 +37,19 @@ object GraphQLSchemaPlugin extends AutoPlugin {
       taskKey[File]("generates a graphql schema file")
 
     /**
+      * Setting to control the output of the schema generation.
+      *
+      * @see https://github.com/sangria-graphql/sangria/blob/343d7a59eeb9392573751306f2b485bca2bee75f/src/main/scala/sangria/renderer/SchemaRenderer.scala#L298-L323
+      * @example if you would like to include sangria built-ins
+      * {{{
+      *   graphqlSchemaGenFilter := SchemaFilterNames.WithoutGraphQLBuiltIn
+      * }}}
+      */
+    val graphqlSchemaGenFilter: SettingKey[SchemaFilterName] =
+      settingKey[SchemaFilterName](
+        "defines the filter for generating the schema")
+
+    /**
       * Returns the changes between the two schemas defined as parameters.
       *
       * `graphqlSchemaChanges <new schema> <old schema>`
@@ -64,9 +79,13 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   }
   import autoImport._
   import GraphQLPlugin.autoImport._
+  import rocks.muki.graphql.schema.SchemaFilters.{
+    Default => DefaultSchemaFilter
+  }
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
+    graphqlSchemaGenFilter := DefaultSchemaFilter,
     graphqlSchemaChanges := graphqlSchemaChangesTask.evaluated,
     target in graphqlSchemaGen := (target in Compile).value / "sbt-graphql",
     graphqlSchemaGen := {
@@ -104,6 +123,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   private def generateSchemaGeneratorClass() = Def.task {
     val schemaCode = graphqlSchemaSnippet.value
     val file = (sourceManaged in Compile).value / "sbt-sangria-codegen" / s"$mainClass.scala"
+    val filter = graphqlSchemaGenFilter.value.name
 
     val content = s"""|package $packageName
                       |object $mainClass {
@@ -112,7 +132,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
                       |  }
                       |  def main(args: Array[String]): Unit = {
                       |    val schemaFile = new java.io.File(args(0))
-                      |    val graphql: String = schema.renderPretty
+                      |    val graphql: String = schema.renderPretty($filter)
                       |    schemaFile.getParentFile.mkdirs()
                       |    new java.io.PrintWriter(schemaFile) {
                       |      write(graphql)
