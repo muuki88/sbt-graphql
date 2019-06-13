@@ -41,8 +41,9 @@ case class ApolloSourceGenerator(fileName: String,
     */
   def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] = {
     Right(
-      additionalImports ++ document.interfaces.map(
-        generateInterface(_, isSealed = false)))
+      additionalImports ++ document.interfaces
+        .map(generateInterface(_, isSealed = false))
+    )
   }
 
   /**
@@ -58,19 +59,21 @@ case class ApolloSourceGenerator(fileName: String,
     */
   def generateTypes(document: TypedDocument.Api): Result[List[Stat]] = {
     val typeStats = document.types.flatMap(generateType)
-    Right(
-      jsonCodeGen.imports ++ List(q"""object types {
+    Right(jsonCodeGen.imports ++ List(q"""object types {
              ..$typeStats
-           }""")
-    )
+           }"""))
   }
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
 
     val operations = document.operations.map { operation =>
       val typeName = Term.Name(
-        operation.name.getOrElse(throw new IllegalArgumentException(
-          "Anonymous operations are not support")))
+        operation.name.getOrElse(
+          throw new IllegalArgumentException(
+            "Anonymous operations are not support"
+          )
+        )
+      )
 
       // input variables require "input types", which are generated separately and are
       // available for all operations provided by the given document.
@@ -96,9 +99,11 @@ case class ApolloSourceGenerator(fileName: String,
         .getOrElse("")
 
       val documentString = escapedDocumentString + escapedFragmentString
-      val graphqlDocument = Term.Interpolate(Term.Name("graphql"),
-                                             Lit.String(documentString) :: Nil,
-                                             Nil)
+      val graphqlDocument = Term.Interpolate(
+        Term.Name("graphql"),
+        Lit.String(documentString) :: Nil,
+        Nil
+      )
 
       val dataJsonDecoder =
         Option(jsonCodeGen.generateFieldDecoder(Type.Name("Data")))
@@ -108,12 +113,24 @@ case class ApolloSourceGenerator(fileName: String,
           }
           .getOrElse(List.empty[Stat])
 
+      val variablesJsonEncoder =
+        Option(jsonCodeGen.generateFieldEncoder(Type.Name("Variables")))
+          .filter(_.nonEmpty)
+          .map { stats =>
+            List[Stat](q"""object Variables { ..$stats }""")
+          }
+          .getOrElse(List.empty[Stat])
+
+      val variablesDef = List[Stat](
+        q"""case class Variables(..$inputParams)""") ++ variablesJsonEncoder
+
+      val dataDef = List[Stat](q"""case class Data(..$dataParams)""") ++ dataJsonDecoder
+
       q"""
           object $typeName extends ..$additionalInits {
            val document: sangria.ast.Document = $graphqlDocument
-           case class Variables(..$inputParams)
-           case class Data(..$dataParams)
-           ..$dataJsonDecoder
+           ..$variablesDef
+           ..$dataDef
            ..$data
           }"""
     }
@@ -123,15 +140,14 @@ case class ApolloSourceGenerator(fileName: String,
     Right(
       additionalImports ++
         jsonCodeGen.imports ++
-        List(
-          q"import sangria.macros._",
-          q"import types._",
-          q"""
+        List(q"import sangria.macros._",
+             q"import types._",
+             q"""
        object ${Term.Name(objectName)} {
           ..$operations
        }
-     """
-        ))
+     """)
+    )
   }
 
   private def selectionStats(field: TypedDocument.Field,
@@ -179,23 +195,29 @@ case class ApolloSourceGenerator(fileName: String,
             val conrecteUnionTypes = unionTypes.map {
               case TypedDocument.UnionSelection(unionType, _) => unionType.name
             }
-            jsonCodeGen.generateUnionFieldDecoder(unionName,
-                                                  conrecteUnionTypes,
-                                                  "__typename")
+            jsonCodeGen.generateUnionFieldDecoder(
+              unionName,
+              conrecteUnionTypes,
+              "__typename"
+            )
           }
 
         // create concrete case classes for each union type
         val unionValues = unionTypes.flatMap {
           case TypedDocument.UnionSelection(unionType, unionSelection) =>
             // get nested selections
-            val innerSelections = unionSelection.fields.flatMap(field =>
-              selectionStats(field, List.empty))
-            val params = generateFieldParams(unionSelection.fields,
-                                             typeQualifiers :+ unionName.value)
+            val innerSelections = unionSelection.fields.flatMap(
+              field => selectionStats(field, List.empty)
+            )
+            val params = generateFieldParams(
+              unionSelection.fields,
+              typeQualifiers :+ unionName.value
+            )
             val unionTypeName = Type.Name(unionType.name)
             val unionTermName = Term.Name(unionType.name)
 
-            val jsonCodec = jsonCodeGen.generateFieldDecoder(unionTypeName)
+            val jsonCodec = jsonCodeGen.generateFieldDecoder(unionTypeName) ++ jsonCodeGen
+              .generateFieldEncoder(unionTypeName)
 
             List(q"case class $unionTypeName(..$params) extends $unionTrait") ++
               Option(innerSelections ++ jsonCodec)
@@ -221,12 +243,15 @@ case class ApolloSourceGenerator(fileName: String,
 
         // The inner stats don't require the typeQualifiers as they are packed into a separate
         // object, which is like a fresh start.
-        val innerStats = jsonCodeGen.generateFieldDecoder(fieldName) ++ fieldSelection.fields
+        val innerStats = jsonCodeGen.generateFieldDecoder(fieldName) ++ jsonCodeGen
+          .generateFieldEncoder(fieldName) ++ fieldSelection.fields
           .flatMap(selectionStats(_, List.empty))
 
         // Add
-        val params = generateFieldParams(fieldSelection.fields,
-                                         typeQualifiers :+ termName.value)
+        val params = generateFieldParams(
+          fieldSelection.fields,
+          typeQualifiers :+ termName.value
+        )
         List(
           // "// nice comment".parse[Stat].get,
           q"case class $fieldName(..$params) extends $template"
@@ -240,7 +265,8 @@ case class ApolloSourceGenerator(fileName: String,
 
   private def generateFieldParams(
       fields: List[TypedDocument.Field],
-      typeQualifiers: List[String]): List[Term.Param] =
+      typeQualifiers: List[String]
+  ): List[Term.Param] =
     fields.map { field =>
       val tpe = parameterFieldType(field, typeQualifiers)
       termParam(field.name, tpe)
@@ -274,8 +300,9 @@ case class ApolloSourceGenerator(fileName: String,
     * @param genType
     * @return scala type
     */
-  private def generateFieldType(field: TypedDocument.Field)(
-      genType: schema.Type => Type): Type = {
+  private def generateFieldType(
+      field: TypedDocument.Field
+  )(genType: schema.Type => Type): Type = {
     // recursive function
     def typeOf(tpe: schema.Type): Type = tpe match {
       case schema.OptionType(wrapped) =>
@@ -326,14 +353,23 @@ case class ApolloSourceGenerator(fileName: String,
   }
 
   private def generateObject(obj: TypedDocument.Object,
-                             interfaces: List[String]): Stat = {
+                             interfaces: List[String]): List[Stat] = {
     val params = obj.fields.map { field =>
       val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
       termParam(field.name, tpe)
     }
     val className = Type.Name(obj.name)
+    val objName = Term.Name(obj.name)
     val template = generateTemplate(interfaces)
-    q"case class $className(..$params) extends $template": Stat
+    val objectStats = Some(
+      jsonCodeGen.generateFieldDecoder(className) ++ jsonCodeGen
+        .generateFieldEncoder(className))
+      .filter(_.nonEmpty)
+      .map(stats => q"""case object $objName {
+              ..$stats
+         }""")
+      .toList
+    List[Stat](q"case class $className(..$params) extends $template") ++ objectStats
   }
 
   /**
@@ -347,7 +383,7 @@ case class ApolloSourceGenerator(fileName: String,
       List(generateInterface(interface, isSealed = false))
 
     case obj: TypedDocument.Object =>
-      List(generateObject(obj, List.empty))
+      generateObject(obj, List.empty)
 
     case TypedDocument.Enum(name, values) =>
       val enumValues = values.map { value =>
@@ -359,7 +395,8 @@ case class ApolloSourceGenerator(fileName: String,
       val enumName = Type.Name(name)
       val objectName = Term.Name(name)
       val jsonDecoder = jsonCodeGen.generateEnumFieldDecoder(enumName, values)
-      val enumStats: List[Stat] = enumValues ++ jsonDecoder
+      val jsonEncoder = jsonCodeGen.generateEnumFieldEncoder(enumName, values)
+      val enumStats: List[Stat] = enumValues ++ jsonDecoder ++ jsonEncoder
 
       List[Stat](
         q"sealed trait $enumName",
@@ -372,7 +409,7 @@ case class ApolloSourceGenerator(fileName: String,
       List(q"type $alias = $underlying": Stat)
 
     case TypedDocument.Union(name, types) =>
-      val unionValues = types.map(obj => generateObject(obj, List(name)))
+      val unionValues = types.flatMap(obj => generateObject(obj, List(name)))
       val unionName = Type.Name(name)
       val objectName = Term.Name(name)
       List[Stat](
