@@ -40,7 +40,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
         // Include only types that have been used in the document
         schema.typeList.filter(types).collect(generateType).toList,
         document
-      ))
+      )
+    )
 
   /**
     * Marks a schema type so it is added to the imported AST.
@@ -49,6 +50,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     * to generate a field which has an enum type this method should be called.
     */
   private def touchType(tpe: Type): Unit = tpe.namedType match {
+    case x if types.contains(x) =>
+      ()
     case IDType =>
       types += tpe
       ()
@@ -68,15 +71,18 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
 
   private def generateSelections(
       selections: Vector[ast.Selection],
-      typeConditions: Set[Type] = Set.empty): TypedDocument.Selection =
+      typeConditions: Set[Type] = Set.empty
+  ): TypedDocument.Selection =
     selections
       .map(generateSelection(typeConditions))
       .foldLeft(TypedDocument.Selection.empty)(_ + _)
 
-  private def generateSelection(typeConditions: Set[Type])(
-      node: ast.Selection): TypedDocument.Selection = {
+  private def generateSelection(
+      typeConditions: Set[Type]
+  )(node: ast.Selection): TypedDocument.Selection = {
     def conditionalFragment(
-        f: => TypedDocument.Selection): TypedDocument.Selection =
+        f: => TypedDocument.Selection
+    ): TypedDocument.Selection =
       if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
         f
       else
@@ -96,13 +102,15 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
               TypedDocument.UnionSelection(tpe, selection)
             }
             TypedDocument.Selection(
-              TypedDocument.Field(field.outputName, tpe, union = types))
+              TypedDocument.Field(field.outputName, tpe, union = types)
+            )
 
           case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
             val gen = generateSelections(field.selections)
             TypedDocument.Selection(
               TypedDocument
-                .Field(field.outputName, tpe, selection = Some(gen)))
+                .Field(field.outputName, tpe, selection = Some(gen))
+            )
 
           case _ =>
             touchType(tpe)
@@ -117,7 +125,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
         typeInfo.enter(fragment)
         val result = conditionalFragment(
           generateSelections(fragment.selections, typeConditions)
-            .copy(interfaces = List(name)))
+            .copy(interfaces = List(name))
+        )
         typeInfo.leave(fragment)
         result
 
@@ -132,7 +141,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
   }
 
   private def generateOperation(
-      operation: ast.OperationDefinition): TypedDocument.Operation = {
+      operation: ast.OperationDefinition
+  ): TypedDocument.Operation = {
     typeInfo.enter(operation)
     val variables = operation.variables.toList.map { varDef =>
       schema.getInputType(varDef.tpe) match {
@@ -150,7 +160,8 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
   }
 
   private def generateFragment(
-      fragment: ast.FragmentDefinition): TypedDocument.Interface = {
+      fragment: ast.FragmentDefinition
+  ): TypedDocument.Interface = {
     typeInfo.enter(fragment)
     val selection = generateSelections(fragment.selections)
     typeInfo.leave(fragment)
