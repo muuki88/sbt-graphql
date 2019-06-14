@@ -6,7 +6,7 @@ scalaVersion in ThisBuild := "2.12.4"
 val server = project
   .enablePlugins(GraphQLSchemaPlugin)
   .settings(
-    libraryDependencies += "org.sangria-graphql" %% "sangria" % "1.3.2",
+    libraryDependencies += "org.sangria-graphql" %% "sangria" % "1.4.2",
     graphqlSchemaSnippet :=
       "com.example.starwars.TestSchema.StarWarsSchema"
   )
