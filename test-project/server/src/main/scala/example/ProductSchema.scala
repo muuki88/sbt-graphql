@@ -43,7 +43,7 @@ object LocalDateTimeScalar {
       case _ => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) ⇒ parseDate(s)
+      case ast.StringValue(s, _, _, _, _) ⇒ parseDate(s)
       case _ => Left(LocalDateTimeCoercionViolation)
     })
 

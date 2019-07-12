@@ -44,8 +44,8 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.4",
   organization := "rocks.muki",
   libraryDependencies ++= Seq(
-    "org.sangria-graphql" %% "sangria" % "1.3.2",
-    "org.sangria-graphql" %% "sangria-circe" % "1.1.0"
+    "org.sangria-graphql" %% "sangria" % "1.4.2",
+    "org.sangria-graphql" %% "sangria-circe" % "1.2.0"
   ),
   // define schemas available in all builds
   graphqlSchemas += GraphQLSchema(
