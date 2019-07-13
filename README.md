@@ -36,8 +36,7 @@ In your `build.sbt` enable the plugins and add sangria. I'm using circe as a par
 enablePlugins(GraphQLSchemaPlugin, GraphQLQueryPlugin)
 
 libraryDependencies ++= Seq(
-  "org.sangria-graphql" %% "sangria" % "1.4.2",
-  "org.sangria-graphql" %% "sangria-circe" % "1.2.1"
+  "org.sangria-graphql" %% "sangria" % "1.4.2"
 )
 ``` 
 

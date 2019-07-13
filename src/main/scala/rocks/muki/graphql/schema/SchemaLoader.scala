@@ -3,10 +3,10 @@ package rocks.muki.graphql.schema
 import java.io.File
 
 import io.circe.Json
-import io.circe.parser.parse
+import io.circe.jackson.parse
 import sangria.introspection.introspectionQuery
 import sangria.macros._
-import sangria.marshalling.circe._
+import rocks.muki.graphql.instances._
 import sangria.parser.QueryParser
 import sangria.schema.Schema
 import sbt.io.IO
