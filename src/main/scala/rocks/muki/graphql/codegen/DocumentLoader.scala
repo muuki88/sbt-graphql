@@ -35,13 +35,12 @@ object DocumentLoader {
     * @param files the files that should be loaded
     * @return
     */
-  def merged(schema: Schema[_, _], files: List[File]): Result[Document] = {
+  def merged(schema: Schema[_, _], files: List[File]): Result[Document] =
     /*_*/
     files
       .traverse(file => single(schema, file))
       .map(documents => documents.combineAll)
-    /*_*/
-  }
+  /*_*/
 
   /**
     * Load a single, validated query file.
@@ -49,32 +48,29 @@ object DocumentLoader {
     * @param file
     * @return
     */
-  def single(schema: Schema[_, _], file: File): Result[Document] = {
+  def single(schema: Schema[_, _], file: File): Result[Document] =
     for {
       document <- parseDocument(file)
       violations = QueryValidator.default.validateQuery(schema, document)
       _ <- Either.cond(
         violations.isEmpty,
         document,
-        Failure(
-          s"Invalid query in ${file.getAbsolutePath}:\n${violations.map(_.errorMessage).mkString(", ")}"))
+        Failure(s"Invalid query in ${file.getAbsolutePath}:\n${violations.map(_.errorMessage).mkString(", ")}")
+      )
     } yield document
-  }
 
   private def parseSchema(file: File): Result[Schema[_, _]] =
     for {
       document <- parseDocument(file)
-      schema <- Either.catchNonFatal(Schema.buildFromAst(document)).leftMap {
-        error =>
-          Failure(s"Failed to read schema $file: ${error.getMessage}")
+      schema <- Either.catchNonFatal(Schema.buildFromAst(document)).leftMap { error =>
+        Failure(s"Failed to read schema $file: ${error.getMessage}")
       }
     } yield schema
 
   private def parseDocument(file: File): Result[Document] =
     for {
-      input <- Either.catchNonFatal(Source.fromFile(file).mkString).leftMap {
-        error =>
-          Failure(s"Failed to read $file: ${error.getMessage}")
+      input <- Either.catchNonFatal(Source.fromFile(file).mkString).leftMap { error =>
+        Failure(s"Failed to read $file: ${error.getMessage}")
       }
       document <- Either.fromTry(QueryParser.parse(input)).leftMap { error =>
         Failure(s"Failed to parse $file: ${error.getMessage}")

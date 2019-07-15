@@ -46,8 +46,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
       * }}}
       */
     val graphqlSchemaGenFilter: SettingKey[SchemaFilterName] =
-      settingKey[SchemaFilterName](
-        "defines the filter for generating the schema")
+      settingKey[SchemaFilterName]("defines the filter for generating the schema")
 
     /**
       * Returns the changes between the two schemas defined as parameters.
@@ -67,21 +66,19 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     /**
       * Validates the new schema against existing queries and the production schema
       */
-    val graphqlValidateSchema: InputKey[Unit] = inputKey[Unit](
-      "Validates the new schema against existing queries and the production schema")
+    val graphqlValidateSchema: InputKey[Unit] =
+      inputKey[Unit]("Validates the new schema against existing queries and the production schema")
 
     /**
       * Creates release notes for changes between the the two given schemas
       */
-    val graphqlReleaseNotes: InputKey[String] = inputKey[String](
-      "Creates release notes for changes between the the two given schemas")
+    val graphqlReleaseNotes: InputKey[String] =
+      inputKey[String]("Creates release notes for changes between the the two given schemas")
 
   }
   import autoImport._
   import GraphQLPlugin.autoImport._
-  import rocks.muki.graphql.schema.SchemaFilters.{
-    Default => DefaultSchemaFilter
-  }
+  import rocks.muki.graphql.schema.SchemaFilters.{Default => DefaultSchemaFilter}
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
@@ -155,8 +152,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     Def.task {
       val newSchema = newSchemaDefinition.schemaTask.value
       val oldSchema = oldSchemaDefinition.schemaTask.value
-      log.info(
-        s"Comparing ${oldSchemaDefinition.label} with ${newSchemaDefinition.label} schema")
+      log.info(s"Comparing ${oldSchemaDefinition.label} with ${newSchemaDefinition.label} schema")
       oldSchema compare newSchema
     }
   }

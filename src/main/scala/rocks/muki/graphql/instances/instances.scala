@@ -40,8 +40,7 @@ package object instances {
       node.fold(
         jsonNull = invalidScalar,
         jsonBoolean = identity,
-        jsonNumber =
-          num ⇒ num.toBigInt orElse num.toBigDecimal getOrElse invalidScalar,
+        jsonNumber = num ⇒ num.toBigInt orElse num.toBigDecimal getOrElse invalidScalar,
         jsonString = identity,
         jsonArray = _ ⇒ invalidScalar,
         jsonObject = _ ⇒ invalidScalar

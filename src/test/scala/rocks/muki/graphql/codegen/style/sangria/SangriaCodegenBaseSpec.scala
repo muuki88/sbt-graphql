@@ -19,11 +19,7 @@ package rocks.muki.graphql.codegen.style.sangria
 import java.io.File
 
 import org.scalatest.{EitherValues, WordSpec}
-import rocks.muki.graphql.codegen.{
-  DocumentLoader,
-  ScalametaGenerator,
-  TypedDocumentParser
-}
+import rocks.muki.graphql.codegen.{DocumentLoader, ScalametaGenerator, TypedDocumentParser}
 import rocks.muki.graphql.schema.SchemaLoader
 import sangria.schema.Schema
 import sbt._
@@ -31,8 +27,7 @@ import sbt._
 import scala.io.Source
 import scala.meta._
 
-abstract class SangriaCodegenBaseSpec(name: String,
-                                      schema: Option[Schema[_, _]] = None)
+abstract class SangriaCodegenBaseSpec(name: String, schema: Option[Schema[_, _]] = None)
     extends WordSpec
     with EitherValues {
   def this(name: String, schema: Schema[_, _]) = this(name, Some(schema))

@@ -33,21 +33,22 @@ object TestData {
     def appearsIn: List[Episode.Value]
   }
 
-  case class Human(id: String,
-                   name: Option[String],
-                   friends: List[String],
-                   appearsIn: List[Episode.Value],
-                   homePlanet: Option[String])
-      extends Character
-  case class Droid(id: String,
-                   name: Option[String],
-                   friends: List[String],
-                   appearsIn: List[Episode.Value],
-                   primaryFunction: Option[String])
-      extends Character
+  case class Human(
+      id: String,
+      name: Option[String],
+      friends: List[String],
+      appearsIn: List[Episode.Value],
+      homePlanet: Option[String]
+  ) extends Character
+  case class Droid(
+      id: String,
+      name: Option[String],
+      friends: List[String],
+      appearsIn: List[Episode.Value],
+      primaryFunction: Option[String]
+  ) extends Character
 
-  case class DeferFriends(friends: List[String])
-      extends Deferred[List[Option[Character]]]
+  case class DeferFriends(friends: List[String]) extends Deferred[List[Option[Character]]]
 
   val characters = List[Character](
     Human(
@@ -57,16 +58,20 @@ object TestData {
       appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
       homePlanet = Some("Tatooine")
     ),
-    Human(id = "1001",
-          name = Some("Darth Vader"),
-          friends = List("1004"),
-          appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
-          homePlanet = Some("Tatooine")),
-    Human(id = "1002",
-          name = Some("Han Solo"),
-          friends = List("1000", "1003", "2001"),
-          appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
-          homePlanet = None),
+    Human(
+      id = "1001",
+      name = Some("Darth Vader"),
+      friends = List("1004"),
+      appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
+      homePlanet = Some("Tatooine")
+    ),
+    Human(
+      id = "1002",
+      name = Some("Han Solo"),
+      friends = List("1000", "1003", "2001"),
+      appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
+      homePlanet = None
+    ),
     Human(
       id = "1003",
       name = Some("Leia Organa"),
@@ -74,11 +79,13 @@ object TestData {
       appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
       homePlanet = Some("Alderaan")
     ),
-    Human(id = "1004",
-          name = Some("Wilhuff Tarkin"),
-          friends = List("1001"),
-          appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
-          homePlanet = None),
+    Human(
+      id = "1004",
+      name = Some("Wilhuff Tarkin"),
+      friends = List("1001"),
+      appearsIn = List(Episode.NEWHOPE, Episode.EMPIRE, Episode.JEDI),
+      homePlanet = None
+    ),
     Droid(
       id = "2000",
       name = Some("C-3PO"),
@@ -96,9 +103,7 @@ object TestData {
   )
 
   class FriendsResolver extends DeferredResolver[Any] {
-    override def resolve(deferred: Vector[Deferred[Any]],
-                         ctx: Any,
-                         queryState: Any)(implicit ec: ExecutionContext) =
+    override def resolve(deferred: Vector[Deferred[Any]], ctx: Any, queryState: Any)(implicit ec: ExecutionContext) =
       deferred map {
         case DeferFriends(friendIds) ⇒
           Future.fromTry(Try(friendIds map (id ⇒ characters.find(_.id == id))))

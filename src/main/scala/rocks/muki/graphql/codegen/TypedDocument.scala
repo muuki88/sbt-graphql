@@ -32,21 +32,19 @@ object TypedDocument {
     * @param selection -
     * @param union
     */
-  case class Field(name: String,
-                   tpe: schema.Type,
-                   selection: Option[Selection] = None,
-                   union: List[UnionSelection] = List.empty)
-      extends TypedDocument {
+  case class Field(
+      name: String,
+      tpe: schema.Type,
+      selection: Option[Selection] = None,
+      union: List[UnionSelection] = List.empty
+  ) extends TypedDocument {
     def isObjectLike = selection.nonEmpty
     def isUnion = union.nonEmpty
   }
 
-  case class Selection(fields: List[Field],
-                       interfaces: List[String] = List.empty)
-      extends TypedDocument {
+  case class Selection(fields: List[Field], interfaces: List[String] = List.empty) extends TypedDocument {
     def +(that: Selection) =
-      Selection((this.fields ++ that.fields).distinct,
-                this.interfaces ++ that.interfaces)
+      Selection((this.fields ++ that.fields).distinct, this.interfaces ++ that.interfaces)
   }
   object Selection {
     final val empty = Selection(List.empty)
@@ -54,8 +52,7 @@ object TypedDocument {
       Selection(List(field))
   }
 
-  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection)
-      extends TypedDocument
+  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection) extends TypedDocument
 
   /**
     * Operations represent API calls and are the entry points to the API.
@@ -66,11 +63,12 @@ object TypedDocument {
     * @param original the original sangria OperationDefinition
     *
     */
-  case class Operation(name: Option[String],
-                       variables: List[Field],
-                       selection: Selection,
-                       original: ast.OperationDefinition)
-      extends TypedDocument
+  case class Operation(
+      name: Option[String],
+      variables: List[Field],
+      selection: Selection,
+      original: ast.OperationDefinition
+  ) extends TypedDocument
 
   /**
     * Marker trait for GraphQL input and output types.
@@ -96,8 +94,5 @@ object TypedDocument {
     *              and input variable types.
     *
     */
-  case class Api(operations: List[Operation],
-                 interfaces: List[Interface],
-                 types: List[Type],
-                 original: ast.Document)
+  case class Api(operations: List[Operation], interfaces: List[Interface], types: List[Type], original: ast.Document)
 }
