@@ -18,20 +18,14 @@ package rocks.muki.graphql.codegen.style.apollo
 import org.scalatest.{EitherValues, TryValues, WordSpec}
 import java.io.File
 
-import rocks.muki.graphql.codegen.{
-  ApolloSourceGenerator,
-  DocumentLoader,
-  TypedDocumentParser
-}
+import rocks.muki.graphql.codegen.{ApolloSourceGenerator, DocumentLoader, TypedDocumentParser}
 import rocks.muki.graphql.schema.SchemaLoader
 
 import scala.io.{Codec, Source => IOSource}
 import scala.meta._
 import sbt._
 
-abstract class ApolloCodegenBaseSpec(
-    name: String,
-    generator: String => ApolloSourceGenerator)
+abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSourceGenerator)
     extends WordSpec
     with EitherValues
     with TryValues {
@@ -63,8 +57,7 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim,
-               s"------\n$actual\n------")
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
       }
     }
 
@@ -92,8 +85,7 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim,
-               s"------\n$actual\n------")
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
       }
     }
 
@@ -121,8 +113,7 @@ abstract class ApolloCodegenBaseSpec(
         val actual = stats.map(_.show[Syntax]).mkString("\n")
         val expectedSource = contentOf(expected).parse[Source].get
 
-        assert(actual === expectedSource.show[Syntax].trim,
-               s"------\n$actual\n------")
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
       }
     }
 

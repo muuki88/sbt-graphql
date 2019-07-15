@@ -9,21 +9,18 @@ import scala.meta._
   */
 object ScalametaUtils {
 
-  def typeRefOf(typeTerm: String): Type.Ref = {
+  def typeRefOf(typeTerm: String): Type.Ref =
     typeTerm.parse[Type].get.asInstanceOf[Type.Ref]
-  }
 
-  def typeRefOf(term: String, typeTerm: String): Type.Ref = {
+  def typeRefOf(term: String, typeTerm: String): Type.Ref =
     typeRefOf(term.split('.'), typeTerm)
-  }
 
-  def typeRefOf(terms: Seq[String], typeTerm: String): Type.Ref = {
+  def typeRefOf(terms: Seq[String], typeTerm: String): Type.Ref =
     if (terms.isEmpty) {
       Type.Name(typeTerm)
     } else {
       Type.Select(termRefOf(terms), Type.Name(typeTerm))
     }
-  }
 
   // terms must not be empty
   def termRefOf(terms: Seq[String]): Term.Ref = {
@@ -35,9 +32,8 @@ object ScalametaUtils {
     }
   }
 
-  def termRefOf(term: String): Term.Ref = {
+  def termRefOf(term: String): Term.Ref =
     termRefOf(term.split('.'))
-  }
 
   /**
     * Takes a list of import declarations and generates a list of scalameta import statements.
@@ -49,12 +45,11 @@ object ScalametaUtils {
     * @param imports a list of packages, objects or classes to import
     * @return a list of scalameta import statements
     */
-  def imports(imports: List[String]): List[Import] = {
+  def imports(imports: List[String]): List[Import] =
     imports.map { x =>
       val i = importer(x.split("\\.").toList)
       q"import ..$i"
     }
-  }
 
   private def importer(imports: List[String]): List[Importer] = {
     val reversedImportNames = imports.init.map(Term.Name(_)).reverse
@@ -82,8 +77,7 @@ object ScalametaUtils {
       case Nil =>
         throw new IllegalStateException("Cannot create an empty import")
       case name :: Nil =>
-        throw new IllegalStateException(
-          s"Cannot create a import tree for a single name: $name")
+        throw new IllegalStateException(s"Cannot create a import tree for a single name: $name")
       case name :: qual :: Nil => Term.Select(qual, name)
       case name :: qualifiers =>
         Term.Select(recursiveTermSelect(qualifiers), name)

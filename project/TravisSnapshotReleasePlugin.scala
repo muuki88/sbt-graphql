@@ -49,23 +49,19 @@ object TravisSnapshotReleasePlugin extends AutoPlugin {
           Def
             .task[Unit] {
               val snapshotVersion = version.value
-              log.success(
-                s"Pushed to snapshot branch. Publishing $snapshotVersion")
+              log.success(s"Pushed to snapshot branch. Publishing $snapshotVersion")
             }
             .dependsOn(publishSigned)
         } else if (releaseTag.isDefined) {
           Def
             .task[Unit] {
-              log.success(
-                s"Pushed to master branch. Publishing a release with version ${version.value}")
+              log.success(s"Pushed to master branch. Publishing a release with version ${version.value}")
             }
             .dependsOn(publishSigned)
         } else {
           Def.task[Unit] {
-            log.warn(
-              "Skip publishing from travis. No release tag found or not on snapshot branch")
-            log.warn(
-              s"Branch $branch | Head commit: ${git.gitHeadCommit.value}")
+            log.warn("Skip publishing from travis. No release tag found or not on snapshot branch")
+            log.warn(s"Branch $branch | Head commit: ${git.gitHeadCommit.value}")
           }
         }
 

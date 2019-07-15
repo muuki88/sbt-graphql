@@ -13,9 +13,7 @@ object PreProcessors {
     * @param preProcessors the list of preprocessors
     * @return a new file with the processed content
     */
-  def apply(graphqlFile: File,
-            targetDir: File,
-            preProcessors: Seq[PreProcessor]): Result[File] = {
+  def apply(graphqlFile: File, targetDir: File, preProcessors: Seq[PreProcessor]): Result[File] = {
     val processedFile = targetDir / graphqlFile.getName
 
     for {
@@ -41,17 +39,13 @@ object PreProcessors {
     * @param preProcessors the list of preprocessors
     * @return a list of new files with the processed content
     */
-  def apply(graphqlFiles: Seq[File],
-            targetDir: File,
-            preProcessors: Seq[PreProcessor]): Result[Seq[File]] = {
-
+  def apply(graphqlFiles: Seq[File], targetDir: File, preProcessors: Seq[PreProcessor]): Result[Seq[File]] =
     /*_*/ // Apply preprocessor list to all files. Accumulated errors through ValidatedNel.
     graphqlFiles.toList
       .traverse(file => apply(file, targetDir, preProcessors).toValidatedNel)
       .toEither
       .leftMap(errorMessages => errorMessages.reduce) // reduce NonEmptyList[Failure] to one Failure
-    /*_*/
-  }
+  /*_*/
 
   /**
     * Allows to import other graphql files (e.g. fragments) into an graphql file.
@@ -77,8 +71,7 @@ object PreProcessors {
           case Some(importedGraphQLFile) =>
             val importedGraphQLContent = IO.read(importedGraphQLFile)
             for {
-              recursiveProcessed <- magicImports(rootDirectories)(
-                importedGraphQLContent)
+              recursiveProcessed <- magicImports(rootDirectories)(importedGraphQLContent)
             } yield recursiveProcessed + IO.Newline
           case None =>
             Left(Failure(s"Could not resolve $filePath in $rootDirectories"))

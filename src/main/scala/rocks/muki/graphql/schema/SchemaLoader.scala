@@ -58,7 +58,7 @@ object SchemaLoader {
   */
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
-  override def loadSchema(): Schema[Any, Any] = {
+  override def loadSchema(): Schema[Any, Any] =
     // check if it's a json or graphql file and parse accordingly
     if (file.getName.endsWith(".json")) {
       parse(IO.read(file)) match {
@@ -74,7 +74,6 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
         case Failure(error) => throw error
       }
     }
-  }
 }
 
 /**
@@ -83,26 +82,24 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
   * @param url the graphql endpoint
   * @param log log output
   */
-case class IntrospectSchemaLoader(url: String,
-                                  log: Logger,
-                                  headers: Seq[(String, String)] = Seq.empty,
-                                  method: IntrospectSchemaLoader.Method =
-                                    IntrospectSchemaLoader.GET)
-    extends SchemaLoader {
+case class IntrospectSchemaLoader(
+    url: String,
+    log: Logger,
+    headers: Seq[(String, String)] = Seq.empty,
+    method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET
+) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
     Schema.buildFromIntrospection(introspect())
 
-  def withHeaders(headers: (String, String)*): IntrospectSchemaLoader = {
+  def withHeaders(headers: (String, String)*): IntrospectSchemaLoader =
     copy(headers = headers.toList)
-  }
 
   /**
     * @return a new schema loader that uses a POST requests instead of a get request
     */
-  def withPost(): IntrospectSchemaLoader = {
+  def withPost(): IntrospectSchemaLoader =
     copy(method = IntrospectSchemaLoader.POST)
-  }
 
   /**
     * @see https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
@@ -131,8 +128,7 @@ case class IntrospectSchemaLoader(url: String,
         log.error(error.message)
         log.error("Body received")
         log.error(response.body)
-        sys.error(
-          s"Invalid JSON was returned from graphql endpoint ${method.name} : $url")
+        sys.error(s"Invalid JSON was returned from graphql endpoint ${method.name} : $url")
     }
   }
 }

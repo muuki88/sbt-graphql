@@ -1,5 +1,5 @@
 // formatting
-addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.12")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.0.2")
 
 // releasing
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.1")

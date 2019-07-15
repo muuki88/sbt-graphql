@@ -22,15 +22,15 @@ scriptedLaunchOpts += "-Dproject.version=" + version.value
 scalacOptions += "-Ypartial-unification"
 
 // project meta data
-licenses := Seq(
-  "Apache-2.0" -> url("https://opensource.org/licenses/Apache-2.0"))
+licenses := Seq("Apache-2.0" -> url("https://opensource.org/licenses/Apache-2.0"))
 homepage := Some(url("https://github.com/muuki88/sbt-graphql"))
 
 scmInfo := Some(
   ScmInfo(
     url("https://github.com/muuki88/sbt-graphql"),
     "scm:git@github.com:muuki88/sbt-graphql.git"
-  ))
+  )
+)
 
 developers := List(
   Developer(
@@ -38,7 +38,8 @@ developers := List(
     name = "Nepomuk Seiler",
     email = "nepomuk.seiler@gmail.com",
     url = url("https://www.muki.rocks")
-  ))
+  )
+)
 
 // bintray config
 bintrayOrganization := Some("sbt")
@@ -59,8 +60,7 @@ git.gitTagToVersionNumber := {
 
 git.formattedShaVersion := {
   val suffix =
-    git.makeUncommittedSignifierSuffix(git.gitUncommittedChanges.value,
-                                       git.uncommittedSignifier.value)
+    git.makeUncommittedSignifierSuffix(git.gitUncommittedChanges.value, git.uncommittedSignifier.value)
 
   git.gitHeadCommit.value map { _.substring(0, 7) } map { sha =>
     git.baseVersion.value + "-" + sha + suffix
@@ -79,7 +79,5 @@ pgpSecretRing := baseDirectory.value / "project" / ".gnupg" / "sec.asc"
 pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray)
 
 // ci commands
-addCommandAlias("validateFormatting",
-                "; scalafmt::test ; test:scalafmt::test ; sbt:scalafmt::test")
-addCommandAlias("validate",
-                "; clean ; update ; validateFormatting ; test ; scripted")
+addCommandAlias("validateFormatting", "; scalafmtCheckAll ; scalafmtSbtCheck ")
+addCommandAlias("validate", "; clean ; update ; validateFormatting ; test ; scripted")

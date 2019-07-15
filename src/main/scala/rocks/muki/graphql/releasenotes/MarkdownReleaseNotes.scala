@@ -30,7 +30,6 @@ class MarkdownReleaseNotes extends ReleaseNotes {
     output.toString
   }
 
-  private def renderChanges(changes: Vector[SchemaChange]): String = {
+  private def renderChanges(changes: Vector[SchemaChange]): String =
     changes.map(change => s"* ${change.description}").mkString("\n")
-  }
 }

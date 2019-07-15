@@ -23,11 +23,12 @@ import scala.meta._
 /**
   * Generate code using Scalameta.
   */
-case class ApolloSourceGenerator(fileName: String,
-                                 additionalImports: List[Import],
-                                 additionalInits: List[Init],
-                                 jsonCodeGen: JsonCodeGen)
-    extends Generator[List[Stat]] {
+case class ApolloSourceGenerator(
+    fileName: String,
+    additionalImports: List[Import],
+    additionalInits: List[Init],
+    jsonCodeGen: JsonCodeGen
+) extends Generator[List[Stat]] {
 
   /**
     * Generates only the interfaces (fragments) that appear in the given
@@ -39,12 +40,11 @@ case class ApolloSourceGenerator(fileName: String,
     * @param document schema + query
     * @return interfaces
     */
-  def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] = {
+  def generateInterfaces(document: TypedDocument.Api): Result[List[Stat]] =
     Right(
       additionalImports ++ document.interfaces
         .map(generateInterface(_, isSealed = false))
     )
-  }
 
   /**
     * Generates only the types that appear in the given
@@ -121,8 +121,7 @@ case class ApolloSourceGenerator(fileName: String,
           }
           .getOrElse(List.empty[Stat])
 
-      val variablesDef = List[Stat](
-        q"""case class Variables(..$inputParams)""") ++ variablesJsonEncoder
+      val variablesDef = List[Stat](q"""case class Variables(..$inputParams)""") ++ variablesJsonEncoder
 
       val dataDef = List[Stat](q"""case class Data(..$dataParams)""") ++ dataJsonDecoder
 
@@ -140,9 +139,7 @@ case class ApolloSourceGenerator(fileName: String,
     Right(
       additionalImports ++
         jsonCodeGen.imports ++
-        List(q"import sangria.macros._",
-             q"import types._",
-             q"""
+        List(q"import sangria.macros._", q"import types._", q"""
        object ${Term.Name(objectName)} {
           ..$operations
        }
@@ -150,12 +147,10 @@ case class ApolloSourceGenerator(fileName: String,
     )
   }
 
-  private def selectionStats(field: TypedDocument.Field,
-                             typeQualifiers: List[String]): List[Stat] =
+  private def selectionStats(field: TypedDocument.Field, typeQualifiers: List[String]): List[Stat] =
     field match {
       // render enumerations (union types)
-      case TypedDocument.Field(name, _, None, unionTypes)
-          if unionTypes.nonEmpty =>
+      case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
         // create the union types
 
         val unionName = Type.Name(name.capitalize)
@@ -280,8 +275,7 @@ case class ApolloSourceGenerator(fileName: String,
     * @param field
     * @return
     */
-  private def parameterFieldType(field: TypedDocument.Field,
-                                 typeQualifiers: List[String]): Type =
+  private def parameterFieldType(field: TypedDocument.Field, typeQualifiers: List[String]): Type =
     generateFieldType(field) { tpe =>
       if (field.isObjectLike || field.isUnion) {
         // prepend the type qualifier for nested object/case class structures
@@ -330,8 +324,7 @@ case class ApolloSourceGenerator(fileName: String,
     Template(early = Nil, inits = templateInits, emptySelf, stats = Nil)
   }
 
-  private def generateInterface(interface: TypedDocument.Interface,
-                                isSealed: Boolean): Stat = {
+  private def generateInterface(interface: TypedDocument.Interface, isSealed: Boolean): Stat = {
     val defs = interface.fields.map { field =>
       val fieldName = Term.Name(field.name)
       val tpe = generateFieldType(field) { tpe =>
@@ -352,8 +345,7 @@ case class ApolloSourceGenerator(fileName: String,
     }
   }
 
-  private def generateObject(obj: TypedDocument.Object,
-                             interfaces: List[String]): List[Stat] = {
+  private def generateObject(obj: TypedDocument.Object, interfaces: List[String]): List[Stat] = {
     val params = obj.fields.map { field =>
       val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
       termParam(field.name, tpe)
@@ -363,8 +355,8 @@ case class ApolloSourceGenerator(fileName: String,
     val template = generateTemplate(interfaces)
     val objectStats = Some(
       jsonCodeGen.generateFieldDecoder(className) ++ jsonCodeGen
-        .generateFieldEncoder(className))
-      .filter(_.nonEmpty)
+        .generateFieldEncoder(className)
+    ).filter(_.nonEmpty)
       .map(stats => q"""case object $objName {
               ..$stats
          }""")

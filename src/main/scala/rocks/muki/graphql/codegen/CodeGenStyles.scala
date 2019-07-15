@@ -31,9 +31,7 @@ object CodeGenStyles {
 
     // Generate the GraphQLQuery trait
     val graphQLQueryFile = context.targetDirectory / s"${GraphQLQueryGenerator.name}.scala"
-    SourceCodeWriter.write(
-      graphQLQueryFile,
-      GraphQLQueryGenerator.sourceCode(context.packageName))
+    SourceCodeWriter.write(graphQLQueryFile, GraphQLQueryGenerator.sourceCode(context.packageName))
 
     val additionalImports = ScalametaUtils.imports(context.imports.toList)
     val additionalInits = GraphQLQueryGenerator.inits
@@ -41,16 +39,13 @@ object CodeGenStyles {
     // Process all the graphql files
     val files = inputFiles.map { inputFile =>
       for {
-        processedFile <- PreProcessors(inputFile,
-                                       context.targetDirectory,
-                                       context.preProcessors)
+        processedFile <- PreProcessors(inputFile, context.targetDirectory, context.preProcessors)
         queryDocument <- DocumentLoader.single(schema, processedFile)
         typedDocument <- TypedDocumentParser(schema, queryDocument)
           .parse()
-        sourceCode <- ApolloSourceGenerator(inputFile.getName,
-                                            additionalImports,
-                                            additionalInits,
-                                            context.jsonCodeGen)(typedDocument)
+        sourceCode <- ApolloSourceGenerator(inputFile.getName, additionalImports, additionalInits, context.jsonCodeGen)(
+          typedDocument
+        )
       } yield {
         val stats =
           q"""package $packageName {
@@ -65,16 +60,11 @@ object CodeGenStyles {
 
     val interfaceFile = for {
       // use all queries to determine the interfaces & types we need
-      processedFiles <- PreProcessors(inputFiles,
-                                      context.targetDirectory,
-                                      context.preProcessors)
+      processedFiles <- PreProcessors(inputFiles, context.targetDirectory, context.preProcessors)
       allQueries <- DocumentLoader.merged(schema, processedFiles.toList)
       typedDocument <- TypedDocumentParser(schema, allQueries)
         .parse()
-      codeGenerator = ApolloSourceGenerator("Interfaces.scala",
-                                            additionalImports,
-                                            additionalInits,
-                                            context.jsonCodeGen)
+      codeGenerator = ApolloSourceGenerator("Interfaces.scala", additionalImports, additionalInits, context.jsonCodeGen)
       interfaces <- codeGenerator.generateInterfaces(typedDocument)
       types <- codeGenerator.generateTypes(typedDocument)
     } yield {

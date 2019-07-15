@@ -34,20 +34,17 @@ package object graphql {
   /**
     * Parses two schema labels
     */
-  val tupleGraphQLSchemaParser
-    : Def.Initialize[Parser[(GraphQLSchema, GraphQLSchema)]] =
+  val tupleGraphQLSchemaParser: Def.Initialize[Parser[(GraphQLSchema, GraphQLSchema)]] =
     Def.setting {
       val gqlSchemas = graphqlSchemas.value
       val labels = gqlSchemas.schemas.map(_.label)
       // create a depended parser. A label can only be selected once
       schemaLabelParser(labels).flatMap {
         case selectedLabel if labels.contains(selectedLabel) =>
-          success(schemaOrError(selectedLabel, gqlSchemas)) ~ schemaLabelParser(
-            labels.filterNot(_ == selectedLabel)).map(label =>
-            schemaOrError(label, gqlSchemas))
+          success(schemaOrError(selectedLabel, gqlSchemas)) ~ schemaLabelParser(labels.filterNot(_ == selectedLabel))
+            .map(label => schemaOrError(label, gqlSchemas))
         case selectedLabel =>
-          failure(
-            s"$selectedLabel is not available. Use: [${labels.mkString(" | ")}]")
+          failure(s"$selectedLabel is not available. Use: [${labels.mkString(" | ")}]")
       }
     }
 
@@ -55,16 +52,12 @@ package object graphql {
     * @param labels list of available schemas by label
     * @return a parser for the given labels
     */
-  private[this] def schemaLabelParser(
-      labels: Iterable[String]): Parser[String] = {
+  private[this] def schemaLabelParser(labels: Iterable[String]): Parser[String] = {
     val schemaParser = StringBasic.examples(FixedSetExamples(labels))
     token(Space.? ~> schemaParser)
   }
 
-  private def schemaOrError(label: String,
-                            graphQLSchema: GraphQLSchemas): GraphQLSchema =
-    graphQLSchema.schemaByLabel.getOrElse(
-      label,
-      sys.error(s"The schema '$label' is not defined in graphqlSchemas"))
+  private def schemaOrError(label: String, graphQLSchema: GraphQLSchemas): GraphQLSchema =
+    graphQLSchema.schemaByLabel.getOrElse(label, sys.error(s"The schema '$label' is not defined in graphqlSchemas"))
 
 }

@@ -34,9 +34,11 @@ trait JsonCodeGen {
     * @param typeDiscriminatorField the field which determines the output type for union types
     * @return a json decoder instance for union types
     */
-  def generateUnionFieldDecoder(unionTrait: Type.Name,
-                                unionNames: List[String],
-                                typeDiscriminatorField: String): List[Stat]
+  def generateUnionFieldDecoder(
+      unionTrait: Type.Name,
+      unionNames: List[String],
+      typeDiscriminatorField: String
+  ): List[Stat]
 
   /**
     *
@@ -45,9 +47,11 @@ trait JsonCodeGen {
     * @param typeDiscriminatorField the field which determines the output type for union types
     * @return a json encoder instance for union types
     */
-  def generateUnionFieldEncoder(unionTrait: Type.Name,
-                                unionNames: List[String],
-                                typeDiscriminatorField: String): List[Stat]
+  def generateUnionFieldEncoder(
+      unionTrait: Type.Name,
+      unionNames: List[String],
+      typeDiscriminatorField: String
+  ): List[Stat]
 
   /**
     *
@@ -55,8 +59,7 @@ trait JsonCodeGen {
     * @param enumValues all enum field names
     * @return a json decoder instance for enum types
     */
-  def generateEnumFieldDecoder(enumTrait: Type.Name,
-                               enumValues: List[String]): List[Stat]
+  def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat]
 
   /**
     *
@@ -64,8 +67,7 @@ trait JsonCodeGen {
     * @param enumValues all enum field names
     * @return a json decoder instance for enum types
     */
-  def generateEnumFieldEncoder(enumTrait: Type.Name,
-                               enumValues: List[String]): List[Stat]
+  def generateEnumFieldEncoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat]
 
 }
 
@@ -87,10 +89,8 @@ object JsonCodeGens {
         typeDiscriminatorField: String
     ): List[Stat] = Nil
 
-    def generateEnumFieldDecoder(enumTrait: Type.Name,
-                                 enumValues: List[String]): List[Stat] = Nil
-    def generateEnumFieldEncoder(enumTrait: Type.Name,
-                                 enumValues: List[String]): List[Stat] = Nil
+    def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = Nil
+    def generateEnumFieldEncoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = Nil
   }
 
   object Circe extends JsonCodeGen {
@@ -135,9 +135,7 @@ object JsonCodeGens {
         typeDiscriminatorField: String
     ): List[Stat] = Nil
 
-    override def generateEnumFieldDecoder(
-        enumTrait: Type.Name,
-        enumValues: List[String]): List[Stat] = {
+    override def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = {
       val patterns = enumValues.map { name =>
         val nameLiteral = Lit.String(name)
         val enumTerm = Term.Name(name)

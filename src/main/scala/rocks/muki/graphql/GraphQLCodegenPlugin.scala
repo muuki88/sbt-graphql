@@ -24,11 +24,10 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       settingKey[String]("Package for the generated code")
 
     val graphqlCodegenImports =
-      settingKey[Seq[String]](
-        "Additional imports to add to the generated code")
+      settingKey[Seq[String]]("Additional imports to add to the generated code")
 
-    val graphqlCodegenPreProcessors = taskKey[Seq[PreProcessor]](
-      "Preprocessors that should be applied before the graphql file is parsed")
+    val graphqlCodegenPreProcessors =
+      taskKey[Seq[PreProcessor]]("Preprocessors that should be applied before the graphql file is parsed")
 
     val graphqlCodegen = taskKey[Seq[File]]("Generate GraphQL API code")
 
@@ -45,17 +44,17 @@ object GraphQLCodegenPlugin extends AutoPlugin {
       Seq(
         sourceGenerators += graphqlCodegen.taskValue,
         sourceDirectory in graphqlCodegen := sourceDirectory.value / "graphql",
-        sourceDirectories in graphqlCodegen := List(
-          (sourceDirectory in (config, graphqlCodegen)).value),
+        sourceDirectories in graphqlCodegen := List((sourceDirectory in (config, graphqlCodegen)).value),
         target in graphqlCodegen := sourceManaged.value / "sbt-graphql",
         graphqlCodegenQueries := Defaults
-          .collectFiles(sourceDirectories in graphqlCodegen,
-                        includeFilter in graphqlCodegen,
-                        excludeFilter in graphqlCodegen)
+          .collectFiles(
+            sourceDirectories in graphqlCodegen,
+            includeFilter in graphqlCodegen,
+            excludeFilter in graphqlCodegen
+          )
           .value,
         graphqlCodegenPreProcessors in config := List(
-          PreProcessors.magicImports(
-            (sourceDirectories in (config, graphqlCodegen)).value)
+          PreProcessors.magicImports((sourceDirectories in (config, graphqlCodegen)).value)
         ),
         graphqlCodegen in config := {
           val log = streams.value.log
@@ -73,25 +72,27 @@ object GraphQLCodegenPlugin extends AutoPlugin {
           val imports = graphqlCodegenImports.value
           val jsonCodeGen = graphqlCodegenJson.value
           val preProcessors = graphqlCodegenPreProcessors.value
-          log.info(
-            s"Generating json decoding with: ${jsonCodeGen.getClass.getSimpleName}")
+          log.info(s"Generating json decoding with: ${jsonCodeGen.getClass.getSimpleName}")
 
           log.info(s"Adding imports: ${imports.mkString(",")}")
 
           val moduleName = (name in (config, graphqlCodegen)).value
-          val context = CodeGenContext(schema,
-                                       targetDir,
-                                       queries,
-                                       packageName,
-                                       moduleName,
-                                       jsonCodeGen,
-                                       imports,
-                                       preProcessors,
-                                       log)
+          val context = CodeGenContext(
+            schema,
+            targetDir,
+            queries,
+            packageName,
+            moduleName,
+            jsonCodeGen,
+            imports,
+            preProcessors,
+            log
+          )
 
           graphqlCodegenStyle.value(context)
         }
-      ))
+      )
+    )
 
   override def projectSettings: Seq[Setting[_]] =
     Seq(

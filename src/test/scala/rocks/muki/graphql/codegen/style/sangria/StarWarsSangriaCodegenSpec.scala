@@ -16,5 +16,4 @@
 
 package rocks.muki.graphql.codegen.style.sangria
 
-class StarWarsSangriaCodegenSpec
-    extends SangriaCodegenBaseSpec("starwars", TestSchema.StarWarsSchema)
+class StarWarsSangriaCodegenSpec extends SangriaCodegenBaseSpec("starwars", TestSchema.StarWarsSchema)

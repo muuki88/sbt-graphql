@@ -22,9 +22,7 @@ import sangria.schema
 /**
   * Generate code using Scalameta.
   */
-case class ScalametaGenerator(moduleName: Term.Name,
-                              emitInterfaces: Boolean = false,
-                              stats: List[Stat] = List.empty)
+case class ScalametaGenerator(moduleName: Term.Name, emitInterfaces: Boolean = false, stats: List[Stat] = List.empty)
     extends Generator[Defn.Object] {
 
   override def apply(api: TypedDocument.Api): Result[Defn.Object] = {
@@ -51,19 +49,16 @@ case class ScalametaGenerator(moduleName: Term.Name,
   def termParam(paramName: String, tpe: Type) =
     Term.Param(List.empty, Term.Name(paramName), Some(tpe), None)
 
-  def generateTemplate(traits: List[String],
-                       prefix: String = moduleName.value + "."): Template = {
+  def generateTemplate(traits: List[String], prefix: String = moduleName.value + "."): Template = {
     // TODO fix constructor names
-    val templateInits = traits.map(name =>
-      Init(ScalametaUtils.typeRefOf(prefix, name), Name.Anonymous(), Nil))
+    val templateInits = traits.map(name => Init(ScalametaUtils.typeRefOf(prefix, name), Name.Anonymous(), Nil))
 
     val emptySelf = Self(Name.Anonymous(), None)
 
     Template(Nil, templateInits, emptySelf, List.empty)
   }
 
-  def generateFieldType(field: TypedDocument.Field)(
-      genType: schema.Type => Type): Type = {
+  def generateFieldType(field: TypedDocument.Field)(genType: schema.Type => Type): Type = {
     def typeOf(tpe: schema.Type): Type = tpe match {
       case schema.OptionType(wrapped) =>
         t"Option[${typeOf(wrapped)}]"
@@ -90,19 +85,16 @@ case class ScalametaGenerator(moduleName: Term.Name,
           Type.Name(tpe.namedType.name)
       }
 
-    def generateSelectionParams(prefix: String)(
-        selection: TypedDocument.Selection): List[Term.Param] =
+    def generateSelectionParams(prefix: String)(selection: TypedDocument.Selection): List[Term.Param] =
       selection.fields.map { field =>
         val tpe = fieldType(field, prefix)
         termParam(field.name, tpe)
       }
 
-    def generateSelectionStats(prefix: String)(
-        selection: TypedDocument.Selection): List[Stat] =
+    def generateSelectionStats(prefix: String)(selection: TypedDocument.Selection): List[Stat] =
       selection.fields.flatMap {
         // render enumerations (union types)
-        case TypedDocument.Field(name, _, None, unionTypes)
-            if unionTypes.nonEmpty =>
+        case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
           val unionName = Type.Name(name.capitalize)
           val objectName = Term.Name(unionName.value)
           val template = generateTemplate(List(unionName.value), prefix)
@@ -196,8 +188,7 @@ case class ScalametaGenerator(moduleName: Term.Name,
     q"trait $traitName { ..$defs }"
   }
 
-  def generateObject(obj: TypedDocument.Object,
-                     interfaces: List[String]): Stat = {
+  def generateObject(obj: TypedDocument.Object, interfaces: List[String]): Stat = {
     val params = obj.fields.map { field =>
       val tpe = generateFieldType(field)(t => Type.Name(t.namedType.name))
       termParam(field.name, tpe)
