@@ -15,7 +15,7 @@ import sangria.ast
   */
 object CodeGenStyles {
 
-  type Style = (CodeGenContext) => Seq[File]
+  type Style = CodeGenContext => Seq[File]
 
   /**
     * == Apollo CodeGen style ==
@@ -53,7 +53,7 @@ object CodeGenStyles {
              }"""
 
         val outputFile = SourceCodeWriter.write(context, inputFile, stats)
-        context.log.info(s"Generated source $outputFile from $inputFile ")
+        context.log.debug(s"Generated source $outputFile from $inputFile ")
         outputFile
       }
     }
@@ -75,7 +75,7 @@ object CodeGenStyles {
          """
       val outputFile = context.targetDirectory / "Interfaces.scala"
       SourceCodeWriter.write(outputFile, stats)
-      context.log.info(s"Generated source $outputFile")
+      context.log.debug(s"Generated source $outputFile")
       outputFile
     }
 
