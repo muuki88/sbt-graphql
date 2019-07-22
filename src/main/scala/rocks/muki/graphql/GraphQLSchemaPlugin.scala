@@ -124,7 +124,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
 
     val content = s"""|package $packageName
                       |object $mainClass {
-                      |  val schema: sangria.schema.Schema[_, _] = {
+                      |  lazy val schema: sangria.schema.Schema[_, _] = {
                       |    $schemaCode
                       |  }
                       |  def main(args: Array[String]): Unit = {
