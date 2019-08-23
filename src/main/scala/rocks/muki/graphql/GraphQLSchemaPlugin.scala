@@ -123,15 +123,19 @@ object GraphQLSchemaPlugin extends AutoPlugin {
     val filter = graphqlSchemaGenFilter.value.name
 
     val content = s"""|package $packageName
+                      |
+                      |import java.io._
+                      |import java.nio.charset.StandardCharsets
+                      |
                       |object $mainClass {
                       |  lazy val schema: sangria.schema.Schema[_, _] = {
                       |    $schemaCode
                       |  }
                       |  def main(args: Array[String]): Unit = {
-                      |    val schemaFile = new java.io.File(args(0))
+                      |    val schemaFile = new File(args(0))
                       |    val graphql: String = schema.renderPretty($filter)
                       |    schemaFile.getParentFile.mkdirs()
-                      |    new java.io.PrintWriter(schemaFile) {
+                      |    new PrintWriter(new OutputStreamWriter(new FileOutputStream(schemaFile), StandardCharsets.UTF_8), true) {
                       |      write(graphql)
                       |      close()
                       |    }
