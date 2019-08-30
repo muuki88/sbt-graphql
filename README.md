@@ -511,7 +511,7 @@ You can change the source directory for your graphql queries with this line in
 your `build.sbt`
 
 ```scala
-sourceDirectory in (Compile, graphqlValidateQueries) := file("path/to/graphql")
+sourceDirectory in (Test, graphqlValidateQueries) := file("path/to/graphql")
 ```
 
 # Developing
