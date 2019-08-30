@@ -1,5 +1,75 @@
 # Change Log
 
+## [v0.14.0](https://github.com/muuki88/sbt-graphql/tree/v0.14.0) (2019-08-30)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.13.2...v0.14.0)
+
+**Merged pull requests:**
+
+- Use graphql-compliant schema filter for schema gen [\#78](https://github.com/muuki88/sbt-graphql/pull/78) ([lunaryorn](https://github.com/lunaryorn))
+- Fix setting scope [\#77](https://github.com/muuki88/sbt-graphql/pull/77) ([lunaryorn](https://github.com/lunaryorn))
+
+## [v0.13.2](https://github.com/muuki88/sbt-graphql/tree/v0.13.2) (2019-08-23)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.13.1...v0.13.2)
+
+**Merged pull requests:**
+
+- Write an utf-8 file in SchemaGen instead of relying on system defaults [\#75](https://github.com/muuki88/sbt-graphql/pull/75) ([felixbr](https://github.com/felixbr))
+
+## [v0.13.1](https://github.com/muuki88/sbt-graphql/tree/v0.13.1) (2019-07-22)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.13.0...v0.13.1)
+
+**Closed issues:**
+
+- Fix .scalafmt.conf [\#73](https://github.com/muuki88/sbt-graphql/issues/73)
+- Yet another trouble getting codegen to work  [\#67](https://github.com/muuki88/sbt-graphql/issues/67)
+- jawn parser library incompatibility [\#61](https://github.com/muuki88/sbt-graphql/issues/61)
+
+**Merged pull requests:**
+
+- FIX \#73 update scalafmt and name .scalafmt.conf properly [\#74](https://github.com/muuki88/sbt-graphql/pull/74) ([muuki88](https://github.com/muuki88))
+
+## [v0.13.0](https://github.com/muuki88/sbt-graphql/tree/v0.13.0) (2019-07-13)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.12.0...v0.13.0)
+
+**Implemented enhancements:**
+
+- Generate circe Encoder for query Variables [\#35](https://github.com/muuki88/sbt-graphql/issues/35)
+
+**Fixed bugs:**
+
+- Additional imports are quoted and therefore broken [\#57](https://github.com/muuki88/sbt-graphql/issues/57)
+
+**Closed issues:**
+
+- Missing Sangria Custom Scalars In Schema Generation [\#69](https://github.com/muuki88/sbt-graphql/issues/69)
+- Code generation - The output directory for generated files should be configurable. [\#68](https://github.com/muuki88/sbt-graphql/issues/68)
+- codegen support for 'URI' scalar type [\#65](https://github.com/muuki88/sbt-graphql/issues/65)
+- Allow loading schema from either \*.graphql or \*.json [\#63](https://github.com/muuki88/sbt-graphql/issues/63)
+- Not available on maven? [\#55](https://github.com/muuki88/sbt-graphql/issues/55)
+
+**Merged pull requests:**
+
+- Update circe to 0.11.1 while replacing jawn with jackson [\#72](https://github.com/muuki88/sbt-graphql/pull/72) ([felixbr](https://github.com/felixbr))
+- fixed stackoverflow error, running in tests, json encoding [\#71](https://github.com/muuki88/sbt-graphql/pull/71) ([Krever](https://github.com/Krever))
+- Provide configurable filters for schema generation [\#70](https://github.com/muuki88/sbt-graphql/pull/70) ([nickhudkins](https://github.com/nickhudkins))
+- Fixes \#63 [\#64](https://github.com/muuki88/sbt-graphql/pull/64) ([NicolasRouquette](https://github.com/NicolasRouquette))
+
+## [v0.12.0](https://github.com/muuki88/sbt-graphql/tree/v0.12.0) (2018-11-20)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.11.0...v0.12.0)
+
+**Merged pull requests:**
+
+- Use sourceManaged in Compile config for generated renderer [\#59](https://github.com/muuki88/sbt-graphql/pull/59) ([ches](https://github.com/ches))
+
+## [v0.11.0](https://github.com/muuki88/sbt-graphql/tree/v0.11.0) (2018-11-08)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.10.1...v0.11.0)
+
+**Merged pull requests:**
+
+- Fix custom imports [\#58](https://github.com/muuki88/sbt-graphql/pull/58) ([muuki88](https://github.com/muuki88))
+- sbt 1.2.6 [\#56](https://github.com/muuki88/sbt-graphql/pull/56) ([sullis](https://github.com/sullis))
+- Update scalameta to 4.0.0 [\#54](https://github.com/muuki88/sbt-graphql/pull/54) ([ngbinh](https://github.com/ngbinh))
+
 ## [v0.10.1](https://github.com/muuki88/sbt-graphql/tree/v0.10.1) (2018-09-17)
 [Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.10.0...v0.10.1)
 
@@ -92,7 +162,6 @@
 
 - Improve README [\#31](https://github.com/muuki88/sbt-graphql/pull/31) ([jonas](https://github.com/jonas))
 - Upgrade to Scalameta 3.7.4 [\#30](https://github.com/muuki88/sbt-graphql/pull/30) ([muuki88](https://github.com/muuki88))
-- FIX \#25 Add more documentation and a test for nested input types [\#28](https://github.com/muuki88/sbt-graphql/pull/28) ([muuki88](https://github.com/muuki88))
 
 ## [v0.6.0](https://github.com/muuki88/sbt-graphql/tree/v0.6.0) (2018-05-31)
 [Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.5.0...v0.6.0)
@@ -104,6 +173,7 @@
 
 **Merged pull requests:**
 
+- FIX \#25 Add more documentation and a test for nested input types [\#28](https://github.com/muuki88/sbt-graphql/pull/28) ([muuki88](https://github.com/muuki88))
 - Initial draft for json codec code generation [\#23](https://github.com/muuki88/sbt-graphql/pull/23) ([muuki88](https://github.com/muuki88))
 - FIX \#18 Remove the IntegrationTest scope from the GraphQLQueryPlugin [\#20](https://github.com/muuki88/sbt-graphql/pull/20) ([muuki88](https://github.com/muuki88))
 
