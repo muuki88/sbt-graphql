@@ -13,9 +13,6 @@ object SchemaFilters {
   case object WithoutSangriaBuiltIn extends SchemaFilterName {
     val name = "sangria.renderer.SchemaFilter.withoutSangriaBuiltIn"
   }
-  case object Default extends SchemaFilterName {
-    val name = "sangria.renderer.SchemaFilter.default"
-  }
   case object WithoutGraphQLBuiltIn extends SchemaFilterName {
     val name = "sangria.renderer.SchemaFilter.withoutGraphQLBuiltIn"
   }
