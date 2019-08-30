@@ -3,9 +3,9 @@ package rocks.muki.graphql
 import rocks.muki.graphql.releasenotes.MarkdownReleaseNotes
 import rocks.muki.graphql.schema.SchemaLoader
 import rocks.muki.graphql.schema.SchemaFilterName
+import rocks.muki.graphql.schema.SchemaFilters.WithoutGraphQLBuiltIn
 import sangria.schema._
 import sbt._
-import sangria.renderer.SchemaFilter.default
 import sbt.Keys._
 
 object GraphQLSchemaPlugin extends AutoPlugin {
@@ -78,11 +78,10 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   }
   import autoImport._
   import GraphQLPlugin.autoImport._
-  import rocks.muki.graphql.schema.SchemaFilters.{Default => DefaultSchemaFilter}
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlSchemaSnippet := """sys.error("Configure the `graphqlSchemaSnippet` setting with the correct scala code snippet to access your sangria schema")""",
-    graphqlSchemaGenFilter := DefaultSchemaFilter,
+    graphqlSchemaGenFilter := WithoutGraphQLBuiltIn,
     graphqlSchemaChanges := graphqlSchemaChangesTask.evaluated,
     target in graphqlSchemaGen := (target in Compile).value / "sbt-graphql",
     graphqlSchemaGen := {
