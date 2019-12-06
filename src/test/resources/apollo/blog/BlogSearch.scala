@@ -77,36 +77,6 @@ fragment SearchResultFragment on SearchResult {
   }
 }"""
     case class Variables(text: String, pagination: Pagination)
-    case class Data(search: List[Search], searchWithFragmentSpread: List[SearchWithFragmentSpread], searchOnImplements: List[SearchOnImplements])
-    sealed trait Search {
-      def __typename: String
-      def id: ID
-    }
-    object Search {
-      case class Blog(id: ID, __typename: String, title: String) extends Search
-      case class Article(id: ID, __typename: String, title: String, status: ArticleStatus, author: Search.Author) extends Search
-      object Article { case class Author(__typename: String, name: String) extends AuthorFragment }
-      case class Author(id: ID, __typename: String, name: String) extends Search
-    }
-    sealed trait SearchWithFragmentSpread {
-      def __typename: String
-      def id: ID
-    }
-    object SearchWithFragmentSpread {
-      case class Blog(id: ID, __typename: String, title: String) extends SearchWithFragmentSpread
-      case class Article(id: ID, __typename: String, title: String, status: ArticleStatus, author: SearchWithFragmentSpread.Author) extends SearchWithFragmentSpread
-      object Article { case class Author(__typename: String, name: String) extends AuthorFragment }
-      case class Author(id: ID, __typename: String, name: String) extends SearchWithFragmentSpread
-    }
-    sealed trait SearchOnImplements {
-      def __typename: String
-      def id: ID
-    }
-    object SearchOnImplements {
-      case class Blog(id: ID, __typename: String, title: String) extends SearchOnImplements
-      case class Article(id: ID, __typename: String, title: String, status: ArticleStatus, author: SearchOnImplements.Author) extends SearchOnImplements
-      object Article { case class Author(name: String) }
-      case class Author(id: ID, __typename: String, name: String) extends SearchOnImplements
-    }
+    case class Data(search: List[Search], searchWithFragmentSpread: List[SearchResultFragment], searchOnImplements: List[SearchResultOnIdentifiableFragment])
   }
 }

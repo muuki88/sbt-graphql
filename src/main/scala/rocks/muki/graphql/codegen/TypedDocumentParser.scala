@@ -20,7 +20,7 @@ import sangria.validation.TypeInfo
 import sangria.schema._
 import sangria.ast
 
-case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
+case class TypedDocumentParser(schema: Schema[Any, Any], document: ast.Document) {
 
   /**
     * We need the schema to generate any type info from a parsed ast.Document
@@ -32,16 +32,18 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     */
   private val types = scala.collection.mutable.Set[Type]()
 
-  def parse(): Result[TypedDocument.Api] =
-    Right(
-      TypedDocument.Api(
-        document.operations.values.map(generateOperation).toList,
-        document.fragments.values.toList.map(generateFragment),
-        // Include only types that have been used in the document
-        schema.typeList.filter(types).collect(generateType).toList,
-        document
-      )
+  def parse(): Result[TypedDocument.Api] = {
+    val api = TypedDocument.Api(
+      operations = document.operations.values.map(generateOperation).toList,
+      interfaces = List.empty,
+      fragments = document.fragments.values.toList.map(generateFragment),
+      // Include only types that have been used in the document
+      types = schema.typeList.filter(types).collect(generateType).toList,
+      original = document
     )
+    // generates interfaces for union types that contain all fields!
+    Right(api)
+  }
 
   /**
     * Marks a schema type so it is added to the imported AST.
@@ -83,20 +85,49 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     def conditionalFragment(
         f: => TypedDocument.Selection
     ): TypedDocument.Selection =
-      if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get))
-        f
-      else
-        TypedDocument.Selection.empty
+      if (typeConditions.isEmpty || typeConditions(typeInfo.tpe.get)) f else TypedDocument.Selection.empty
 
     typeInfo.enter(node)
     val result = node match {
+      // check if this field has a codeGen directive
+      case field: ast.Field if getUseTypeDirectiveValue(field).isDefined =>
+        require(typeInfo.tpe.isDefined, s"Field without type: $field")
+        val tpe = typeInfo.tpe.get
+        // turns this grapqhl query: fieldName @codeGen(useType: "Foo") { ... }
+        // into "fieldName: Foo"
+
+        val codeGen = TypedDocument.CodeGen(useType = getUseTypeDirectiveValue(field).get)
+
+        TypedDocument.Selection(
+          fields = List(
+            // the typeCondition the fragment definition (... on clause) should be the same as the field type
+            TypedDocument.Field(field.outputName, tpe, codeGen = Some(codeGen))
+          )
+        )
+      // look ahead in the selections and handle if there's only a fragment selection inside
+      case field: ast.Field if hasSingleFragmentSelection(field) =>
+        require(typeInfo.tpe.isDefined, s"Field without type: $field")
+        val tpe = typeInfo.tpe.get
+        // turns this grapqhl query: fieldName { ...FragmentName }
+        // into "fieldName: FragmentName"
+
+        val fragmentSpread = field.selections.head.asInstanceOf[ast.FragmentSpread]
+        val fragment = TypedDocument.FragmentSelection(fragmentSpread.name, tpe.namedType.name)
+
+        TypedDocument.Selection(
+          fields = List(
+            // the typeCondition the fragment definition (... on clause) should be the same as the field type
+            TypedDocument.Field(field.outputName, tpe, fragment = Some(fragment))
+          )
+        )
+
       case field: ast.Field =>
         require(typeInfo.tpe.isDefined, s"Field without type: $field")
         val tpe = typeInfo.tpe.get
+
         tpe.namedType match {
           case union: UnionType[_] =>
             val types = union.types.map { tpe =>
-              // Prepend the union type name to include and descend into fragment spreads
               val conditions = Set[Type](union, tpe) ++ tpe.interfaces
               val selection = generateSelections(field.selections, conditions)
               TypedDocument.UnionSelection(tpe, selection)
@@ -108,8 +139,7 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
           case obj @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
             val gen = generateSelections(field.selections)
             TypedDocument.Selection(
-              TypedDocument
-                .Field(field.outputName, tpe, selection = Some(gen))
+              TypedDocument.Field(field.outputName, tpe, selection = Some(gen))
             )
 
           case _ =>
@@ -123,13 +153,13 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
         // Sangria's TypeInfo abstraction does not resolve fragment spreads
         // when traversing, so explicitly enter resolved fragment.
         typeInfo.enter(fragment)
-        val result = conditionalFragment(
-          generateSelections(fragment.selections, typeConditions)
-            .copy(interfaces = List(name))
-        )
+
+        val result = TypedDocument.Selection(fields = List.empty)
         typeInfo.leave(fragment)
+
         result
 
+      // This is only called when generateFragments is called with the documents.fragments values
       case inlineFragment: ast.InlineFragment =>
         conditionalFragment(generateSelections(inlineFragment.selections))
 
@@ -139,6 +169,20 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     typeInfo.leave(node)
     result
   }
+
+  private def hasSingleFragmentSelection(field: ast.Field): Boolean =
+    field.selections.length == 1 && field.selections.exists {
+      case _: ast.FragmentSpread => true
+      case _ => false
+    }
+
+  private def getUseTypeDirectiveValue(field: ast.Field): Option[String] =
+    field.directives.collectFirst {
+      case d if d.name == "codeGen" =>
+        d.arguments.collectFirst {
+          case ast.Argument("useType", value: ast.StringValue, _, _) => value.value
+        }
+    }.flatten
 
   private def generateOperation(
       operation: ast.OperationDefinition
@@ -155,17 +199,43 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     }
 
     val selection = generateSelections(operation.selections)
+
     typeInfo.leave(operation)
     TypedDocument.Operation(operation.name, variables, selection, operation)
   }
 
   private def generateFragment(
       fragment: ast.FragmentDefinition
-  ): TypedDocument.Interface = {
+  ): TypedDocument.Fragment = {
+    // we are not using the typeCondition property here, neither do we add
+    // any possible interfaces this type might have. Code generations thus
+    // generate less generic code.
     typeInfo.enter(fragment)
-    val selection = generateSelections(fragment.selections)
+
+    require(typeInfo.tpe.isDefined, s"Fragment without type: $fragment")
+    val tpe = typeInfo.tpe.get
+    val fieldName = fragment.name
+
+    val field = tpe.namedType match {
+      case union: UnionType[_] =>
+        val types = union.types.map { tpe =>
+          val conditions = Set[Type](union, tpe) ++ tpe.interfaces
+          val selection = generateSelections(fragment.selections, conditions)
+          TypedDocument.UnionSelection(tpe, selection)
+        }
+        TypedDocument.Field(fieldName, tpe, union = types)
+
+      case _ @ (_: ObjectLikeType[_, _] | _: InputObjectType[_]) =>
+        val gen = generateSelections(fragment.selections)
+        TypedDocument.Field(fieldName, tpe, selection = Some(gen))
+
+      case _ =>
+        touchType(tpe)
+        TypedDocument.Field(fieldName, tpe)
+    }
     typeInfo.leave(fragment)
-    TypedDocument.Interface(fragment.name, selection.fields)
+
+    TypedDocument.Fragment(fragment.name, field)
   }
 
   private def generateObject(obj: ObjectType[_, _]): TypedDocument.Object = {

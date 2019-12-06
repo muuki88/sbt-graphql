@@ -2,8 +2,8 @@ package rocks.muki.graphql.codegen.style.apollo
 
 import rocks.muki.graphql.codegen.{ApolloSourceGenerator, GraphQLQueryGenerator, JsonCodeGens}
 
-class ApolloAnimalsCirceCodegenSpec
+class ApolloForumCirceCodegenSpec
     extends ApolloCodegenBaseSpec(
-      "animals-circe",
+      "forum-circe",
       (fileName: String) => ApolloSourceGenerator(fileName, Nil, GraphQLQueryGenerator.inits, JsonCodeGens.Circe)
     )
