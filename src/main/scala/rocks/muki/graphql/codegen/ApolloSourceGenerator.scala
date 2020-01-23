@@ -30,6 +30,8 @@ case class ApolloSourceGenerator(
     jsonCodeGen: JsonCodeGen
 ) extends Generator[List[Stat]] {
 
+  private val typesImport: Import = q"import types._"
+
   /**
     * Generates only the interfaces (fragments) that appear in the given
     * document.
@@ -44,6 +46,13 @@ case class ApolloSourceGenerator(
     Right(
       additionalImports ++ document.interfaces
         .map(generateInterface(_, isSealed = false))
+    )
+
+  def generateFragments(document: TypedDocument.Api): Result[List[Stat]] =
+    Right(
+      jsonCodeGen.imports ++ additionalImports ++ List(typesImport, q"""object fragments {
+            ..${document.fragments.flatMap(generateFragment)}
+         }""")
     )
 
   /**
@@ -80,13 +89,17 @@ case class ApolloSourceGenerator(
       val inputParams = generateFieldParams(operation.variables, List.empty)
       val dataParams =
         generateFieldParams(operation.selection.fields, List.empty)
+
       val data =
         operation.selection.fields.flatMap(selectionStats(_, List.empty))
 
       // render the document into the query object.
       // replacing single $ with $$ for escaping
       val escapedDocumentString =
-        operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
+        operation.original
+          .copy(selections = operation.original.selections.map(removeCodeGen))
+          .renderPretty
+          .replaceAll("\\$", "\\$\\$")
 
       // add the fragments to the query as well
       val escapedFragmentString = Option(document.original.fragments)
@@ -133,13 +146,12 @@ case class ApolloSourceGenerator(
            ..$data
           }"""
     }
-    val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
     Right(
       additionalImports ++
         jsonCodeGen.imports ++
-        List(q"import sangria.macros._", q"import types._", q"""
+        List(q"import sangria.macros._", typesImport, q"""
        object ${Term.Name(objectName)} {
           ..$operations
        }
@@ -147,10 +159,19 @@ case class ApolloSourceGenerator(
     )
   }
 
-  private def selectionStats(field: TypedDocument.Field, typeQualifiers: List[String]): List[Stat] =
+  /**
+    *
+    * @param field field to generated code for
+    * @param typeQualifiers for nested case class structures in companion objects
+    * @return
+    */
+  private def selectionStats(field: TypedDocument.Field, typeQualifiers: List[String]): List[Stat] = {
     field match {
+      case TypedDocument.Field(name, tpe, _, _, _, Some(codeGen)) => List.empty
+      case TypedDocument.Field(name, tpe, _, _, Some(fragment), _) => List.empty
+
       // render enumerations (union types)
-      case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
+      case TypedDocument.Field(name, _, None, unionTypes, _, _) if unionTypes.nonEmpty =>
         // create the union types
 
         val unionName = Type.Name(name.capitalize)
@@ -229,7 +250,7 @@ case class ApolloSourceGenerator(
         )
 
       // render a nested case class for a deeper selection
-      case TypedDocument.Field(name, tpe, Some(fieldSelection), _) =>
+      case TypedDocument.Field(name, tpe, Some(fieldSelection), _, _, _) =>
         // Recursive call - create more case classes
 
         val fieldName = Type.Name(name.capitalize)
@@ -253,15 +274,28 @@ case class ApolloSourceGenerator(
         ) ++ Option(innerStats).filter(_.nonEmpty).map { stats =>
           q"object $termName { ..$stats }"
         }
-      case TypedDocument.Field(_, _, _, _) =>
+      case TypedDocument.Field(_, _, _, _, _, _) =>
         // scalar types, e.g. String, Option, List
         List.empty
     }
+  }
 
-  private def generateFieldParams(
-      fields: List[TypedDocument.Field],
-      typeQualifiers: List[String]
-  ): List[Term.Param] =
+  private def removeCodeGen(selection: sangria.ast.Selection): sangria.ast.Selection = selection match {
+    case f: sangria.ast.Field =>
+      f.copy(
+        selections = f.selections.map(removeCodeGen),
+        directives = f.directives.filter(_.name == "codeGen")
+      )
+    case s => s
+  }
+
+  /**
+    *
+    * @param fields generate case class class members / values
+    * @param typeQualifiers for nested case class structures in companion objects
+    * @return
+    */
+  private def generateFieldParams(fields: List[TypedDocument.Field], typeQualifiers: List[String]): List[Term.Param] =
     fields.map { field =>
       val tpe = parameterFieldType(field, typeQualifiers)
       termParam(field.name, tpe)
@@ -273,18 +307,27 @@ case class ApolloSourceGenerator(
   /**
     * Turns a Type
     * @param field
+    * @param typeQualifiers for nested case class structures in companion objects
     * @return
     */
   private def parameterFieldType(field: TypedDocument.Field, typeQualifiers: List[String]): Type =
     generateFieldType(field) { tpe =>
-      if (field.isObjectLike || field.isUnion) {
-        // prepend the type qualifier for nested object/case class structures
-        ScalametaUtils.typeRefOf(typeQualifiers, field.name.capitalize)
-      } else {
-        // this branch handles non-enum or case class types, which means we don't need the
-        // typeQualifiers here.
-        Type.Name(tpe.namedType.name)
+      // custom directive has highest precedence
+      val codeGenType = field.codeGen.map(codeGen => Type.Name(codeGen.useType))
+      // use the fragment name as a type!
+      val fragmentType = field.fragment.map(fragment => Type.Name(fragment.name))
+
+      codeGenType.orElse(fragmentType).getOrElse {
+        if (field.isObjectLike || field.isUnion) {
+          // prepend the type qualifier for nested object/case class structures
+          ScalametaUtils.typeRefOf(typeQualifiers, field.name.capitalize)
+        } else {
+          // this branch handles non-enum or case class types, which means we don't need the
+          // typeQualifiers here.
+          Type.Name(tpe.namedType.name)
+        }
       }
+
     }
 
   /**
@@ -364,6 +407,9 @@ case class ApolloSourceGenerator(
     List[Stat](q"case class $className(..$params) extends $template") ++ objectStats
   }
 
+  private def generateFragment(fragment: TypedDocument.Fragment): List[Stat] =
+    selectionStats(fragment.field, List.empty)
+
   /**
     * Generates the general types for this document.
     *
@@ -408,6 +454,9 @@ case class ApolloSourceGenerator(
         q"sealed trait $unionName",
         q"object $objectName { ..$unionValues }"
       )
+    // fragments are generated separately and thus are ignored here
+    case _: TypedDocument.Fragment =>
+      List.empty
   }
 
 }

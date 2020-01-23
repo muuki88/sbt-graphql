@@ -29,16 +29,31 @@ import scala.io.Source
 
 object DocumentLoader {
 
+  private val codeGenUseTypeArg: Argument[Option[String]] = Argument(
+    "useType",
+    OptionInputType(StringType),
+    "Specify another type to be used"
+  )
+
+  private val codeGenDirective = Directive(
+    name = "codeGen",
+    description = Some("Directs the executor to include this fragment definition only when the `if` argument is true."),
+    arguments = codeGenUseTypeArg :: Nil,
+    locations = Set(
+      DirectiveLocation.Field
+    )
+  )
+
   /**
     * Loads and parses all files and merge them into a single document
     * @param schema used to validate parsed files
     * @param files the files that should be loaded
     * @return
     */
-  def merged(schema: Schema[_, _], files: List[File]): Result[Document] =
+  def merged(schema: Schema[Any, Any], files: List[File]): Result[Document] =
     /*_*/
     files
-      .traverse(file => single(schema, file))
+      .traverse(file => single(withDirectives(schema), file))
       .map(documents => documents.combineAll)
   /*_*/
 
@@ -48,16 +63,20 @@ object DocumentLoader {
     * @param file
     * @return
     */
-  def single(schema: Schema[_, _], file: File): Result[Document] =
+  def single(schema: Schema[Any, Any], file: File): Result[Document] =
     for {
       document <- parseDocument(file)
-      violations = QueryValidator.default.validateQuery(schema, document)
+      violations = QueryValidator.default.validateQuery(withDirectives(schema), document)
       _ <- Either.cond(
         violations.isEmpty,
         document,
         Failure(s"Invalid query in ${file.getAbsolutePath}:\n${violations.map(_.errorMessage).mkString(", ")}")
       )
     } yield document
+
+  private def withDirectives(schema: Schema[Any, Any]): Schema[Any, Any] = schema.copy(
+    directives = schema.directives :+ codeGenDirective
+  )
 
   private def parseSchema(file: File): Result[Schema[_, _]] =
     for {

@@ -15,7 +15,7 @@
  */
 package rocks.muki.graphql.codegen.style.apollo
 
-import org.scalatest.{EitherValues, TryValues, WordSpec}
+import org.scalatest.{EitherValues, Matchers, TryValues, WordSpec}
 import java.io.File
 
 import rocks.muki.graphql.codegen.{ApolloSourceGenerator, DocumentLoader, TypedDocumentParser}
@@ -27,6 +27,7 @@ import sbt._
 
 abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSourceGenerator)
     extends WordSpec
+    with Matchers
     with EitherValues
     with TryValues {
 
@@ -49,7 +50,9 @@ abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSo
           SchemaLoader
             .fromFile(inputDir / "schema.graphql")
             .loadSchema()
-        val document = DocumentLoader.single(schema, input).right.value
+        val documentResult = DocumentLoader.single(schema, input)
+        documentResult shouldBe a[Right[_, _]]
+        val document = documentResult.right.value
         val typedDocument =
           TypedDocumentParser(schema, document).parse().right.value
         val stats = generator(input.getName)(typedDocument).right.value
@@ -74,7 +77,9 @@ abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSo
           SchemaLoader
             .fromFile(inputDir / "schema.graphql")
             .loadSchema()
-        val document = DocumentLoader.single(schema, input).right.value
+        val documentResult = DocumentLoader.single(schema, input)
+        documentResult shouldBe a[Right[_, _]]
+        val document = documentResult.right.value
         val typedDocument =
           TypedDocumentParser(schema, document).parse().right.value
         val stats = generator(input.getName)
@@ -102,11 +107,43 @@ abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSo
           SchemaLoader
             .fromFile(inputDir / "schema.graphql")
             .loadSchema()
-        val document = DocumentLoader.single(schema, input).right.value
+        val documentResult = DocumentLoader.single(schema, input)
+        documentResult shouldBe a[Right[_, _]]
+        val document = documentResult.right.value
         val typedDocument =
           TypedDocumentParser(schema, document).parse().right.value
         val stats = generator(input.getName)
           .generateTypes(typedDocument)
+          .right
+          .value
+
+        val actual = stats.map(_.show[Syntax]).mkString("\n")
+        val expectedSource = contentOf(expected).parse[Source].get
+
+        assert(actual === expectedSource.show[Syntax].trim, s"------\n$actual\n------")
+      }
+    }
+
+    for {
+      input <- inputDir.listFiles()
+      if input.getName.endsWith(".graphql")
+      name = input.getName.replace(".graphql", "")
+      expected = new File(inputDir, s"${name}Fragments.scala")
+      if expected.exists
+    } {
+      s"generate fragments code for ${input.getName}" in {
+
+        val schema =
+          SchemaLoader
+            .fromFile(inputDir / "schema.graphql")
+            .loadSchema()
+        val documentResult = DocumentLoader.single(schema, input)
+        documentResult shouldBe a[Right[_, _]]
+        val document = documentResult.right.value
+        val typedDocument =
+          TypedDocumentParser(schema, document).parse().right.value
+        val stats = generator(input.getName)
+          .generateFragments(typedDocument)
           .right
           .value
 
