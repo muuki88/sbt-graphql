@@ -4,6 +4,7 @@ object types {
     case object DRAFT extends ArticleStatus
     case object PUBLISHED extends ArticleStatus
   }
+  trait Identifiable { def id: ID }
   case class Pagination(first: Int, count: Int, order: Option[PaginationOrder])
   sealed trait PaginationOrder
   object PaginationOrder {

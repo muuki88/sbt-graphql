@@ -207,10 +207,15 @@ case class TypedDocumentParser(schema: Schema[Any, Any], document: ast.Document)
   private def generateFragment(
       fragment: ast.FragmentDefinition
   ): TypedDocument.Fragment = {
-    // we are not using the typeCondition property here, neither do we add
-    // any possible interfaces this type might have. Code generations thus
-    // generate less generic code.
     typeInfo.enter(fragment)
+
+    // add all interfaces that are being used as type condition
+    // all other types should be part of the Data object in the
+    // generated query object.
+    schema.allTypes.get(fragment.typeCondition.name).foreach {
+      case schemaType: InterfaceType[_, _] => types += schemaType
+      case _ =>
+    }
 
     require(typeInfo.tpe.isDefined, s"Fragment without type: $fragment")
     val tpe = typeInfo.tpe.get
