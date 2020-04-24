@@ -86,7 +86,7 @@ case class ApolloSourceGenerator(
       // render the document into the query object.
       // replacing single $ with $$ for escaping
       val escapedDocumentString =
-        operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
+        operation.original.renderPretty
 
       // add the fragments to the query as well
       val escapedFragmentString = Option(document.original.fragments)
