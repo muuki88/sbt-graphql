@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-jackson28" % circeVersion,
   "org.typelevel" %% "cats-core" % catsVersion,
   "org.typelevel" %% "cats-testkit" % catsVersion % Test,
-  "org.scalaj" %% "scalaj-http" % "2.3.0",
+  "org.scalaj" %% "scalaj-http" % "2.4.2",
   "org.scalameta" %% "scalameta" % "4.3.9",
   "org.scalatest" %% "scalatest" % "3.1.1" % Test,
   "org.typelevel" %% "cats-testkit-scalatest" % "1.0.1" % Test

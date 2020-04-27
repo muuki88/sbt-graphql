@@ -1,0 +1,20 @@
+query SearchQueryWithArgumentFragment($text: String!, $lengthUnit: LengthUnit = METER) {
+  search(text: $text) {
+    ...StarshipDetail
+    ...HumanDetail
+    ...DroidDetail
+  }
+}
+
+fragment StarshipDetail on Starship {
+  name
+  length(unit: $lengthUnit)
+}
+
+fragment HumanDetail on Human {
+  name
+}
+
+fragment DroidDetail on Droid {
+  name
+}
