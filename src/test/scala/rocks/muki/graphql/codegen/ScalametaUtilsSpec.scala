@@ -1,10 +1,11 @@
 package rocks.muki.graphql.codegen
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.meta._
 
-class ScalametaUtilsSpec extends WordSpec with Matchers {
+class ScalametaUtilsSpec extends AnyWordSpec with Matchers {
 
   "The ScalametaUtils" should {
 

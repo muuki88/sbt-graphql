@@ -49,6 +49,12 @@ enum Episode {
   JEDI
 }
 
+# Length units
+enum LengthUnit {
+  METER
+  FEET
+}
+
 # A humanoid creature in the Star Wars universe.
 type Human implements Character {
   # The id of the human.
@@ -73,6 +79,7 @@ type Human implements Character {
 type Starship {
   id: ID!
   name: String
+  length(unit: LengthUnit = METER): Float
 }
 
 # A search result can have different types

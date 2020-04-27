@@ -83,22 +83,22 @@ case class ApolloSourceGenerator(
       val data =
         operation.selection.fields.flatMap(selectionStats(_, List.empty))
 
-      // render the document into the query object.
-      // replacing single $ with $$ for escaping
-      val escapedDocumentString =
-        operation.original.renderPretty.replaceAll("\\$", "\\$\\$")
+      // render the operation into the query object.
+      val operationString =
+        operation.original.renderPretty
 
       // add the fragments to the query as well
-      val escapedFragmentString = Option(document.original.fragments)
+      val fragmentsString = Option(document.original.fragments)
         .filter(_.nonEmpty)
         .map { fragments =>
           fragments.values
-            .map(_.renderPretty.replaceAll("\\$", "\\$\\$"))
+            .map(_.renderPretty)
             .mkString("\n\n", "\n", "")
         }
         .getOrElse("")
 
-      val documentString = escapedDocumentString + escapedFragmentString
+      // render the document into the query object
+      val documentString = operationString + fragmentsString
       val graphqlDocument = Term.Interpolate(
         Term.Name("graphql"),
         Lit.String(documentString) :: Nil,

@@ -6,7 +6,7 @@ scalaVersion in ThisBuild := "2.12.4"
 val server = project
   .enablePlugins(GraphQLSchemaPlugin)
   .settings(
-    libraryDependencies += "org.sangria-graphql" %% "sangria" % "1.4.2",
+    libraryDependencies += "org.sangria-graphql" %% "sangria" % "2.0.0-RC1",
     graphqlSchemaSnippet :=
       "com.example.starwars.TestSchema.StarWarsSchema"
   )
@@ -21,9 +21,12 @@ val client = project
   )
 
 TaskKey[Unit]("check") := {
-  val files  = (graphqlCodegen in client).value
+  val files = (graphqlCodegen in client).value
 
-  assert(files.length == 1, s"Sangria code should only generated one file, but got ${files.length}.\n${files.mkString("\n")}")
+  assert(
+    files.length == 1,
+    s"Sangria code should only generated one file, but got ${files.length}.\n${files.mkString("\n")}"
+  )
 
   val file = files.head
   assert(file.exists, s"$file could not be found")

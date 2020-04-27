@@ -28,7 +28,7 @@ package object graphql {
       val gqlSchema = graphqlSchemas.value
       val labels = gqlSchema.schemas.map(_.label)
       // create a dependent parser. A label can only be selected once
-      schemaLabelParser(labels).map(label => schemaOrError(label, gqlSchema))
+      schemaLabelParser(labels).flatMap(label => schemaOrError(label, gqlSchema))
     }
 
   /**
@@ -41,8 +41,8 @@ package object graphql {
       // create a depended parser. A label can only be selected once
       schemaLabelParser(labels).flatMap {
         case selectedLabel if labels.contains(selectedLabel) =>
-          success(schemaOrError(selectedLabel, gqlSchemas)) ~ schemaLabelParser(labels.filterNot(_ == selectedLabel))
-            .map(label => schemaOrError(label, gqlSchemas))
+          schemaOrError(selectedLabel, gqlSchemas) ~ schemaLabelParser(labels.filterNot(_ == selectedLabel))
+            .flatMap(label => schemaOrError(label, gqlSchemas))
         case selectedLabel =>
           failure(s"$selectedLabel is not available. Use: [${labels.mkString(" | ")}]")
       }
@@ -57,7 +57,9 @@ package object graphql {
     token(Space.? ~> schemaParser)
   }
 
-  private def schemaOrError(label: String, graphQLSchema: GraphQLSchemas): GraphQLSchema =
-    graphQLSchema.schemaByLabel.getOrElse(label, sys.error(s"The schema '$label' is not defined in graphqlSchemas"))
-
+  private def schemaOrError(label: String, graphQLSchema: GraphQLSchemas): Parser[GraphQLSchema] =
+    graphQLSchema.schemaByLabel
+      .get(label)
+      .map(success(_))
+      .getOrElse(failure(s"The schema '$label' is not defined in graphqlSchemas"))
 }

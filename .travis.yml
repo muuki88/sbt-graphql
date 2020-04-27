@@ -2,7 +2,7 @@ language: scala
 matrix:
   include:
   - jdk: openjdk8
-    scala: 2.12.7
+    scala: 2.12.11
     env: COMMAND=validate
 
 script:
