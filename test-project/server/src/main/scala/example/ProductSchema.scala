@@ -30,8 +30,8 @@ object LocalDateTimeScalar {
   case object LocalDateTimeCoercionViolation extends ValueCoercionViolation("LocalDateTime value expected")
 
   private def parseDate(s: String) = Try(LocalDateTime.parse(s)) match {
-    case Success(date) ⇒ Right(date)
-    case Failure(_) ⇒ Left(LocalDateTimeCoercionViolation)
+    case Success(date) => Right(date)
+    case Failure(_) => Left(LocalDateTimeCoercionViolation)
   }
 
   val LocalDateTimeType = ScalarType[LocalDateTime]("LocalDateTime",
@@ -39,11 +39,11 @@ object LocalDateTimeScalar {
       if (caps.contains(DateSupport)) localDateTime.toLocalDate
       else DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(localDateTime),
     coerceUserInput = {
-      case s: String ⇒ parseDate(s)
+      case s: String => parseDate(s)
       case _ => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _, _, _) ⇒ parseDate(s)
+      case ast.StringValue(s, _, _, _, _) => parseDate(s)
       case _ => Left(LocalDateTimeCoercionViolation)
     })
 
@@ -85,7 +85,7 @@ object ProductSchema {
     Field("product", OptionType(ProductType),
       description = Some("Returns a product with specific `id`."),
       arguments = Id :: Nil,
-      resolve = c ⇒ c.ctx.product(c arg Id)),
+      resolve = c => c.ctx.product(c arg Id)),
 
     Field("products", ListType(ProductType),
       description = Some("Returns a list of all available products."),

@@ -21,9 +21,9 @@ object PreProcessors {
         Failure(s"Failed to read $graphqlFile: ${error.getMessage}")
       }
       /*_*/ // Iteratively apply all preprocessors after one another. Fail-fast semantics through Either.
-      processedContent <- preProcessors.toList.foldM(input)(
-        (previousValue, processor) => processor(previousValue)
-      )
+      processedContent <- preProcessors.toList.foldM(input) { (previousValue, processor) =>
+        processor(previousValue)
+      }
       /*_*/
     } yield {
       IO.write(processedFile, processedContent)
