@@ -59,7 +59,7 @@ object SchemaLoader {
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
-    // check if it's a json or graphql file and parse accordingly
+  // check if it's a json or graphql file and parse accordingly
     if (file.getName.endsWith(".json")) {
       parse(IO.read(file)) match {
         case Right(schemaJson) =>
@@ -83,10 +83,10 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
   * @param log log output
   */
 case class IntrospectSchemaLoader(
-    url: String,
-    log: Logger,
-    headers: Seq[(String, String)] = Seq.empty,
-    method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET
+  url: String,
+  log: Logger,
+  headers: Seq[(String, String)] = Seq.empty,
+  method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET
 ) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
@@ -108,16 +108,19 @@ case class IntrospectSchemaLoader(
   private def introspect(): Json = {
     log.info(s"Introspect graphql endpoint: ${method.name} : $url")
 
+    // The schemaDescription doesn't work with "graphql.org/swapi-graphql" and we don't need it anyway
+    val introspectionQueryDocument = introspectionQuery(schemaDescription = false)
+
     val response = method match {
       case IntrospectSchemaLoader.POST =>
         val body = Json
-          .obj("query" -> Json.fromString(introspectionQuery.renderCompact))
+          .obj("query" -> Json.fromString(introspectionQueryDocument.renderCompact))
           .noSpaces
         Http(url).headers(headers).method("POST").postData(body).asString
       case IntrospectSchemaLoader.GET =>
         Http(url)
           .headers(headers)
-          .param("query", introspectionQuery.renderCompact)
+          .param("query", introspectionQueryDocument.renderCompact)
           .asString
     }
 

@@ -1,8 +1,0 @@
-query HeroAndFriends {
-  hero {
-    name
-    friends {
-      name
-    }
-  }
-}
