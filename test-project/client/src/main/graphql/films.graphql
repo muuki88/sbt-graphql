@@ -1,0 +1,8 @@
+query FilmsQuery($first: Int!) {
+    allFilms(first: $first) {
+        films {
+            id
+            title
+        }
+    }
+}
