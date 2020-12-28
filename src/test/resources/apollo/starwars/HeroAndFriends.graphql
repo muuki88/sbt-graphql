@@ -4,13 +4,13 @@ query HeroAndFriends {
     friends {
       name
       friends {
-	name
-	friends {
-	  name
-	  friends {
-	    name
-	  }
-	}
+        name
+        friends {
+          name
+          friends {
+            name
+          }
+        }
       }
     }
   }

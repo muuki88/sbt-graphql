@@ -94,7 +94,7 @@ case class ScalametaGenerator(moduleName: Term.Name, emitInterfaces: Boolean = f
     def generateSelectionStats(prefix: String)(selection: TypedDocument.Selection): List[Stat] =
       selection.fields.flatMap {
         // render enumerations (union types)
-        case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
+        case TypedDocument.Field(name, _, None, unionTypes, _) if unionTypes.nonEmpty =>
           val unionName = Type.Name(name.capitalize)
           val objectName = Term.Name(unionName.value)
           val template = generateTemplate(List(unionName.value), prefix)
@@ -121,7 +121,7 @@ case class ScalametaGenerator(moduleName: Term.Name, emitInterfaces: Boolean = f
           )
 
         // render a nested case class for a deeper selection
-        case TypedDocument.Field(name, _, Some(selection), _) =>
+        case TypedDocument.Field(name, _, Some(selection), _, _) =>
           val stats =
             generateSelectionStats(prefix + name.capitalize + ".")(selection)
           val params =
@@ -142,7 +142,7 @@ case class ScalametaGenerator(moduleName: Term.Name, emitInterfaces: Boolean = f
               }
               .toList
 
-        case TypedDocument.Field(_, _, _, _) =>
+        case TypedDocument.Field(_, _, _, _, _) =>
           List.empty
       }
 
