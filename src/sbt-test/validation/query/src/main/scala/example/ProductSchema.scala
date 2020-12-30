@@ -49,7 +49,7 @@ object ProductSchema {
     Field("product", OptionType(ProductType),
       description = Some("Returns a product with specific `id`."),
       arguments = Id :: Nil,
-      resolve = c ⇒ c.ctx.product(c arg Id)),
+      resolve = c => c.ctx.product(c arg Id)),
 
     Field("products", ListType(ProductType),
       description = Some("Returns a list of all available products."),

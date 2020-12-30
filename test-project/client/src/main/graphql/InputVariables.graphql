@@ -1,6 +1,0 @@
-query InputVariables($humanId: String!) {
-    human(id: $humanId) {
-        name,
-        homePlanet
-    }
-}

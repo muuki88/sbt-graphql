@@ -40,7 +40,7 @@ object TestSchema {
     InterfaceType(
       "Character",
       "A character in the Star Wars Trilogy",
-      () ⇒
+      () =>
         fields[Unit, TestData.Character](
           Field("id", StringType, Some("The id of the character."), resolve = _.value.id),
           Field("name", OptionType(StringType), Some("The name of the character."), resolve = _.value.name),
@@ -48,19 +48,19 @@ object TestSchema {
             "friends",
             OptionType(ListType(OptionType(Character))),
             Some("The friends of the character, or an empty list if they have none."),
-            resolve = ctx ⇒ DeferFriends(ctx.value.friends)
+            resolve = ctx => DeferFriends(ctx.value.friends)
           ),
           Field(
             "appearsIn",
             OptionType(ListType(OptionType(EpisodeEnum))),
             Some("Which movies they appear in."),
-            resolve = _.value.appearsIn map (e ⇒ Some(e))
+            resolve = _.value.appearsIn map (e => Some(e))
           ),
           Field(
             "secretBackstory",
             OptionType(StringType),
             Some("Where are they from and how they came to be who they are."),
-            resolve = _ ⇒ throw PrivacyError("secretBackstory is secret.")
+            resolve = _ => throw PrivacyError("secretBackstory is secret.")
           )
         )
     )
@@ -77,13 +77,13 @@ object TestSchema {
           "friends",
           OptionType(ListType(OptionType(Character))),
           Some("The friends of the human, or an empty list if they have none."),
-          resolve = (ctx) ⇒ DeferFriends(ctx.value.friends)
+          resolve = ctx => DeferFriends(ctx.value.friends)
         ),
         Field(
           "appearsIn",
           OptionType(ListType(OptionType(EpisodeEnum))),
           Some("Which movies they appear in."),
-          resolve = _.value.appearsIn map (e ⇒ Some(e))
+          resolve = _.value.appearsIn map (e => Some(e))
         ),
         Field(
           "homePlanet",
@@ -104,19 +104,19 @@ object TestSchema {
         "name",
         OptionType(StringType),
         Some("The name of the droid."),
-        resolve = ctx ⇒ Future.successful(ctx.value.name)
+        resolve = ctx => Future.successful(ctx.value.name)
       ),
       Field(
         "friends",
         OptionType(ListType(OptionType(Character))),
         Some("The friends of the droid, or an empty list if they have none."),
-        resolve = ctx ⇒ DeferFriends(ctx.value.friends)
+        resolve = ctx => DeferFriends(ctx.value.friends)
       ),
       Field(
         "appearsIn",
         OptionType(ListType(OptionType(EpisodeEnum))),
         Some("Which movies they appear in."),
-        resolve = _.value.appearsIn map (e ⇒ Some(e))
+        resolve = _.value.appearsIn map (e => Some(e))
       ),
       Field(
         "primaryFunction",
@@ -139,9 +139,9 @@ object TestSchema {
   val Query = ObjectType[CharacterRepo, Unit](
     "Query",
     fields[CharacterRepo, Unit](
-      Field("hero", Character, arguments = EpisodeArg :: Nil, resolve = (ctx) ⇒ ctx.ctx.getHero(ctx.arg(EpisodeArg))),
-      Field("human", OptionType(Human), arguments = ID :: Nil, resolve = ctx ⇒ ctx.ctx.getHuman(ctx arg ID)),
-      Field("droid", Droid, arguments = ID :: Nil, resolve = Projector((ctx, f) ⇒ ctx.ctx.getDroid(ctx arg ID).get))
+      Field("hero", Character, arguments = EpisodeArg :: Nil, resolve = ctx => ctx.ctx.getHero(ctx.arg(EpisodeArg))),
+      Field("human", OptionType(Human), arguments = ID :: Nil, resolve = ctx => ctx.ctx.getHuman(ctx arg ID)),
+      Field("droid", Droid, arguments = ID :: Nil, resolve = Projector((ctx, f) => ctx.ctx.getDroid(ctx arg ID).get))
     )
   )
 

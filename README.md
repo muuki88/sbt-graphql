@@ -15,12 +15,17 @@ it with another schema, e.g. the production schema, to avoid breaking changes.
 
 All features are based on the excellent [Sangria GraphQL library](http://sangria-graphql.org)
 
-* Code generation from `graphql` queries
+* Client-side code generation from `graphql` queries
 * Schema generation - inspired by [mediative/sangria-codegen](https://github.com/mediative/sangria-codegen)
 * Schema validation - [sangria schema validation](http://sangria-graphql.org/learn/#schema-validation)
 * Schema validation against another schema - [sangria schema comparison](http://sangria-graphql.org/learn/#schema-comparison)
 * Schema release note generation
 * Query validation against your locally generated schema - [sangria query validation](http://sangria-graphql.org/learn/#query-validation)
+
+Examples for client-side code generation and for schema validation can be found in the `test-project` directory.
+
+**Note**: Generating server-side code from a schema is currently not supported. 
+Look [here](https://github.com/sangria-graphql/sangria/issues/381) for sangria-based solutions. 
 
 # Usage
 

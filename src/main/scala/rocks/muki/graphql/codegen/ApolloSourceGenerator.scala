@@ -202,9 +202,9 @@ case class ApolloSourceGenerator(
         val unionValues = unionTypes.flatMap {
           case TypedDocument.UnionSelection(unionType, unionSelection) =>
             // get nested selections
-            val innerSelections = unionSelection.fields.flatMap(
-              field => selectionStats(field, List.empty)
-            )
+            val innerSelections = unionSelection.fields.flatMap { field =>
+              selectionStats(field, List.empty)
+            }
             val params = generateFieldParams(
               unionSelection.fields,
               typeQualifiers :+ unionName.value
