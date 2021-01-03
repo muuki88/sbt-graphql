@@ -1,3 +1,4 @@
+import io.circe.{ Decoder, Encoder }
 import io.circe.generic.semiauto.{ deriveDecoder, deriveEncoder }
 import sangria.macros._
 import types._
