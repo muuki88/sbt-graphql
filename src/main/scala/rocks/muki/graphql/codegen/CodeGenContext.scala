@@ -21,7 +21,7 @@ import sbt.Logger
   * @param log output log
   */
 case class CodeGenContext(
-    schema: Schema[_, _],
+    schema: Schema[Any, Any],
     targetDirectory: File,
     graphQLFiles: Seq[File],
     packageName: String,

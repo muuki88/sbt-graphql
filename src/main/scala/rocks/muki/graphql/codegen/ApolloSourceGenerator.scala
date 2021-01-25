@@ -84,8 +84,9 @@ case class ApolloSourceGenerator(
         operation.selection.fields.flatMap(selectionStats(_, List.empty))
 
       // render the operation into the query object.
-      val operationString =
-        operation.original.renderPretty
+      val operationString = operation.original
+        .copy(selections = operation.original.selections.map(removeCodeGen))
+        .renderPretty
 
       // add the fragments to the query as well
       val fragmentsString = Option(document.original.fragments)
@@ -150,7 +151,7 @@ case class ApolloSourceGenerator(
   private def selectionStats(field: TypedDocument.Field, typeQualifiers: List[String]): List[Stat] =
     field match {
       // render enumerations (union types)
-      case TypedDocument.Field(name, _, None, unionTypes) if unionTypes.nonEmpty =>
+      case TypedDocument.Field(name, _, None, unionTypes, _) if unionTypes.nonEmpty =>
         // create the union types
 
         val unionName = Type.Name(name.capitalize)
@@ -229,7 +230,7 @@ case class ApolloSourceGenerator(
         )
 
       // render a nested case class for a deeper selection
-      case TypedDocument.Field(name, tpe, Some(fieldSelection), _) =>
+      case TypedDocument.Field(name, tpe, Some(fieldSelection), _, _) =>
         // Recursive call - create more case classes
 
         val fieldName = Type.Name(name.capitalize)
@@ -253,10 +254,22 @@ case class ApolloSourceGenerator(
         ) ++ Option(innerStats).filter(_.nonEmpty).map { stats =>
           q"object $termName { ..$stats }"
         }
-      case TypedDocument.Field(_, _, _, _) =>
+      // if a codeGen directive is used, skip code generation
+      case TypedDocument.Field(_, _, None, _, Some(_)) =>
+        List.empty
+      case TypedDocument.Field(_, _, _, _, _) =>
         // scalar types, e.g. String, Option, List
         List.empty
     }
+
+  private def removeCodeGen(selection: sangria.ast.Selection): sangria.ast.Selection = selection match {
+    case f: sangria.ast.Field =>
+      f.copy(
+        selections = f.selections.map(removeCodeGen),
+        directives = f.directives.filterNot(_.name == "codeGen")
+      )
+    case s => s
+  }
 
   private def generateFieldParams(
       fields: List[TypedDocument.Field],
@@ -312,7 +325,15 @@ case class ApolloSourceGenerator(
       case tpe: schema.Type =>
         genType(tpe)
     }
-    typeOf(field.tpe)
+    field.codeGen
+      .fold(typeOf(field.tpe)) { codeGen =>
+        // users may specify a fully qualified type, e.g. "com.example.Foo"
+        // thus we must split the package terms to generate a proper type selection, instead of a quoted type
+        // that looks like `com.example.Foo` instead of com.exampleFoo
+        val terms = codeGen.useType.split("\\.")
+        ScalametaUtils.typeRefOf(terms.init, terms.last)
+      }
+
   }
 
   private def generateTemplate(traits: List[String]): Template = {

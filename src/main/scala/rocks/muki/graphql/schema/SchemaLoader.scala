@@ -59,7 +59,7 @@ object SchemaLoader {
 class FileSchemaLoader(file: File) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =
-  // check if it's a json or graphql file and parse accordingly
+    // check if it's a json or graphql file and parse accordingly
     if (file.getName.endsWith(".json")) {
       parse(IO.read(file)) match {
         case Right(schemaJson) =>
@@ -83,10 +83,10 @@ class FileSchemaLoader(file: File) extends SchemaLoader {
   * @param log log output
   */
 case class IntrospectSchemaLoader(
-  url: String,
-  log: Logger,
-  headers: Seq[(String, String)] = Seq.empty,
-  method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET
+    url: String,
+    log: Logger,
+    headers: Seq[(String, String)] = Seq.empty,
+    method: IntrospectSchemaLoader.Method = IntrospectSchemaLoader.GET
 ) extends SchemaLoader {
 
   override def loadSchema(): Schema[Any, Any] =

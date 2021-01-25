@@ -25,34 +25,68 @@ sealed trait TypedDocument
 object TypedDocument {
 
   /**
-    * Selcted GraphQL field
+    * Selected GraphQL field
+    *
+    * The class contains a variety of information on a selected field to allow an source code
+    * generators to define different behaviours.
     *
     * @param name - the field name
     * @param tpe - the field type extraced from the schema
-    * @param selection -
-    * @param union
+    * @param selection - is None for scalar types (String, Option, List, etc.)
+    * @param union contains a list of union types that are selected with the spread operator `...UnionTypeName`
     */
   case class Field(
       name: String,
       tpe: schema.Type,
       selection: Option[Selection] = None,
-      union: List[UnionSelection] = List.empty
+      union: List[UnionSelection] = List.empty,
+      codeGen: Option[CodeGen] = None
   ) extends TypedDocument {
     def isObjectLike = selection.nonEmpty
     def isUnion = union.nonEmpty
+
+    override def toString: String =
+      s"Field(name:$name, type:${tpe.namedType.name}, selection: $selection , union: $union, codeGen: $codeGen)"
+
   }
 
+  /**
+    * A Selection represents a list of selected fields with additional meta information.
+    *
+    * Based on the meta information (interfaces, fragment) code generators can decide
+    * what code needs to be generated.
+    *
+    * ## Interfaces
+    *
+    * The generated code may inherit the specified interfaces for this selection.
+    *
+    * ## Fragment
+    *
+    * If a fragment is the source for this selection the fragment code could be generated
+    * in a separate place and referenced here by name and or type of the fragment.
+    *
+    * @param fields the fields that are part of the selection
+    * @param interfaces the interfaces that apply to this selection
+    */
   case class Selection(fields: List[Field], interfaces: List[String] = List.empty) extends TypedDocument {
     def +(that: Selection) =
       Selection((this.fields ++ that.fields).distinct, this.interfaces ++ that.interfaces)
   }
   object Selection {
     final val empty = Selection(List.empty)
-    def apply(field: Field): Selection =
-      Selection(List(field))
+    def apply(field: Field): Selection = Selection(List(field))
   }
 
-  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection) extends TypedDocument
+  case class UnionSelection(tpe: schema.ObjectType[_, _], selection: Selection) extends TypedDocument {
+
+    override def toString: String = s"UnionSelection(type: ${tpe.name}, selection: $selection)"
+  }
+
+  /**
+    *
+    * @param useType use this type instead and don't generate any code
+    */
+  case class CodeGen(useType: String) extends TypedDocument
 
   /**
     * Operations represent API calls and are the entry points to the API.

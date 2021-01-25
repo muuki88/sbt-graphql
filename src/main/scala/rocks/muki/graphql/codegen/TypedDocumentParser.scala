@@ -90,6 +90,21 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
 
     typeInfo.enter(node)
     val result = node match {
+      // check if this field has a codeGen directive
+      case field: ast.Field if getUseTypeDirectiveValue(field).isDefined =>
+        require(typeInfo.tpe.isDefined, s"Field without type: $field")
+        val tpe = typeInfo.tpe.get
+        // turns this grapqhl query: fieldName @codeGen(useType: "Foo") { ... }
+        // into "fieldName: Foo"
+
+        val codeGen = TypedDocument.CodeGen(useType = getUseTypeDirectiveValue(field).get)
+
+        TypedDocument.Selection(
+          fields = List(
+            // the typeCondition the fragment definition (... on clause) should be the same as the field type
+            TypedDocument.Field(field.outputName, tpe, codeGen = Some(codeGen))
+          )
+        )
       case field: ast.Field =>
         require(typeInfo.tpe.isDefined, s"Field without type: $field")
         val tpe = typeInfo.tpe.get
@@ -139,6 +154,14 @@ case class TypedDocumentParser(schema: Schema[_, _], document: ast.Document) {
     typeInfo.leave(node)
     result
   }
+
+  private def getUseTypeDirectiveValue(field: ast.Field): Option[String] =
+    field.directives.collectFirst {
+      case d if d.name == "codeGen" =>
+        d.arguments.collectFirst {
+          case ast.Argument("useType", value: ast.StringValue, _, _) => value.value
+        }
+    }.flatten
 
   private def generateOperation(
       operation: ast.OperationDefinition

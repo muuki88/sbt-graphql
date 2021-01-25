@@ -1,0 +1,5 @@
+query CodeGenHeroNameQuery {
+  hero @codeGen(useType: "Hero") {
+    name
+  }
+}

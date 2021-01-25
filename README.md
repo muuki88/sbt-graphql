@@ -294,6 +294,48 @@ which is represented as `java.time.ZoneDateTime`. Add this as an import
 graphqlCodegenImports += "java.time.ZoneDateTime"
 ```
 
+### Code Gen directive
+
+The plugin provides a `codeGen` directive that is erased during source code generation and
+can be used to customize the generated code.
+
+#### Example - skip code generation
+
+To skip the code generation and provide your own type.
+
+```graphql
+query CodeGenHeroNameQuery {
+  hero @codeGen(useType: "Hero") {
+    name
+  }
+}
+```
+
+You can also use the fully qualified class name to avoid clashes
+
+```graphql
+query CodeGenHeroNameQuery {
+  hero @codeGen(useType: "com.example.model.Hero") {
+    name
+  }
+}
+```
+
+#### Difference to scalar types
+
+Use the code gen directive, when the code generation doesn't generate the code you need.
+This can have multiple reasons
+
+- unsupported feature
+- bug in the code generation
+- code requires additional changes, e.g. extending traits or adding helper methods
+
+The code gen directive is intended to work on [object types](https://graphql.org/graphql-js/object-types/).
+
+[Scalar types](https://graphql.org/graphql-js/basic-types/) represent the core building blocks of
+your graphql schema like `String`, `Float`, `Boolean`, etc. ([DateTime is unfortunately missing until now](https://github.com/graphql/graphql-spec/issues/579)). For this reasons there's no code generation for those types, which makes the
+code gen directive obsolete to use.
+
 ### Magic #imports
 
 This is a feature tries to replicate the [apollographql/graphql-tag loader.js](https://github.com/apollographql/graphql-tag/blob/ae792b67ef16ae23a0a7a8d78af8b698e8acd7d2/loader.js#L29-L37)
