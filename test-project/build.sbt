@@ -99,7 +99,7 @@ lazy val client = project
 lazy val commonSettings = Seq(
   version := "0.4",
   scalaVersion := "2.12.11",
-  organization := "rocks.muki",
+  organization := "de.mukis",
   libraryDependencies ++= Seq(
     "org.sangria-graphql" %% "sangria" % "2.0.0-RC1",
     "org.sangria-graphql" %% "sangria-circe" % "1.3.0"
