@@ -1,5 +1,5 @@
 name := "sbt-graphql"
-organization := "rocks.muki"
+organization := "de.mukis"
 sbtPlugin := true
 enablePlugins(SbtPlugin)
 

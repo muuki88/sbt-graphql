@@ -32,7 +32,7 @@ Look [here](https://github.com/sangria-graphql/sangria/issues/381) for sangria-b
 Add this to your `plugins.sbt` and replace the `<version>` placeholder with the latest release.
 
 ```scala
-addSbtPlugin("rocks.muki" % "sbt-graphql" % "<version>")
+addSbtPlugin("de.mukis" % "sbt-graphql" % "<version>")
 ```
 
 In your `build.sbt` enable the plugins and add sangria. I'm using circe as a parser for my JSON response.
