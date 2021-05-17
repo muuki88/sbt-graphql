@@ -1,1 +1,1 @@
-addSbtPlugin("rocks.muki" % "sbt-graphql" % sys.props("project.version"))
+addSbtPlugin("de.mukis" % "sbt-graphql" % sys.props("project.version"))
