@@ -23,7 +23,7 @@ scriptedLaunchOpts += "-Dproject.version=" + version.value
 scalacOptions += "-Ypartial-unification"
 
 // project meta data
-sonatypeProfileName := "nepomuk.seiler"
+sonatypeProfileName := "de.mukis"
 licenses := Seq("Apache-2.0" -> url("https://opensource.org/licenses/Apache-2.0"))
 homepage := Some(url("https://github.com/muuki88/sbt-graphql"))
 
