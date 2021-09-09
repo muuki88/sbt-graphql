@@ -1,3 +1,5 @@
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 name := "sbt-graphql"
 organization := "de.mukis"
 sbtPlugin := true
