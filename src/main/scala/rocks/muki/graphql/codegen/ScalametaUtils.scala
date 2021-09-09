@@ -3,7 +3,7 @@ package rocks.muki.graphql.codegen
 import scala.meta._
 
 /**
-  * More robust way to parse [[Type.Ref]] and [[Term.Ref]] from String.
+  * More robust way to parse `Type.Ref` and `Term.Ref` from String.
   * @see More discussion: https://gitter.im/scalameta/scalameta?at=5b9ba14f8909f71f75d1b4bd
   * @see https://astexplorer.net/#/gist/ec56167ffafb20cbd8d68f24a37043a9/677e43f3adb93db8513dbe4e2c868dd4f78df4b3
   */

@@ -55,14 +55,14 @@ object GraphQLPlugin extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] = Seq(
     graphqlSchemas := GraphQLSchemas(),
     // schema rendering
-    target in graphqlRenderSchema := (target in Compile).value / "graphql",
+    graphqlRenderSchema / target := (Compile / target).value / "graphql",
     graphqlRenderSchema := graphqlRenderSchemaTask.evaluated
   )
 
   private val graphqlRenderSchemaTask = Def.inputTaskDyn[File] {
     val log = streams.value.log
     val schemaDefinition = singleGraphQLSchemaParser.parsed
-    val file = (target in graphqlRenderSchema).value / s"${schemaDefinition.label}.graphql"
+    val file = (graphqlRenderSchema / target).value / s"${schemaDefinition.label}.graphql"
     log.info(s"Rendering schema to: ${file.getPath}")
 
     Def.task {

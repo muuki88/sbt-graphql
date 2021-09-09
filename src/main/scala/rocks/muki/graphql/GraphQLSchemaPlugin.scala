@@ -20,7 +20,7 @@ object GraphQLSchemaPlugin extends AutoPlugin {
   object autoImport {
 
     /**
-      * A scala snippet that returns the [[sangria.schema.Schema]] for your graphql application.
+      * A scala snippet that returns the `sangria.schema.Schema` for your graphql application.
       *
       * @example if your schema is defined on an object
       * {{{

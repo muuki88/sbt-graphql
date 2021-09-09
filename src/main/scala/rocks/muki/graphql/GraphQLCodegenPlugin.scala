@@ -43,22 +43,22 @@ object GraphQLCodegenPlugin extends AutoPlugin {
     inConfig(config)(
       Seq(
         sourceGenerators += graphqlCodegen.taskValue,
-        sourceDirectory in graphqlCodegen := sourceDirectory.value / "graphql",
-        sourceDirectories in graphqlCodegen := List((sourceDirectory in (config, graphqlCodegen)).value),
-        target in graphqlCodegen := sourceManaged.value / "sbt-graphql",
+        graphqlCodegen / sourceDirectory := sourceDirectory.value / "graphql",
+        graphqlCodegen / sourceDirectories := List((config / graphqlCodegen / sourceDirectory).value),
+        graphqlCodegen / target := sourceManaged.value / "sbt-graphql",
         graphqlCodegenQueries := Defaults
           .collectFiles(
-            sourceDirectories in graphqlCodegen,
-            includeFilter in graphqlCodegen,
-            excludeFilter in graphqlCodegen
+            graphqlCodegen / sourceDirectories,
+            graphqlCodegen / includeFilter,
+            graphqlCodegen / excludeFilter
           )
           .value,
-        graphqlCodegenPreProcessors in config := List(
-          PreProcessors.magicImports((sourceDirectories in (config, graphqlCodegen)).value)
+        config / graphqlCodegenPreProcessors := List(
+          PreProcessors.magicImports((config / graphqlCodegen / sourceDirectories).value)
         ),
-        graphqlCodegen in config := {
+        config / graphqlCodegen := {
           val log = streams.value.log
-          val targetDir = (target in (config, graphqlCodegen)).value
+          val targetDir = (config / graphqlCodegen / target).value
           //val generator = ScalametaGenerator((name in graphqlCodegen).value)
           val queries = graphqlCodegenQueries.value
           val schemaFile = graphqlCodegenSchema.value
@@ -76,7 +76,7 @@ object GraphQLCodegenPlugin extends AutoPlugin {
 
           log.info(s"Adding imports: ${imports.mkString(",")}")
 
-          val moduleName = (name in (config, graphqlCodegen)).value
+          val moduleName = (config / graphqlCodegen / name).value
           val context = CodeGenContext(
             schema,
             targetDir,
@@ -97,14 +97,14 @@ object GraphQLCodegenPlugin extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     Seq(
       graphqlCodegenStyle := Apollo,
-      graphqlCodegenSchema := (resourceDirectory in Compile).value / "schema.graphql",
+      graphqlCodegenSchema := (Compile / resourceDirectory).value / "schema.graphql",
       graphqlCodegenJson := JsonCodeGens.None,
-      includeFilter in graphqlCodegen := "*.graphql",
-      excludeFilter in graphqlCodegen := HiddenFileFilter || "*.fragment.graphql",
+      graphqlCodegen / includeFilter := "*.graphql",
+      graphqlCodegen / excludeFilter := HiddenFileFilter || "*.fragment.graphql",
       graphqlCodegenPackage := "graphql.codegen",
       graphqlCodegenImports := Seq.empty,
-      name in graphqlCodegen := "GraphQLCodegen",
-      graphqlCodegen := (graphqlCodegen in Compile).value
+      graphqlCodegen / name := "GraphQLCodegen",
+      graphqlCodegen := (Compile / graphqlCodegen).value
     ) ++ codegenTask(Compile) ++ codegenTask(Test)
 
 }
