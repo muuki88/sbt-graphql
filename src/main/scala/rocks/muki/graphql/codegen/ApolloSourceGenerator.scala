@@ -186,16 +186,21 @@ case class ApolloSourceGenerator(
         )
 
         // create a json decoder for the union trait if a "__typename" field is present
-        val unionJsonDecoder =
+        val unionJsonCodec =
           unionCommonFields.find(_.name == "__typename").toList.flatMap { _ =>
-            val conrecteUnionTypes = unionTypes.map {
+            val concreteUnionTypes = unionTypes.map {
               case TypedDocument.UnionSelection(unionType, _) => unionType.name
             }
             jsonCodeGen.generateUnionFieldDecoder(
               unionName,
-              conrecteUnionTypes,
+              concreteUnionTypes,
               "__typename"
-            )
+            ) ++
+              jsonCodeGen.generateUnionFieldEncoder(
+                unionName,
+                concreteUnionTypes,
+                "__typename"
+              )
           }
 
         // create concrete case classes for each union type
@@ -222,7 +227,7 @@ case class ApolloSourceGenerator(
                   q"object $unionTermName { ..$stats }"
                 }
                 .toList
-        } ++ unionJsonDecoder
+        } ++ unionJsonCodec
 
         List[Stat](
           unionInterface,
