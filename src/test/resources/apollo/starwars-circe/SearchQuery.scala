@@ -54,6 +54,14 @@ object SearchQuery {
         case other =>
           Decoder.failedWithMessage("invalid type: " + other)
       }) yield value
+      implicit val jsonEncoder: Encoder[Search] = Encoder.instance[Search]({
+        case v: Human =>
+          deriveEncoder[Human].apply(v)
+        case v: Droid =>
+          deriveEncoder[Droid].apply(v)
+        case v: Starship =>
+          deriveEncoder[Starship].apply(v)
+      })
     }
   }
 }

@@ -129,11 +129,37 @@ object JsonCodeGens {
        """)
     }
 
+    /**
+      * GraphQL doesn't support unions in arguments (only in responses), so generating an Encoder might seem silly
+      * at first. It is still needed if `deriveEncoder` in generated code references a union (otherwise the compilation
+      * fails) or if you want to generate json responses using the generated code (e.g. in tests for your application).
+      *
+      * To match the Decoder we pattern match on the `unionTrait` and produce a json object using `deriveEncoder` based
+      * on the case we have. This avoids the default nesting of sum-types `circe` does. The discriminator field
+      * `__typename` is automatically included via `deriveEncoder` as the generated code for each case includes it as
+      * normal field already.
+      *
+      * We could make sure that the value for `__typename` is always the name of the type, ignoring the value someone
+      * put in the field of the case class. As of now, we don't do that, so test-code potentially has to do this
+      * manually but is also not bound to a hardcoded value in the Encoder here (e.g. for testing invalid responses).
+      */
     override def generateUnionFieldEncoder(
         unionTrait: Type.Name,
         unionNames: List[String],
         typeDiscriminatorField: String
-    ): List[Stat] = Nil
+    ): List[Stat] = {
+      val patterns = unionNames.map { name =>
+        val typeName = Type.Name(name)
+
+        p"case v: $typeName => deriveEncoder[$typeName].apply(v)"
+      }
+
+      List(
+        q"""implicit val jsonEncoder: Encoder[$unionTrait] = Encoder.instance[$unionTrait] {
+              ..case $patterns
+            } """
+      )
+    }
 
     override def generateEnumFieldDecoder(enumTrait: Type.Name, enumValues: List[String]): List[Stat] = {
       val patterns = enumValues.map { name =>
