@@ -1,5 +1,14 @@
 # Change Log
 
+## [v0.16.4](https://github.com/muuki88/sbt-graphql/tree/v0.16.4) (2021-09-09)
+[Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.16.3...v0.16.4)
+
+**Merged pull requests:**
+
+- Add generated circe `Encoder` for GraphQL unions [\#99](https://github.com/muuki88/sbt-graphql/pull/99) ([felixbr](https://github.com/felixbr))
+
+## [v0.16.0](https://github.com/muuki88/sbt-graphql/tree/v0.16.0)
+
 ## [v0.14.0](https://github.com/muuki88/sbt-graphql/tree/v0.14.0) (2019-08-30)
 [Full Changelog](https://github.com/muuki88/sbt-graphql/compare/v0.13.2...v0.14.0)
 
