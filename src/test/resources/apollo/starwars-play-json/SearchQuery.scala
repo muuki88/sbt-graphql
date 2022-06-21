@@ -43,13 +43,13 @@ object SearchQuery {
         implicit val jsonReads: Reads[Starship] = Json.reads[Starship]
         implicit val jsonWrites: Writes[Starship] = Json.writes[Starship]
       }
-      implicit val jsonReads: Reads[Search] = (json: JsValue) => for (valueAsObject <- json.validate[JsObject]; typeDiscriminator <- (valueAsObject \ "__typename").validate[String]; value <- typeDiscriminator match {
+      implicit val jsonReads: Reads[Search] = (json: JsValue) => for (typeDiscriminator <- (json \ "__typename").validate[String]; value <- typeDiscriminator match {
         case "Human" =>
-          valueAsObject.validate[Human]
+          json.validate[Human]
         case "Droid" =>
-          valueAsObject.validate[Droid]
+          json.validate[Droid]
         case "Starship" =>
-          valueAsObject.validate[Starship]
+          json.validate[Starship]
         case other =>
           JsError("invalid type: " + other)
       }) yield value

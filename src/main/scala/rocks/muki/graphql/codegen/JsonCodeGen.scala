@@ -211,7 +211,7 @@ object JsonCodeGens {
       val patterns = unionNames.map { name =>
         val nameLiteral = Lit.String(name)
         val nameType = Type.Name(name)
-        p"case $nameLiteral => valueAsObject.validate[$nameType]"
+        p"case $nameLiteral => json.validate[$nameType]"
       } ++ List(
         p"""case other => JsError("invalid type: " + other)"""
       )
@@ -220,8 +220,7 @@ object JsonCodeGens {
         q"""
         implicit val jsonReads: Reads[$unionTrait] = (json: JsValue) =>
           for {
-            valueAsObject <- json.validate[JsObject]
-            typeDiscriminator <- (valueAsObject \ $discriminatorFieldLiteral).validate[String]
+            typeDiscriminator <- (json \ $discriminatorFieldLiteral).validate[String]
             value <- typeDiscriminator match { ..case $patterns }
           } yield value
        """)
