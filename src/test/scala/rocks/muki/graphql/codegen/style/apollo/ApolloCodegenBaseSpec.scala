@@ -17,14 +17,13 @@ package rocks.muki.graphql.codegen.style.apollo
 
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{EitherValues, TryValues}
-import java.io.File
-
 import rocks.muki.graphql.codegen.{ApolloSourceGenerator, DocumentLoader, TypedDocumentParser}
 import rocks.muki.graphql.schema.SchemaLoader
+import sbt._
 
+import java.io.File
 import scala.io.{Codec, Source => IOSource}
 import scala.meta._
-import sbt._
 
 abstract class ApolloCodegenBaseSpec(name: String, generator: String => ApolloSourceGenerator)
     extends AnyWordSpec

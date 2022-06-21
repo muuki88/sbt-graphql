@@ -191,7 +191,7 @@ A graphql query result is usually modelled with case classes, enums and traits.
 Writing these query result classes is tedious and error prone. `sbt-graphql` can
 generate the correct models for every graphql query.
 
-A lot of insipration came from [apollo codegen](https://github.com/apollographql/apollo-codegen).
+A lot of inspiration came from [apollo codegen](https://github.com/apollographql/apollo-codegen).
 Make sure to check it out for scalajs, typescript and plain javascript projects.
 
 ### Configuration
@@ -266,6 +266,7 @@ Supported JSON libraries and codegen styles
 
 * Apollo style
   * [Circe](https://circe.github.io/circe/)
+  * [Play Json](https://github.com/playframework/play-json)
 * Sangria style
   * _None_
 
@@ -273,6 +274,8 @@ In your `build.sbt` you can configure the JSON library with
 
 ```scala
 graphqlCodegenJson := JsonCodec.Circe
+// or
+graphqlCodegenJson := JsonCodec.PlayJson
 ```
 
 ### Scalar types

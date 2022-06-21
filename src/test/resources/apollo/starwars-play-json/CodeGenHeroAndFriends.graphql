@@ -1,0 +1,17 @@
+query HeroAndFriends {
+  hero {
+    name
+    friends {
+      name
+      friends @codeGen(useType: "com.example.CustomFriend") {
+        name
+        friends {
+          name
+          friends {
+            name
+          }
+        }
+      }
+    }
+  }
+}

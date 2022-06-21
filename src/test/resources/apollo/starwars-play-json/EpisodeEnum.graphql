@@ -1,0 +1,6 @@
+query EpisodeEnum {
+    hero {
+        name
+        appearsIn
+    }
+}
