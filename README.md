@@ -173,7 +173,7 @@ target in graphqlRenderSchema := target.value / "graphql-schema"
 
 ```bash
 $ sbt 
-> graphqlReleaseNotes <old schema> <new schema>
+> graphqlReleaseNotes <new schema> <old schema>
 ```
 
 ### Example
