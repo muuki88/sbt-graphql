@@ -139,7 +139,7 @@ Sangria provides an API for comparing two Schemas. A change can be breaking or n
 The `graphqlValidateSchema` task compares two given schemas defined in the `graphqlSchemas` setting.
 
 ```bash
-graphqlValidateSchema <old schema> <new schema>
+graphqlValidateSchema <new schema> <old schema>
 ```
 
 ### Example
@@ -173,7 +173,7 @@ target in graphqlRenderSchema := target.value / "graphql-schema"
 
 ```bash
 $ sbt 
-> graphqlReleaseNotes <old schema> <new schema>
+> graphqlReleaseNotes <new schema> <old schema>
 ```
 
 ### Example
