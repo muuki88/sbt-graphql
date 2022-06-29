@@ -206,7 +206,11 @@ object JsonCodeGens {
       q"implicit val jsonWrites: Writes[$name] = Json.writes[$name]"
     )
 
-    override def generateUnionFieldDecoder(unionTrait: Type.Name, unionNames: List[String], typeDiscriminatorField: String): List[Stat] = {
+    override def generateUnionFieldDecoder(
+        unionTrait: Type.Name,
+        unionNames: List[String],
+        typeDiscriminatorField: String
+    ): List[Stat] = {
       val discriminatorFieldLiteral = Lit.String(typeDiscriminatorField)
       val patterns = unionNames.map { name =>
         val nameLiteral = Lit.String(name)
@@ -216,8 +220,7 @@ object JsonCodeGens {
         p"""case other => JsError("invalid type: " + other)"""
       )
 
-      List(
-        q"""
+      List(q"""
         implicit val jsonReads: Reads[$unionTrait] = (json: JsValue) =>
           for {
             typeDiscriminator <- (json \ $discriminatorFieldLiteral).validate[String]
@@ -226,7 +229,11 @@ object JsonCodeGens {
        """)
     }
 
-    override def generateUnionFieldEncoder(unionTrait: Type.Name, unionNames: List[String], typeDiscriminatorField: String): List[Stat] = {
+    override def generateUnionFieldEncoder(
+        unionTrait: Type.Name,
+        unionNames: List[String],
+        typeDiscriminatorField: String
+    ): List[Stat] = {
       val patterns = unionNames.map { name =>
         val typeName = Type.Name(name)
 
@@ -250,8 +257,7 @@ object JsonCodeGens {
         p"""case other => JsError("Invalid " + $typeName + ": " + other)"""
       )
 
-      List(
-        q"""
+      List(q"""
         implicit val jsonReads: Reads[$enumTrait] = {
             ..case $patterns
         } """)
