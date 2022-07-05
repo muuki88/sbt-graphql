@@ -65,7 +65,6 @@ case class ApolloSourceGenerator(
   }
 
   override def apply(document: TypedDocument.Api): Result[List[Stat]] = {
-
     val operations = document.operations.map { operation =>
       val typeName = Term.Name(
         operation.name.getOrElse(
@@ -134,7 +133,6 @@ case class ApolloSourceGenerator(
            ..$data
           }"""
     }
-    val types = document.types.flatMap(generateType)
     val objectName = fileName.replaceAll("\\.graphql$|\\.gql$", "")
 
     Right(
@@ -210,12 +208,12 @@ case class ApolloSourceGenerator(
             val innerSelections = unionSelection.fields.flatMap { field =>
               selectionStats(field, List.empty)
             }
-            val params = generateFieldParams(
-              unionSelection.fields,
-              typeQualifiers :+ unionName.value
-            )
             val unionTypeName = Type.Name(unionType.name)
             val unionTermName = Term.Name(unionType.name)
+            val params = generateFieldParams(
+              unionSelection.fields,
+              typeQualifiers :+ unionTermName.value
+            )
 
             val jsonCodec = jsonCodeGen.generateFieldDecoder(unionTypeName) ++ jsonCodeGen
               .generateFieldEncoder(unionTypeName)
@@ -417,7 +415,7 @@ case class ApolloSourceGenerator(
       val enumStats: List[Stat] = enumValues ++ jsonDecoder ++ jsonEncoder
 
       List[Stat](
-        q"sealed trait $enumName",
+        q"sealed trait $enumName extends Product with Serializable",
         q"object $objectName { ..$enumStats }"
       )
 
